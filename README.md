@@ -36,7 +36,6 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Math.Infinitesimal`](src/Math/Infinitesimal.idr) | Nilpotent dual number matrix ($\epsilon^2 = 0$) for exact discrete calculus. |
 | [`Math.RationalTrig`](src/Math/RationalTrig.idr) | Rational Trigonometry: Quadrance, Spread, Cross, and Archimedes' Function. |
 | [`Math.FineStructure`](src/Math/FineStructure.idr) | Pure constructivist derivation of $\alpha^{-1} = 137$. |
-| [`Math.IntPolynumber`](src/Math/IntPolynumber.idr) | Bivariate polynomial multisets for dynamic matrix inflation. |
 | [`Math.LinAlgebra.MetricTensor`](src/Math/LinAlgebra/MetricTensor.idr) | Rational Maxel metrics with BoxInt entries and discriminant classification. |
 | [`Math.LinAlgebra.TernaryClassifier`](src/Math/LinAlgebra/TernaryClassifier.idr) | Permutation of $\{-1, 0, 1\}$ into all 27 canonical spacetime Maxel metrics. |
 | [`Math.LinAlgebra.BilinearProduct`](src/Math/LinAlgebra/BilinearProduct.idr) | Bilinear inner product ($ds^2$) over infinitesimal dual complex vectors and Maxels. |
@@ -46,11 +45,10 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Compound.AlphaReplication`](src/Compound/AlphaReplication.idr) | 4-nucleon hierarchical tetrahedral clustering into a 108-voxel $^4\text{He}$ core. |
 | [`Evolution.State`](src/Evolution/State.idr) | Un-hardcoded `UniverseState vmSize deSize dmSize` record. |
 | [`Evolution.Init`](src/Evolution/Init.idr) | Dynamic vacuum seed initializer (`seedEvolutionaryVacuum`) for Epoch 1. |
-| [`Evolution.Expansion`](src/Evolution/Expansion.idr) | Generalized grid expansion ($1\times 1 \to 2\times 2 \to 3\times 3 \to \dots$). |
+| [`Evolution.Expansion`](src/Evolution/Expansion.idr) | Generalized grid expansion into pure Maxels and outer product tensor inflation. |
 | [`Evolution.Contraction`](src/Evolution/Contraction.idr) | Multi-epoch collapse and folding (`contractAndFoldGeneric`). |
 | [`Evolution.Bootstrap`](src/Evolution/Bootstrap.idr) | Master bootstrap pipeline scaling from Epoch 1 through Epoch 37. |
 | [`Evolution.StructuralAccounting`](src/Evolution/StructuralAccounting.idr) | Structural summation loops for non-cast integer vectors. |
-| [`Evolution.GridExpansion`](src/Evolution/GridExpansion.idr) | Generalized non-hardcoded `expandAndUnfoldGeneric` matrix inflation pipeline. |
 | [`Derivation.PureGeometricClassifier`](src/Derivation/PureGeometricClassifier.idr) | Relational inference of metric coordinates from internal memory density ratios. |
 | [`Compound.LinearEpsilonRouting`](src/Compound/LinearEpsilonRouting.idr) | Kinematic velocity routing across symmetric $g_{\text{EM}}$ vs asymmetric $g_{\text{Substrate}}$ Maxels. |
 | [`Compound.VelocityLensing`](src/Compound/VelocityLensing.idr) | Dark Matter inductive drag and gravitational deflection across scale jumps. |
