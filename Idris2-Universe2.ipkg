@@ -1,0 +1,32 @@
+package Idris2-Universe2
+version = 0.2.0
+authors = "Justin Kelly"
+
+-- Zero external library dependencies: pure bootstrapping via base and Language.Reflection
+depends = base
+
+sourcedir = "src"
+
+modules = Core.BoxInt,
+          Core.Multiset,
+          Core.Polynomial,
+          Core.QTT,
+          Geometry.LatticeTopology,
+          Math.Infinitesimal,
+          Math.RationalTrig,
+          Math.FineStructure,
+          Math.LinAlgebra.MetricTensor,
+          Math.LinAlgebra.TernaryClassifier,
+          Math.LinAlgebra.BilinearProduct,
+          Compound.HadronicConfinement,
+          Compound.AlphaReplication,
+          Evolution.State,
+          Evolution.Init,
+          Evolution.Expansion,
+          Evolution.Contraction,
+          Evolution.Bootstrap,
+          Derivation.PureGeometricClassifier,
+          Compound.LinearEpsilonRouting,
+          Compound.VelocityLensing,
+          Reflect.PermutationSolver,
+          Reflect.InvariantAuditor

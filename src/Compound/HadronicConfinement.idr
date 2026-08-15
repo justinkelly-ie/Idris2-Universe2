@@ -1,0 +1,100 @@
+module Compound.HadronicConfinement
+
+import Core.BoxInt
+import Math.LinAlgebra.TernaryClassifier
+import Geometry.LatticeTopology
+import Evolution.State
+import Evolution.Init
+import Data.Vect
+import Data.Fin
+
+%default total
+
+||| The 3 fundamental QCD color charge sectors in Chromogeometry:
+||| - RedColor   (Hyperbolic / Timelike flux)
+||| - GreenColor (Parabolic / Lightlike null transport)
+||| - BlueColor  (Elliptic / Spacelike confinement canvas)
+public export
+data ColorCharge = RedColor | GreenColor | BlueColor
+
+public export
+Eq ColorCharge where
+  RedColor   == RedColor   = True
+  GreenColor == GreenColor = True
+  BlueColor  == BlueColor  = True
+  _          == _          = False
+
+public export
+Show ColorCharge where
+  show RedColor   = "Red"
+  show GreenColor = "Green"
+  show BlueColor  = "Blue"
+
+||| Classifies each cell index in Fin 27 into its exact QCD Color Sector.
+||| Uses the Z-axis coordinate layer (z = -1 -> Red, z = 0 -> Green, z = +1 -> Blue).
+||| Exactly 9 cells per color sector (9 Red + 9 Green + 9 Blue = 27 total cells).
+public export
+cellColorSector : Fin 27 -> ColorCharge
+cellColorSector idx =
+  let c = fin27ToCoord idx
+  in case coordZ c of
+       MinusOne => RedColor
+       ZeroBit  => GreenColor
+       PlusOne  => BlueColor
+
+||| Total explicit tabulator for 27-element vectors.
+public export
+tabulate27 : (Fin 27 -> a) -> Vect 27 a
+tabulate27 f = [ f 0,  f 1,  f 2,  f 3,  f 4,  f 5,  f 6,  f 7,  f 8,
+                 f 9,  f 10, f 11, f 12, f 13, f 14, f 15, f 16, f 17,
+                 f 18, f 19, f 20, f 21, f 22, f 23, f 24, f 25, f 26 ]
+
+||| A Hadronic Nucleon State (Proton / Neutron) spanning the 27-cell lattice.
+||| Tracks color flux across the Red, Green, and Blue sectors.
+public export
+record HadronState where
+  constructor MkHadronState
+  latticeGrid : Vect 27 BoxInt
+
+||| Creates a balanced Hadronic Ground State at Epoch 3.
+||| Injects 1 unit of Quark flux into each cell (9 Red + 9 Green + 9 Blue = 27 total flux).
+public export
+seedHadronEpoch3 : HadronState
+seedHadronEpoch3 =
+  let grid = tabulate27 (\idx => 
+        case cellColorSector idx of
+          RedColor   => intToBoxInt 1
+          GreenColor => intToBoxInt 1
+          BlueColor  => intToBoxInt 1)
+  in MkHadronState grid
+
+||| Computes the net color charge sum of a sector.
+public export
+sectorColorSum : ColorCharge -> HadronState -> BoxInt
+sectorColorSum targetColor (MkHadronState grid) =
+  let cells = filter (\idx => cellColorSector idx == targetColor) (allFins 27)
+  in foldl (\acc, idx => acc + index idx grid) (intToBoxInt 0) cells
+  where
+    allFins : (n : Nat) -> List (Fin n)
+    allFins Z = []
+    allFins (S k) = FZ :: map FS (allFins k)
+
+||| Color Neutrality (White / Singlet State) Predicate:
+||| A hadron is confined and color-neutral if and only if Red Sum == Green Sum == Blue Sum.
+public export
+isColorNeutral : HadronState -> Bool
+isColorNeutral hadron =
+  let r = sectorColorSum RedColor hadron
+      g = sectorColorSum GreenColor hadron
+      b = sectorColorSum BlueColor hadron
+  in r == g && g == b
+
+||| Total Hadronic Valence Flux: Sum of all 27 cells.
+public export
+totalHadronFlux : HadronState -> BoxInt
+totalHadronFlux (MkHadronState grid) = sumField27 grid
+
+||| Step-Up to Epoch 3 Cosmic State: UniverseState 27 128 3.
+public export
+hadronCosmicStateEpoch3 : UniverseState 27 128 3
+hadronCosmicStateEpoch3 = seedCosmicVacuum 3 7 3
