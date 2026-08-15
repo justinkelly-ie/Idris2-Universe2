@@ -43,6 +43,7 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Geometry.GrassmannCalculus`](src/Geometry/GrassmannCalculus.idr) | Grassmann cochains ($C_0, C_1, C_2, C_3$), coboundaries, Hodge duality, and Yang-Mills. |
 | [`Compound.HadronicConfinement`](src/Compound/HadronicConfinement.idr) | Triadic Chromogeometry, color charges, and color-neutral nucleon singlets. |
 | [`Compound.AlphaReplication`](src/Compound/AlphaReplication.idr) | 4-nucleon hierarchical tetrahedral clustering into a 108-voxel $^4\text{He}$ core. |
+| [`Compound.MolecularBonding`](src/Compound/MolecularBonding.idr) | Tier 5 chemical molecular bonding, covalent Maxel contraction, and saturation. |
 | [`Evolution.State`](src/Evolution/State.idr) | Un-hardcoded `UniverseState vmSize deSize dmSize` record. |
 | [`Evolution.Init`](src/Evolution/Init.idr) | Dynamic vacuum seed initializer (`seedEvolutionaryVacuum`) for Epoch 1. |
 | [`Evolution.Expansion`](src/Evolution/Expansion.idr) | Generalized grid expansion into pure Maxels and outer product tensor inflation. |
