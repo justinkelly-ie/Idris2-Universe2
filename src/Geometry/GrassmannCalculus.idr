@@ -1,4 +1,4 @@
-module Geometry.DEC3D
+module Geometry.GrassmannCalculus
 
 import Core.BoxInt
 import Core.Multiset
@@ -9,7 +9,7 @@ import Data.Vect
 %default total
 
 ------------------------------------------------------------------------
--- 1. WILDBERGER'S 3D GRASSMANN COCHAIN HIERARCHY
+-- 1. WILDBERGER'S GRASSMANN COCHAIN HIERARCHY
 --    (Standard Physics: Discrete Exterior Calculus 0-, 1-, 2-, 3-Forms)
 ------------------------------------------------------------------------
 
