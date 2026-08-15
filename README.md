@@ -32,7 +32,6 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Core.BoxInt`](src/Core/BoxInt.idr) | Box arithmetic wrapper for exact signed integer scalars. |
 | [`Core.Multiset`](src/Core/Multiset.idr) | Type-indexed inductive multisets and reflected Box Arithmetic. |
 | [`Core.Polynomial`](src/Core/Polynomial.idr) | Nested polynomial multisets, Goh Factorization, and cyclotomic division. |
-| [`Core.QTT`](src/Core/QTT.idr) | Quantitative Type Theory resource conservation combinators. |
 | [`Core.VexelMaxel`](src/Core/VexelMaxel.idr) | Singletons, Pixels, Voxels, Vexels (vector multisets), and Maxels (matrix multisets). |
 | [`Math.Infinitesimal`](src/Math/Infinitesimal.idr) | Nilpotent dual number matrix ($\epsilon^2 = 0$) for exact discrete calculus. |
 | [`Math.RationalTrig`](src/Math/RationalTrig.idr) | Rational Trigonometry: Quadrance, Spread, Cross, and Archimedes' Function. |

@@ -10,7 +10,6 @@ sourcedir = "src"
 modules = Core.BoxInt,
           Core.Multiset,
           Core.Polynomial,
-          Core.QTT,
           Core.VexelMaxel,
           Geometry.LatticeTopology,
           Geometry.GrassmannCalculus,
