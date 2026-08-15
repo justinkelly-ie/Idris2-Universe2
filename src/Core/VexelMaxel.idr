@@ -9,7 +9,7 @@ import Language.Reflection
 %default total
 
 ------------------------------------------------------------------------
--- 1. WILDBERGER'S SINGLETONS & PIXELS
+-- 1. WILDBERGER'S SINGLETONS, PIXELS & VOXELS
 ------------------------------------------------------------------------
 
 ||| A Singleton is a 1-list from Nat [n], representing a 1D basis coordinate.
@@ -26,7 +26,7 @@ public export
 Show Singleton where
   show (MkSingleton i) = "[" ++ show i ++ "]"
 
-||| A Pixel is a 2-list from Nat [i, j], representing a 2D coordinate cell.
+||| A Pixel is a 2-list from Nat [i, j], representing a 2D coordinate cell or Grothendieck pair (pos, neg).
 public export
 record Pixel where
   constructor MkPixel
@@ -41,8 +41,38 @@ public export
 Show Pixel where
   show (MkPixel r c) = "[" ++ show r ++ ", " ++ show c ++ "]"
 
+||| A Voxel is a 3-list from Nat [x, y, z], representing a 3D coordinate cell or Triplet Codon / Baryon state.
+public export
+record Voxel where
+  constructor MkVoxel
+  axisX : Nat
+  axisY : Nat
+  axisZ : Nat
+
+public export
+Eq Voxel where
+  (MkVoxel x1 y1 z1) == (MkVoxel x2 y2 z2) = x1 == x2 && y1 == y2 && z1 == z2
+
+public export
+Show Voxel where
+  show (MkVoxel x y z) = "[" ++ show x ++ ", " ++ show y ++ ", " ++ show z ++ "]"
+
 ------------------------------------------------------------------------
--- 2. VEXELS & MAXELS AS PURE MULTISETS
+-- 2. GROTHENDIECK BOXINT <-> PIXEL ISOMORPHISM
+------------------------------------------------------------------------
+
+||| Encodes a Grothendieck signed pair (pos, neg) as a 2D coordinate Pixel [pos, neg].
+public export
+boxIntToPixelPair : Nat -> Nat -> Pixel
+boxIntToPixelPair p n = MkPixel p n
+
+||| Evaluates the signed BoxInt integer value of a Grothendieck coordinate Pixel [pos, neg]: (pos - neg).
+public export
+pixelToSignedBoxInt : Pixel -> BoxInt
+pixelToSignedBoxInt (MkPixel p n) = intToBoxInt (cast p - cast n)
+
+------------------------------------------------------------------------
+-- 3. VEXELS & MAXELS AS PURE MULTISETS
 ------------------------------------------------------------------------
 
 ||| A Vexel is a multiset of Singletons (Wildberger Vector).
@@ -76,7 +106,7 @@ Show Maxel where
   show (MkMaxel ps) = "Maxel(" ++ show ps ++ ")"
 
 ------------------------------------------------------------------------
--- 3. ALGEBRAIC MULTIPLICATION: SINGLETONS WITH PIXELS
+-- 4. ALGEBRAIC MULTIPLICATION: SINGLETONS WITH PIXELS
 --    [k] * [l, m] = [m] if k == l else blank
 ------------------------------------------------------------------------
 
@@ -93,7 +123,7 @@ mulPixelSingleton (MkPixel l m) (MkSingleton k) =
   if m == k then Just (MkSingleton l) else Nothing
 
 ------------------------------------------------------------------------
--- 4. ROW & COLUMN VEXEL EXTRACTIONS FROM MAXELS
+-- 5. ROW & COLUMN VEXEL EXTRACTIONS FROM MAXELS
 ------------------------------------------------------------------------
 
 ||| Extracts the i-th Row of a Maxel as a 1D Vexel: R_i(M) = [i] * M
@@ -119,7 +149,7 @@ extractColVexel j (MkMaxel ps) =
   in MkVexel extracted
 
 ------------------------------------------------------------------------
--- 5. CHIRAL OUTER PRODUCT: VEXEL x VEXEL -> MAXEL
+-- 6. CHIRAL OUTER PRODUCT: VEXEL x VEXEL -> MAXEL
 ------------------------------------------------------------------------
 
 ||| Multiplies a column Vexel (ket) by a row Vexel (bra) to generate a Maxel:
@@ -138,7 +168,33 @@ totalMaxelWeight (MkMaxel ps) =
   sum (map snd ps)
 
 ------------------------------------------------------------------------
--- 6. ELABORATOR REFLECTION AUDITORS
+-- 7. PHYSICAL, CHEMICAL & BIOLOGICAL PERMUTATIONS
+------------------------------------------------------------------------
+
+||| 🌌 Physics: A Quark Vexel represents the 3 color charges (Red=[1], Green=[2], Blue=[3]) of a Baryon singlet.
+public export
+nucleonQuarkVexel : Vexel
+nucleonQuarkVexel =
+  MkVexel [ (MkSingleton 1, intToBoxInt 1)
+          , (MkSingleton 2, intToBoxInt 1)
+          , (MkSingleton 3, intToBoxInt 1)
+          ]
+
+||| 🧪 Chemistry: A Molecular Bond Maxel represents covalent bond connectivity between atoms i and j.
+public export
+waterMoleculeBonds : Maxel
+waterMoleculeBonds =
+  MkMaxel [ (MkPixel 1 2, intToBoxInt 1) -- O-H1 bond
+          , (MkPixel 1 3, intToBoxInt 1) -- O-H2 bond
+          ]
+
+||| 🧬 Biology: A Codon Voxel represents a 3-nucleotide genetic triplet (e.g., [A=0, U=1, G=2] => AUG Methionine/Start).
+public export
+startCodonAUG : Voxel
+startCodonAUG = MkVoxel 0 1 2
+
+------------------------------------------------------------------------
+-- 8. COMPILE-TIME REFLECTION & INVARIANT AUDITORS
 ------------------------------------------------------------------------
 
 ||| Pure evaluator verifying that row extraction on an outer-product Maxel is proportional to the bra Vexel.
