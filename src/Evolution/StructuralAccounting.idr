@@ -5,7 +5,7 @@ import Data.Vect
 
 %default total
 
-||| Pure, cast-free structural summation of BoxInt vectors.
+||| Structural summation of BoxInt vectors.
 ||| Accumulates memory units purely through inductive box container algebra (+),
 ||| with zero reliance on backend primitive integer casts.
 public export
