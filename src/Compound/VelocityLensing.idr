@@ -6,6 +6,7 @@ import Math.LinAlgebra.MetricTensor
 import Math.Infinitesimal
 import Compound.LinearEpsilonRouting
 import Core.BoxInt
+import Core.VexelMaxel
 import Data.Vect
 
 %default total
@@ -27,18 +28,21 @@ computeInductiveDrag {dm} dmLogData = sumStructural dmLogData
 public export
 lensVelocityAcrossScale : {vm, de, dm : Nat} ->
                           (state : UniverseState vm de dm) ->
-                          (metric : MetricTensor2D) ->
+                          (metric : Maxel) ->
                           (1 velocity : VelocityVector2D) ->
                           VelocityVector2D
-lensVelocityAcrossScale (MkUniverseState vm de dm) (MkMetricTensor2D g11 g12 g22) (MkVelocity vA vB) =
+lensVelocityAcrossScale (MkUniverseState vm de dm) metric (MkVelocity vA vB) =
   let drag = computeInductiveDrag dm
+      g11Val = g11 metric
+      g12Val = g12 metric
+      g22Val = g22 metric
       vA_12 = m12 vA
       vB_12 = m12 vB
       scaleFactor = intToBoxInt 1 + drag
       
       -- Vector components scale cleanly under pure BoxInt algebra
-      rawOutAlpha = (g11 * vA_12) + (g12 * vB_12)
-      rawOutBeta  = (g12 * vA_12) + (g22 * vB_12)
+      rawOutAlpha = (g11Val * vA_12) + (g12Val * vB_12)
+      rawOutBeta  = (g12Val * vA_12) + (g22Val * vB_12)
       outAlpha = rawOutAlpha `div` scaleFactor
       outBeta  = rawOutBeta  `div` scaleFactor
   in MkVelocity (MkInfinitesimal (intToBoxInt 0) outAlpha (intToBoxInt 0))

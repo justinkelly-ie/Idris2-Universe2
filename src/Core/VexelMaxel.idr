@@ -105,6 +105,13 @@ public export
 Show Maxel where
   show (MkMaxel ps) = "Maxel(" ++ show ps ++ ")"
 
+||| Extracts the weight of a specific coordinate Pixel in a Maxel.
+public export
+lookupPixel : Pixel -> Maxel -> BoxInt
+lookupPixel _ (MkMaxel []) = intToBoxInt 0
+lookupPixel target (MkMaxel ((p, w) :: rest)) =
+  if p == target then w else lookupPixel target (MkMaxel rest)
+
 ------------------------------------------------------------------------
 -- 4. ALGEBRAIC MULTIPLICATION: SINGLETONS WITH PIXELS
 --    [k] * [l, m] = [m] if k == l else blank

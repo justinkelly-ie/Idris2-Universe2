@@ -1,6 +1,7 @@
 module Math.LinAlgebra.BilinearProduct
 
 import Core.BoxInt
+import Core.VexelMaxel
 import Math.LinAlgebra.MetricTensor
 import Math.Infinitesimal
 
@@ -28,15 +29,18 @@ scaleDual : BoxInt -> DualComplex -> DualComplex
 scaleDual (MkBoxInt s) (MkDual r i) = 
   MkDual (MkBoxInt (s * unwrapBox r)) (MkBoxInt (s * unwrapBox i))
 
-||| Computes the infinitesimal bilinear inner product (ds^2) under a metric tensor.
+||| Computes the infinitesimal bilinear inner product (ds^2) under a metric Maxel.
 ||| ds^2 = g11 * dx^2 + 2 * g12 * dx * dy + g22 * dy^2
 public export
-bilinearInnerProduct : MetricTensor2D -> InfinitesimalStep2D -> DualComplex
-bilinearInnerProduct (MkMetricTensor2D g11 g12 g22) (MkStep2D dx dy) =
-  let dx2  = dx * dx
+bilinearInnerProduct : Maxel -> InfinitesimalStep2D -> DualComplex
+bilinearInnerProduct g (MkStep2D dx dy) =
+  let g11Val = g11 g
+      g12Val = g12 g
+      g22Val = g22 g
+      dx2  = dx * dx
       dy2  = dy * dy
       dxdy = dx * dy
-      term1 = scaleDual g11 dx2
-      term2 = scaleDual (intToBoxInt 2 * g12) dxdy
-      term3 = scaleDual g22 dy2
+      term1 = scaleDual g11Val dx2
+      term2 = scaleDual (intToBoxInt 2 * g12Val) dxdy
+      term3 = scaleDual g22Val dy2
   in term1 + term2 + term3

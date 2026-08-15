@@ -1,74 +1,90 @@
 module Math.LinAlgebra.MetricTensor
 
-import Core.BoxInt
+import public Core.BoxInt
+import public Core.VexelMaxel
 
 %default total
 
-||| Rational Metric Tensor g = [[g11, g12], [g12, g22]] using BoxInt fields.
+||| A 2x2 Metric is a symmetric Maxel (multiset of Pixels).
 public export
-record MetricTensor2D where
-  constructor MkMetricTensor2D
-  g11 : BoxInt
-  g12 : BoxInt
-  g22 : BoxInt
+buildMetricMaxel : (g11 : BoxInt) -> (g12 : BoxInt) -> (g22 : BoxInt) -> Maxel
+buildMetricMaxel a b c =
+  MkMaxel [ (MkPixel 1 1, a)
+          , (MkPixel 1 2, b)
+          , (MkPixel 2 1, b)
+          , (MkPixel 2 2, c)
+          ]
 
+||| Extract g11 component from a Maxel.
 public export
-Eq MetricTensor2D where
-  (MkMetricTensor2D a1 b1 c1) == (MkMetricTensor2D a2 b2 c2) =
-    a1 == a2 && b1 == b2 && c1 == c2
+g11 : Maxel -> BoxInt
+g11 m = lookupPixel (MkPixel 1 1) m
 
+||| Extract g12 component from a Maxel.
 public export
-Show MetricTensor2D where
-  show (MkMetricTensor2D a b c) = 
-    "g = [[" ++ show (unwrapBox a) ++ ", " ++ show (unwrapBox b) ++ "], [" 
-             ++ show (unwrapBox b) ++ ", " ++ show (unwrapBox c) ++ "]]"
+g12 : Maxel -> BoxInt
+g12 m = lookupPixel (MkPixel 1 2) m
 
-||| Metric Determinant (Discriminant): det(g) = g11 * g22 - g12^2
+||| Extract g22 component from a Maxel.
 public export
-detMetric : MetricTensor2D -> BoxInt
-detMetric (MkMetricTensor2D a b c) = (a * c) - (b * b)
+g22 : Maxel -> BoxInt
+g22 m = lookupPixel (MkPixel 2 2) m
 
-||| Metric Trace: tr(g) = g11 + g22
+||| Metric Determinant: det(M) = g11 * g22 - g12^2
 public export
-traceMetric : MetricTensor2D -> BoxInt
-traceMetric (MkMetricTensor2D a b c) = a + c
+detMetric : Maxel -> BoxInt
+detMetric m = (g11 m * g22 m) - (g12 m * g12 m)
 
-||| Primary Euclidean Blue Metric: g = [[1, 0], [0, 1]]
+||| Metric Trace: tr(M) = g11 + g22
 public export
-gBlue : MetricTensor2D
-gBlue = MkMetricTensor2D (intToBoxInt 1) (intToBoxInt 0) (intToBoxInt 1)
+traceMetric : Maxel -> BoxInt
+traceMetric m = g11 m + g22 m
 
-||| Primary Relativistic Red Metric: g = [[1, 0], [0, -1]]
+||| Primary Euclidean Blue Metric Maxel: g = [[1, 0], [0, 1]]
 public export
-gRed : MetricTensor2D
-gRed = MkMetricTensor2D (intToBoxInt 1) (intToBoxInt 0) (intToBoxInt (-1))
+gBlue : Maxel
+gBlue = buildMetricMaxel (intToBoxInt 1) (intToBoxInt 0) (intToBoxInt 1)
 
-||| Primary Split-Complex Green Metric: g = [[0, 1], [1, 0]]
+||| Primary Relativistic Red Metric Maxel: g = [[1, 0], [0, -1]]
 public export
-gGreen : MetricTensor2D
-gGreen = MkMetricTensor2D (intToBoxInt 0) (intToBoxInt 1) (intToBoxInt 0)
+gRed : Maxel
+gRed = buildMetricMaxel (intToBoxInt 1) (intToBoxInt 0) (intToBoxInt (-1))
 
-||| Causal Poset Substrate Metric: g = [[1, 1], [1, 0]]
+||| Primary Split-Complex Green Metric Maxel: g = [[0, 1], [1, 0]]
 public export
-gSubstrate : MetricTensor2D
-gSubstrate = MkMetricTensor2D (intToBoxInt 1) (intToBoxInt 1) (intToBoxInt 0)
+gGreen : Maxel
+gGreen = buildMetricMaxel (intToBoxInt 0) (intToBoxInt 1) (intToBoxInt 0)
 
-||| Electromagnetism Spacetime Metric: g = [[1, 0], [0, -1]]
+||| Causal Poset Substrate Metric Maxel: g = [[1, 1], [1, 0]]
 public export
-gEM : MetricTensor2D
+gSubstrate : Maxel
+gSubstrate = buildMetricMaxel (intToBoxInt 1) (intToBoxInt 1) (intToBoxInt 0)
+
+||| Electromagnetism Spacetime Metric Maxel: g = [[1, 0], [0, -1]]
+public export
+gEM : Maxel
 gEM = gRed
 
-||| Symplectic Phase Space Metric: g = [[0, 1], [1, 0]]
+||| Symplectic Phase Space Metric Maxel: g = [[0, 1], [1, 0]]
 public export
-gToroidal : MetricTensor2D
+gToroidal : Maxel
 gToroidal = gGreen
 
-||| Rational Spread Trigonometric Metric: g = [[1, -1], [-1, 1]]
+||| Rational Spread Trigonometric Metric Maxel: g = [[1, -1], [-1, 1]]
 public export
-gTrigonometry : MetricTensor2D
-gTrigonometry = MkMetricTensor2D (intToBoxInt 1) (intToBoxInt (-1)) (intToBoxInt 1)
+gTrigonometry : Maxel
+gTrigonometry = buildMetricMaxel (intToBoxInt 1) (intToBoxInt (-1)) (intToBoxInt 1)
 
-||| Boolean Bit Projection Metric: g = [[1, 0], [0, 0]]
+||| Boolean Bit Projection Metric Maxel: g = [[1, 0], [0, 0]]
 public export
-gBoole : MetricTensor2D
-gBoole = MkMetricTensor2D (intToBoxInt 1) (intToBoxInt 0) (intToBoxInt 0)
+gBoole : Maxel
+gBoole = buildMetricMaxel (intToBoxInt 1) (intToBoxInt 0) (intToBoxInt 0)
+
+||| Backward-compatible aliases mapping MetricTensor2D to Maxel.
+public export
+MetricTensor2D : Type
+MetricTensor2D = Maxel
+
+public export
+MkMetricTensor2D : BoxInt -> BoxInt -> BoxInt -> Maxel
+MkMetricTensor2D = buildMetricMaxel

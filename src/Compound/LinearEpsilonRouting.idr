@@ -1,6 +1,7 @@
 module Compound.LinearEpsilonRouting
 
 import Core.BoxInt
+import Core.VexelMaxel
 import Math.LinAlgebra.MetricTensor
 import Math.Infinitesimal
 
@@ -24,23 +25,29 @@ Show VelocityVector2D where
 
 ||| Linearly routes 2D velocity tokens through a symmetric gEM metric transformation.
 public export
-linearEpsilonRouting : MetricTensor2D -> (1 v : VelocityVector2D) -> VelocityVector2D
-linearEpsilonRouting (MkMetricTensor2D g11 g12 g22) (MkVelocity vA vB) =
-  let vA_12 = m12 vA
+linearEpsilonRouting : Maxel -> (1 v : VelocityVector2D) -> VelocityVector2D
+linearEpsilonRouting g (MkVelocity vA vB) =
+  let g11Val = g11 g
+      g12Val = g12 g
+      g22Val = g22 g
+      vA_12 = m12 vA
       vB_12 = m12 vB
-      outAlpha = (g11 * vA_12) + (g12 * vB_12)
-      outBeta  = (g12 * vA_12) + (g22 * vB_12)
+      outAlpha = (g11Val * vA_12) + (g12Val * vB_12)
+      outBeta  = (g12Val * vA_12) + (g22Val * vB_12)
   in MkVelocity (MkInfinitesimal (intToBoxInt 0) outAlpha (intToBoxInt 0))
                 (MkInfinitesimal (intToBoxInt 0) outBeta  (intToBoxInt 0))
 
 ||| Linearly routes 2D velocity tokens through an asymmetric gSubstrate metric transformation.
 ||| When g22 = 0, the vertical component cannot feed back into itself, enforcing a one-way causal arrow.
 public export
-linearEpsilonSubstrateRouting : MetricTensor2D -> (1 v : VelocityVector2D) -> VelocityVector2D
-linearEpsilonSubstrateRouting (MkMetricTensor2D g11 g12 g22) (MkVelocity vA vB) =
-  let vA_12 = m12 vA
+linearEpsilonSubstrateRouting : Maxel -> (1 v : VelocityVector2D) -> VelocityVector2D
+linearEpsilonSubstrateRouting g (MkVelocity vA vB) =
+  let g11Val = g11 g
+      g12Val = g12 g
+      g22Val = g22 g
+      vA_12 = m12 vA
       vB_12 = m12 vB
-      outAlpha = (g11 * vA_12) + (g12 * vB_12)
-      outBeta  = (g12 * vA_12) + (g22 * vB_12)
+      outAlpha = (g11Val * vA_12) + (g12Val * vB_12)
+      outBeta  = (g12Val * vA_12) + (g22Val * vB_12)
   in MkVelocity (MkInfinitesimal (intToBoxInt 0) outAlpha (intToBoxInt 0))
                 (MkInfinitesimal (intToBoxInt 0) outBeta  (intToBoxInt 0))
