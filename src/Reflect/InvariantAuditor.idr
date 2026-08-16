@@ -8,6 +8,7 @@ import Core.SingFraction
 import Math.Infinitesimal
 import Math.QuantumTransition
 import Math.WilsonPolyhedra
+import Math.FourGeometries
 import Math.RationalTrig
 import Math.FineStructure
 import Math.LinAlgebra.MetricTensor
@@ -809,6 +810,35 @@ export
 %macro
 auditHadronSingletPolyhedralInvariance : Elab (Reflect.InvariantAuditor.auditHadronSingletPolyhedralInvarianceProofExport = True)
 auditHadronSingletPolyhedralInvariance = pure Refl
+
+------------------------------------------------------------------------
+-- 7. THE 4 FUNDAMENTAL GEOMETRIES SYNTHESIS AUDIT MACROS
+------------------------------------------------------------------------
+
+||| Audit proving the Determinant Classification of the 4 Geometries (+1, -1, 0, Substrate).
+public export
+auditFourGeometriesDeterminantsProofExport : Bool
+auditFourGeometriesDeterminantsProofExport =
+  auditFourGeometriesDeterminantsProof
+
+||| Audit proving the Cosmic 210 Budget Synthesis across the 4 Geometries.
+public export
+auditFourGeometriesCosmicSynthesisProofExport : Bool
+auditFourGeometriesCosmicSynthesisProofExport =
+  auditFourGeometriesCosmicSynthesisProof
+
+||| Compile-time macro verifying the Determinant Classification of the 4 Geometries.
+export
+%macro
+auditFourGeometriesDeterminants : Elab (Reflect.InvariantAuditor.auditFourGeometriesDeterminantsProofExport = True)
+auditFourGeometriesDeterminants = pure Refl
+
+||| Compile-time macro verifying the Cosmic 210 Budget Synthesis across the 4 Geometries.
+export
+%macro
+auditFourGeometriesCosmicSynthesis : Elab (Reflect.InvariantAuditor.auditFourGeometriesCosmicSynthesisProofExport = True)
+auditFourGeometriesCosmicSynthesis = pure Refl
+
 
 
 
