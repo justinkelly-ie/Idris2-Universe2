@@ -19,6 +19,35 @@ natPower2 : Nat -> Nat
 natPower2 0 = 1
 natPower2 (S k) = 2 * natPower2 k
 
+||| Computes integer half of a Nat:
+public export
+halfNat : Nat -> Nat
+halfNat 0 = 0
+halfNat 1 = 0
+halfNat (S (S n)) = S (halfNat n)
+
+||| Tests if a Nat is odd:
+public export
+isOddNat : Nat -> Bool
+isOddNat 0 = False
+isOddNat 1 = True
+isOddNat (S (S n)) = isOddNat n
+
+||| Fast binary exponentiation for powers of 2 in O(log k) fuel steps:
+public export
+fastNatPower2Fuel : (fuel : Nat) -> Nat -> Nat
+fastNatPower2Fuel 0 _ = 1
+fastNatPower2Fuel (S _) 0 = 1
+fastNatPower2Fuel (S fuel) k =
+  let half = halfNat k
+      halfPow = fastNatPower2Fuel fuel half
+      sq = halfPow * halfPow
+  in if isOddNat k then 2 * sq else sq
+
+public export
+fastNatPower2 : Nat -> Nat
+fastNatPower2 k = fastNatPower2Fuel (k + 5) k
+
 ||| Evaluates scaled Kraft-McMillan sum for a list of codeword lengths with maximum length maxL:
 ||| Sum_{i=1}^k 2^(maxL - l_i) <= 2^maxL.
 public export
