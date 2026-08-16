@@ -57,7 +57,7 @@ computeOuterProductSum (k :: ks) bras =
 public export
 expandAndUnfoldGeneric : {currentVM, de, dm : Nat} ->
                          {nextScale : Nat} ->
-                         (priorState : UniverseState currentVM de dm) ->
+                         (1 priorState : UniverseState currentVM de dm) ->
                          (chiralKet : Vect nextScale Int) ->
                          (chiralBra : Vect nextScale Int) ->
                          Maxel
@@ -77,9 +77,24 @@ expandAndUnfoldGeneric {currentVM} {de} {dm} {nextScale} (MkUniverseState vmStat
 ||| satisfies full resource accounting across the 4x4 scale transition.
 public export
 execute4x4Expansion : {vm, de, dm : Nat} ->
-                      (state : UniverseState vm de dm) ->
+                      (1 state : UniverseState vm de dm) ->
                       (ket4 : Vect 4 Int) ->
                       (bra4 : Vect 4 Int) ->
                       Maxel
 execute4x4Expansion state ket4 bra4 = 
   expandAndUnfoldGeneric state ket4 bra4
+
+||| 3D Spatial Tensor Unfolding:
+||| Expands a universe state forward into an active 3D Boxel volume multiset
+||| with historical mass anchored at (nextScale, nextScale, nextScale) and active field at (1, 1, 1).
+public export
+expandAndUnfoldBoxel3D : {currentVM, de, dm : Nat} ->
+                         {nextScale : Nat} ->
+                         (1 priorState : UniverseState currentVM de dm) ->
+                         (activeFieldWeight : BoxInt) ->
+                         Boxel
+expandAndUnfoldBoxel3D {currentVM} {de} {dm} {nextScale} (MkUniverseState vmState deState dmLog) activeFieldWeight =
+  let historyMass = sumStructural dmLog
+      ancestralAnchor = (MkVoxel nextScale nextScale nextScale, historyMass)
+      activeCenter    = (MkVoxel 1 1 1, activeFieldWeight)
+  in canonicalizeBoxel (MkBoxel [ancestralAnchor, activeCenter])

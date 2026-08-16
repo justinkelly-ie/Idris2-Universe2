@@ -108,3 +108,143 @@ Eq SingFraction where
 public export
 Show SingFraction where
   show (MkSingFraction n (MkSingleton d)) = show n ++ "/" ++ show (MkSingleton d)
+
+------------------------------------------------------------------------
+-- 3. QUANTITATIVE TYPE THEORY (QTT) LINEAR OPERATIONS
+------------------------------------------------------------------------
+
+||| Pure linear consumption of a SingFraction token.
+||| Guarantees exactly one usage with zero leakage.
+public export
+linearConsumeSingFraction : (1 frac : SingFraction) -> SingFraction
+linearConsumeSingFraction (MkSingFraction n d) = MkSingFraction n d
+
+||| Linear scaling of a fractional multiset by a linear BoxInt factor.
+public export
+linearScaleSingFraction : (1 frac : SingFraction) -> (1 scale : BoxInt) -> SingFraction
+linearScaleSingFraction (MkSingFraction (MkBoxInt n) d) (MkBoxInt s) =
+  MkSingFraction (MkBoxInt (s * n)) d
+
+||| Linearly split a SingFraction into two parts according to an integer partition p.
+||| Conserves total numerator energy: p + (n - p) == n.
+public export
+linearSplitSingFraction : (1 frac : SingFraction) -> (p : BoxInt) -> (SingFraction, SingFraction)
+linearSplitSingFraction (MkSingFraction (MkBoxInt n) d) (MkBoxInt p) =
+  (MkSingFraction (MkBoxInt p) d, MkSingFraction (MkBoxInt (n - p)) d)
+
+------------------------------------------------------------------------
+-- 4. CONTINUED FRACTIONS & OPTIMAL RATIONAL CONVERGENTS
+------------------------------------------------------------------------
+
+||| Decomposes an exact SingFraction into a list of continued fraction coefficients [a0; a1, a2, ...]:
+||| q = a0 + 1 / (a1 + 1 / (a2 + ...))
+public export
+toContinuedFraction : (fuel : Nat) -> SingFraction -> List BoxInt
+toContinuedFraction Z _ = []
+toContinuedFraction (S fuel) (MkSingFraction n (MkSingleton d)) =
+  let dInt = natToBoxInt d
+  in if d == 0
+       then []
+       else
+         let a0 = n `div` dInt
+             remVal = n - (a0 * dInt)
+         in if unwrapBox remVal == 0
+              then [a0]
+              else
+                let remNat = integerToNat (unwrapBox (if remVal >= 0 then remVal else -remVal))
+                    inverted = MkSingFraction (if remVal >= 0 then dInt else -dInt) (MkSingleton remNat)
+                in a0 :: toContinuedFraction fuel inverted
+
+||| Reconstructs an exact SingFraction from a list of continued fraction coefficients:
+||| fromContinuedFraction [a0, a1, a2, ...] = a0 + 1 / (a1 + 1 / ...)
+public export
+fromContinuedFraction : List BoxInt -> SingFraction
+fromContinuedFraction [] = zeroSingFraction
+fromContinuedFraction [a] = mkSingFraction a 1
+fromContinuedFraction (a :: rest) =
+  let restFrac = fromContinuedFraction rest
+      oneOverRest = divSingFraction unitSingFraction restFrac
+      aFrac = mkSingFraction a 1
+  in addSingFraction aFrac oneOverRest
+
+||| Audits that Continued Fraction decomposition and reconstruction preserve exact rational equivalence:
+||| For q = 43 / 19, continued fraction is [2; 3, 1, 4] (2 + 1/(3 + 1/(1 + 1/4)) = 2 + 1/(3 + 4/5) = 2 + 5/19 = 43/19).
+public export
+auditContinuedFractionProof : Bool
+auditContinuedFractionProof =
+  let q = mkSingFraction (intToBoxInt 43) 19
+      cf = toContinuedFraction 10 q
+      reconstructed = fromContinuedFraction cf
+  in cf == [intToBoxInt 2, intToBoxInt 3, intToBoxInt 1, intToBoxInt 4] &&
+     reconstructed == q
+
+------------------------------------------------------------------------
+-- 5. STERN-BROCOT RATIONAL TREE & MEDIANT PATHFINDING
+------------------------------------------------------------------------
+
+||| A branch direction in the Stern-Brocot binary tree: Left (L) or Right (R).
+public export
+data SternBrocotBranch = BranchL | BranchR
+
+public export
+Eq SternBrocotBranch where
+  BranchL == BranchL = True
+  BranchR == BranchR = True
+  _       == _       = False
+
+public export
+Show SternBrocotBranch where
+  show BranchL = "L"
+  show BranchR = "R"
+
+||| Computes the Mediant of two positive fractions:
+||| (n1 / d1) (+) (n2 / d2) = (n1 + n2) / (d1 + d2).
+public export
+mediantSingFraction : SingFraction -> SingFraction -> SingFraction
+mediantSingFraction (MkSingFraction n1 (MkSingleton d1)) (MkSingFraction n2 (MkSingleton d2)) =
+  mkSingFraction (n1 + n2) (d1 + d2)
+
+||| Computes the unique Stern-Brocot binary path for any positive SingFraction.
+public export
+toSternBrocotPath : (fuel : Nat) -> SingFraction -> List SternBrocotBranch
+toSternBrocotPath fuel target =
+  helper fuel (mkSingFraction (intToBoxInt 0) 1) (mkSingFraction (intToBoxInt 1) 0) target
+  where
+    helper : Nat -> SingFraction -> SingFraction -> SingFraction -> List SternBrocotBranch
+    helper Z _ _ _ = []
+    helper (S f) l r q =
+      let m = mediantSingFraction l r
+          -- Compare q with m via cross multiplication: n_q * d_m vs n_m * d_q
+          (MkSingFraction nq (MkSingleton dq)) = q
+          (MkSingFraction nm (MkSingleton dm)) = m
+          crossDiff = (nq * natToBoxInt dm) - (nm * natToBoxInt dq)
+      in if unwrapBox crossDiff == 0
+           then []
+           else if crossDiff < 0
+                  then BranchL :: helper f l m q
+                  else BranchR :: helper f m r q
+
+||| Reconstructs the exact SingFraction at the end of a Stern-Brocot binary path.
+public export
+fromSternBrocotPath : List SternBrocotBranch -> SingFraction
+fromSternBrocotPath path =
+  helper path (mkSingFraction (intToBoxInt 0) 1) (mkSingFraction (intToBoxInt 1) 0)
+  where
+    helper : List SternBrocotBranch -> SingFraction -> SingFraction -> SingFraction
+    helper [] l r = mediantSingFraction l r
+    helper (BranchL :: rest) l r =
+      let m = mediantSingFraction l r
+      in helper rest l m
+    helper (BranchR :: rest) l r =
+      let m = mediantSingFraction l r
+      in helper rest m r
+
+||| Audits that Stern-Brocot path encoding for 5/3 is [R, L, R] and reconstructs to 5/3.
+public export
+auditSternBrocotProof : Bool
+auditSternBrocotProof =
+  let q = mkSingFraction (intToBoxInt 5) 3
+      path = toSternBrocotPath 10 q
+      reconstructed = fromSternBrocotPath path
+  in path == [BranchR, BranchL, BranchR] && reconstructed == q
+

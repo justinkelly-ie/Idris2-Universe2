@@ -7,47 +7,58 @@ import Math.Infinitesimal
 
 %default total
 
-||| A 2D Infinitesimal Vector representing localized velocity tokens
-||| along the coordinate axes of the discrete lattice grid.
+||| Constructs a 2D velocity vector as a weighted Vexel of Singletons
+||| representing velocity along spatial [1] and temporal [2] axes.
 public export
-record VelocityVector2D where
-  constructor MkVelocity
-  vAlpha : InfinitesimalToken -- Velocity along horizontal / spatial axis
-  vBeta  : InfinitesimalToken -- Velocity along vertical / temporal axis
+velocityVexel : (vAlpha : BoxInt) -> (vBeta : BoxInt) -> Vexel
+velocityVexel vA vB =
+  MkVexel [ (MkSingleton 1, vA)
+          , (MkSingleton 2, vB)
+          ]
 
+||| Linearly routes a velocity Vexel through a symmetric gEM metric transformation.
+||| Computed directly via pure Maxel-Vexel multiset contraction (g * v).
 public export
-Eq VelocityVector2D where
-  (MkVelocity a1 b1) == (MkVelocity a2 b2) = a1 == a2 && b1 == b2
+linearEpsilonRouting : Maxel -> (1 v : Vexel) -> Vexel
+linearEpsilonRouting g v = actMaxelVexel g v
 
+||| Linearly routes a velocity Vexel through an asymmetric gSubstrate metric transformation.
+||| When g22 = 0, the temporal component cannot feed back into itself, enforcing a one-way causal arrow.
 public export
-Show VelocityVector2D where
-  show (MkVelocity a b) = "Velocity2D(" ++ show a ++ ", " ++ show b ++ ")"
+linearEpsilonSubstrateRouting : Maxel -> (1 v : Vexel) -> Vexel
+linearEpsilonSubstrateRouting g v = actMaxelVexel g v
 
-||| Linearly routes 2D velocity tokens through a symmetric gEM metric transformation.
-public export
-linearEpsilonRouting : Maxel -> (1 v : VelocityVector2D) -> VelocityVector2D
-linearEpsilonRouting g (MkVelocity vA vB) =
-  let g11Val = g11 g
-      g12Val = g12 g
-      g22Val = g22 g
-      vA_12 = m12 vA
-      vB_12 = m12 vB
-      outAlpha = (g11Val * vA_12) + (g12Val * vB_12)
-      outBeta  = (g12Val * vA_12) + (g22Val * vB_12)
-  in MkVelocity (MkInfinitesimal (intToBoxInt 0) outAlpha (intToBoxInt 0))
-                (MkInfinitesimal (intToBoxInt 0) outBeta  (intToBoxInt 0))
+------------------------------------------------------------------------
+-- SYMPLECTIC PHASE SPACE & HAMILTONIAN FLOW ON VEXELS
+------------------------------------------------------------------------
 
-||| Linearly routes 2D velocity tokens through an asymmetric gSubstrate metric transformation.
-||| When g22 = 0, the vertical component cannot feed back into itself, enforcing a one-way causal arrow.
+||| The Canonical 2D Symplectic Matrix Maxel J = [[0, 1], [-1, 0]]:
+||| J = [1, 2] - [2, 1].
 public export
-linearEpsilonSubstrateRouting : Maxel -> (1 v : VelocityVector2D) -> VelocityVector2D
-linearEpsilonSubstrateRouting g (MkVelocity vA vB) =
-  let g11Val = g11 g
-      g12Val = g12 g
-      g22Val = g22 g
-      vA_12 = m12 vA
-      vB_12 = m12 vB
-      outAlpha = (g11Val * vA_12) + (g12Val * vB_12)
-      outBeta  = (g12Val * vA_12) + (g22Val * vB_12)
-  in MkVelocity (MkInfinitesimal (intToBoxInt 0) outAlpha (intToBoxInt 0))
-                (MkInfinitesimal (intToBoxInt 0) outBeta  (intToBoxInt 0))
+symplecticMatrixMaxel : Maxel
+symplecticMatrixMaxel =
+  MkMaxel [ (MkPixel 1 2, intToBoxInt 1)
+          , (MkPixel 2 1, intToBoxInt (-1))
+          ]
+
+||| Computes Hamiltonian vector field phase flow:
+||| \dot{z} = J * \nabla H(z)
+public export
+hamiltonianPhaseFlow : (gradH : Vexel) -> Vexel
+hamiltonianPhaseFlow gradH =
+  actMaxelVexel symplecticMatrixMaxel gradH
+
+||| Audits that the Symplectic Maxel satisfies canonical phase space invariants:
+||| 1. J^2 = -I (J * J = -[1, 1] - [2, 2])
+||| 2. det(J) = +1
+public export
+auditSymplecticInvarianceProof : Bool
+auditSymplecticInvarianceProof =
+  let j = symplecticMatrixMaxel
+      jSq = mulMaxel j j
+      j11 = lookupPixel (MkPixel 1 1) jSq
+      j22 = lookupPixel (MkPixel 2 2) jSq
+      j12 = lookupPixel (MkPixel 1 2) jSq
+      j21 = lookupPixel (MkPixel 2 1) jSq
+  in unwrapBox j11 == -1 && unwrapBox j22 == -1 &&
+     unwrapBox j12 == 0  && unwrapBox j21 == 0

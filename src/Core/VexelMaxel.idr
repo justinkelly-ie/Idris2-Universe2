@@ -105,6 +105,13 @@ public export
 Show Maxel where
   show (MkMaxel ps) = "Maxel(" ++ show ps ++ ")"
 
+||| Extracts the weight of a specific basis Singleton in a Vexel.
+public export
+lookupSingleton : Singleton -> Vexel -> BoxInt
+lookupSingleton _ (MkVexel []) = intToBoxInt 0
+lookupSingleton target (MkVexel ((s, w) :: rest)) =
+  if s == target then w else lookupSingleton target (MkVexel rest)
+
 ||| Extracts the weight of a specific coordinate Pixel in a Maxel.
 public export
 lookupPixel : Pixel -> Maxel -> BoxInt
@@ -112,10 +119,106 @@ lookupPixel _ (MkMaxel []) = intToBoxInt 0
 lookupPixel target (MkMaxel ((p, w) :: rest)) =
   if p == target then w else lookupPixel target (MkMaxel rest)
 
+||| A Boxel is a multiset of Voxels (Wildberger 3D Volume Tensor).
+||| Stored as a list of weighted coordinate Voxels: sum rho_xyz * [x, y, z].
+public export
+record Boxel where
+  constructor MkBoxel
+  voxels : List (Voxel, BoxInt)
+
+public export
+Eq Boxel where
+  (MkBoxel b1) == (MkBoxel b2) = b1 == b2
+
+public export
+Show Boxel where
+  show (MkBoxel bs) = "Boxel(" ++ show bs ++ ")"
+
+||| Extracts the weight of a specific coordinate Voxel in a Boxel.
+public export
+lookupVoxel : Voxel -> Boxel -> BoxInt
+lookupVoxel _ (MkBoxel []) = intToBoxInt 0
+lookupVoxel target (MkBoxel ((v, w) :: rest)) =
+  if v == target then w else lookupVoxel target (MkBoxel rest)
+
+||| Adds two Boxels by concatenating their voxel multiset entries.
+public export
+addBoxel : Boxel -> Boxel -> Boxel
+addBoxel (MkBoxel bs1) (MkBoxel bs2) = MkBoxel (bs1 ++ bs2)
+
+||| Scales a Boxel by a BoxInt scalar.
+public export
+scaleBoxel : BoxInt -> Boxel -> Boxel
+scaleBoxel s (MkBoxel bs) =
+  MkBoxel (map (\(v, w) => (v, s * w)) bs)
+
+||| Computes total weight/density across all voxels in a Boxel.
+public export
+totalBoxelWeight : Boxel -> BoxInt
+totalBoxelWeight (MkBoxel bs) =
+  sum (map snd bs)
+
 ------------------------------------------------------------------------
--- 4. ALGEBRAIC MULTIPLICATION: SINGLETONS WITH PIXELS
+-- CANONICAL MULTISET REDUCTION & ZERO-PRUNING
+------------------------------------------------------------------------
+
+||| Aggregates duplicate coordinate Singletons and prunes zero-weight entries in a Vexel.
+public export
+canonicalizeVexel : Vexel -> Vexel
+canonicalizeVexel (MkVexel terms) =
+  let folded = foldl insertOrAdd [] terms
+      pruned = filter (\(_, w) => unwrapBox w /= 0) folded
+  in MkVexel pruned
+  where
+    insertOrAdd : List (Singleton, BoxInt) -> (Singleton, BoxInt) -> List (Singleton, BoxInt)
+    insertOrAdd [] (s, w) = [(s, w)]
+    insertOrAdd ((k, v) :: rest) (s, w) =
+      if k == s 
+        then (k, v + w) :: rest 
+        else (k, v) :: insertOrAdd rest (s, w)
+
+||| Aggregates duplicate coordinate Pixels and prunes zero-weight entries in a Maxel.
+public export
+canonicalizeMaxel : Maxel -> Maxel
+canonicalizeMaxel (MkMaxel pxs) =
+  let folded = foldl insertOrAdd [] pxs
+      pruned = filter (\(_, w) => unwrapBox w /= 0) folded
+  in MkMaxel pruned
+  where
+    insertOrAdd : List (Pixel, BoxInt) -> (Pixel, BoxInt) -> List (Pixel, BoxInt)
+    insertOrAdd [] (p, w) = [(p, w)]
+    insertOrAdd ((k, v) :: rest) (p, w) =
+      if k == p 
+        then (k, v + w) :: rest 
+        else (k, v) :: insertOrAdd rest (p, w)
+
+||| Aggregates duplicate coordinate Voxels and prunes zero-weight entries in a Boxel.
+public export
+canonicalizeBoxel : Boxel -> Boxel
+canonicalizeBoxel (MkBoxel voxs) =
+  let folded = foldl insertOrAdd [] voxs
+      pruned = filter (\(_, w) => unwrapBox w /= 0) folded
+  in MkBoxel pruned
+  where
+    insertOrAdd : List (Voxel, BoxInt) -> (Voxel, BoxInt) -> List (Voxel, BoxInt)
+    insertOrAdd [] (v, w) = [(v, w)]
+    insertOrAdd ((k, val) :: rest) (v, w) =
+      if k == v 
+        then (k, val + w) :: rest 
+        else (k, val) :: insertOrAdd rest (v, w)
+
+------------------------------------------------------------------------
+-- 4. ALGEBRAIC MULTIPLICATION: PIXELS & SINGLETONS
 --    [k] * [l, m] = [m] if k == l else blank
+--    [i, j] * [k, l] = [i, l] if j == k else blank
 ------------------------------------------------------------------------
+
+||| Multiplies a Pixel by a Pixel (discrete matrix basis multiplication).
+||| [i, j] * [k, l] = [i, l] if j == k, otherwise Nothing.
+public export
+mulPixel : Pixel -> Pixel -> Maybe Pixel
+mulPixel (MkPixel i j) (MkPixel k l) =
+  if j == k then Just (MkPixel i l) else Nothing
 
 ||| Multiplies a Singleton on the left by a Pixel (Row extraction filter).
 public export
@@ -128,6 +231,51 @@ public export
 mulPixelSingleton : Pixel -> Singleton -> Maybe Singleton
 mulPixelSingleton (MkPixel l m) (MkSingleton k) =
   if m == k then Just (MkSingleton l) else Nothing
+
+||| Multiplies two Maxels (discrete matrix multiplication).
+||| (sum a_ij [i, j]) * (sum b_kl [k, l]) => sum (a_ij * b_kl) [i, l] (where j == k)
+public export
+mulMaxel : Maxel -> Maxel -> Maxel
+mulMaxel (MkMaxel ps1) (MkMaxel ps2) =
+  let terms = [ (pOut, w1 * w2)
+              | (p1, w1) <- ps1
+              , (p2, w2) <- ps2
+              , Just pOut <- [mulPixel p1 p2]
+              ]
+  in MkMaxel terms
+
+||| Contracts a Maxel matrix on a Vexel vector (M * v).
+public export
+actMaxelVexel : Maxel -> Vexel -> Vexel
+actMaxelVexel (MkMaxel pxs) (MkVexel sings) =
+  let terms = [ (sOut, pw * sw)
+              | (pix, pw) <- pxs
+              , (sing, sw) <- sings
+              , Just sOut <- [mulPixelSingleton pix sing]
+              ]
+  in MkVexel terms
+
+||| Adds two Maxels by concatenating their pixel multiset entries.
+public export
+addMaxel : Maxel -> Maxel -> Maxel
+addMaxel (MkMaxel ps1) (MkMaxel ps2) = MkMaxel (ps1 ++ ps2)
+
+||| Scales a Maxel by a BoxInt scalar.
+public export
+scaleMaxel : BoxInt -> Maxel -> Maxel
+scaleMaxel s (MkMaxel ps) =
+  MkMaxel (map (\(p, w) => (p, s * w)) ps)
+
+||| Adds two Vexels by concatenating their singleton multiset entries.
+public export
+addVexel : Vexel -> Vexel -> Vexel
+addVexel (MkVexel s1) (MkVexel s2) = MkVexel (s1 ++ s2)
+
+||| Scales a Vexel by a BoxInt scalar.
+public export
+scaleVexel : BoxInt -> Vexel -> Vexel
+scaleVexel s (MkVexel sings) =
+  MkVexel (map (\(sing, w) => (sing, s * w)) sings)
 
 ------------------------------------------------------------------------
 -- 5. ROW & COLUMN VEXEL EXTRACTIONS FROM MAXELS
@@ -156,7 +304,7 @@ extractColVexel j (MkMaxel ps) =
   in MkVexel extracted
 
 ------------------------------------------------------------------------
--- 6. CHIRAL OUTER PRODUCT: VEXEL x VEXEL -> MAXEL
+-- 6. CHIRAL OUTER PRODUCTS & 3D TENSOR STACKS
 ------------------------------------------------------------------------
 
 ||| Multiplies a column Vexel (ket) by a row Vexel (bra) to generate a Maxel:
@@ -167,6 +315,40 @@ outerProductVexel (MkVexel kets) (MkVexel bras) =
   let generated = [ (MkPixel (index k) (index b), kw * bw) 
                   | (k, kw) <- kets, (b, bw) <- bras ]
   in MkMaxel generated
+
+||| 3D Tensor Outer Product: Vexel (1D ket) x Maxel (2D surface) -> Boxel (3D volume).
+||| (sum c_k [k]) x (sum a_ij [i, j]) => sum (c_k * a_ij) [k, i, j]
+public export
+outerProductVexelMaxel : Vexel -> Maxel -> Boxel
+outerProductVexelMaxel (MkVexel sings) (MkMaxel pxs) =
+  let generated = [ (MkVoxel (index s) (row p) (col p), sw * pw)
+                  | (s, sw) <- sings
+                  , (p, pw) <- pxs ]
+  in canonicalizeBoxel (MkBoxel generated)
+
+||| Extracts a 2D Maxel plane slice at a fixed Z-coordinate: Z_k(B) = { [x, y] with w | [x, y, k] in B }
+public export
+sliceBoxelZ : Nat -> Boxel -> Maxel
+sliceBoxelZ targetZ (MkBoxel voxs) =
+  let extracted = mapMaybe (\(MkVoxel x y z, w) =>
+                    if z == targetZ then Just (MkPixel x y, w) else Nothing) voxs
+  in canonicalizeMaxel (MkMaxel extracted)
+
+||| Extracts a 2D Maxel plane slice at a fixed Y-coordinate: Y_k(B) = { [x, z] with w | [x, k, z] in B }
+public export
+sliceBoxelY : Nat -> Boxel -> Maxel
+sliceBoxelY targetY (MkBoxel voxs) =
+  let extracted = mapMaybe (\(MkVoxel x y z, w) =>
+                    if y == targetY then Just (MkPixel x z, w) else Nothing) voxs
+  in canonicalizeMaxel (MkMaxel extracted)
+
+||| Extracts a 2D Maxel plane slice at a fixed X-coordinate: X_k(B) = { [y, z] with w | [k, y, z] in B }
+public export
+sliceBoxelX : Nat -> Boxel -> Maxel
+sliceBoxelX targetX (MkBoxel voxs) =
+  let extracted = mapMaybe (\(MkVoxel x y z, w) =>
+                    if x == targetX then Just (MkPixel y z, w) else Nothing) voxs
+  in canonicalizeMaxel (MkMaxel extracted)
 
 ||| Computes total weight/mass across all pixels in a Maxel.
 public export
@@ -200,8 +382,168 @@ public export
 startCodonAUG : Voxel
 startCodonAUG = MkVoxel 0 1 2
 
+||| 🧬 Biology: A GeneBoxel represents a chain of triplet codons along an mRNA reading frame.
+public export
+record GeneBoxel where
+  constructor MkGene
+  codons : Boxel
+
+||| Fundamental Amino Acids transcribed from genetic triplet codons:
+||| - Methionine (AUG / [0, 1, 2] - Start Codon)
+||| - Alanine (GCU / [2, 1, 0])
+||| - Glycine (GGU / [2, 2, 0])
+||| - Serine (UCU / [1, 1, 0])
+||| - StopCodon (UAA / [1, 0, 0])
+||| - UnknownAcid
+public export
+data AminoAcid = Methionine | Alanine | Glycine | Serine | StopCodon | UnknownAcid
+
+public export
+Eq AminoAcid where
+  Methionine == Methionine = True
+  Alanine    == Alanine    = True
+  Glycine    == Glycine    = True
+  Serine     == Serine     = True
+  StopCodon  == StopCodon  = True
+  UnknownAcid == UnknownAcid = True
+  _          == _          = False
+
+public export
+Show AminoAcid where
+  show Methionine  = "Met"
+  show Alanine     = "Ala"
+  show Glycine     = "Gly"
+  show Serine      = "Ser"
+  show StopCodon   = "Stop"
+  show UnknownAcid = "Xaa"
+
+||| Transcribes a 3-nucleotide coordinate Voxel into its corresponding Amino Acid.
+public export
+translateCodon : Voxel -> AminoAcid
+translateCodon (MkVoxel 0 1 2) = Methionine -- AUG
+translateCodon (MkVoxel 2 1 0) = Alanine    -- GCU
+translateCodon (MkVoxel 2 2 0) = Glycine    -- GGU
+translateCodon (MkVoxel 1 1 0) = Serine     -- UCU
+translateCodon (MkVoxel 1 0 0) = StopCodon  -- UAA
+translateCodon _               = UnknownAcid
+
+||| Translates a GeneBoxel reading frame into a sequence of Amino Acids.
+public export
+translateGene : GeneBoxel -> List AminoAcid
+translateGene (MkGene (MkBoxel voxs)) =
+  map (\(v, _) => translateCodon v) voxs
+
 ------------------------------------------------------------------------
--- 8. COMPILE-TIME REFLECTION & INVARIANT AUDITORS
+-- 8. GRASSMANN WEDGE PRODUCTS ON MULTISETS (Vexel ^ Vexel -> Maxel)
+------------------------------------------------------------------------
+
+||| Evaluates the Grassmann exterior wedge product of two Vexels:
+||| [u] ^ [v] = [u, v] - [v, u].
+||| Satisfies exact nilpotency: v ^ v == 0.
+public export
+wedgeVexel : Vexel -> Vexel -> Maxel
+wedgeVexel (MkVexel u) (MkVexel v) =
+  let pairs = [ (MkPixel i j, wu * wv) | (MkSingleton i, wu) <- u, (MkSingleton j, wv) <- v ]
+      antisym = concatMap (\(MkPixel i j, w) =>
+        if i == j then [] else [(MkPixel i j, w), (MkPixel j i, -w)]) pairs
+  in canonicalizeMaxel (MkMaxel antisym)
+
+||| Evaluates the Grassmann exterior wedge product of a Vexel and a Maxel into a 3D Boxel:
+||| [u] ^ [v, w] = [u, v, w] - [v, u, w] + [v, w, u].
+public export
+wedgeVexelMaxel : Vexel -> Maxel -> Boxel
+wedgeVexelMaxel (MkVexel u) (MkMaxel m) =
+  let terms = concatMap (\(MkSingleton i, wu) =>
+        concatMap (\(MkPixel j k, wm) =>
+          if i == j || j == k || i == k
+            then []
+            else let w = wu * wm
+                 in [ (MkVoxel i j k, w)
+                    , (MkVoxel j i k, -w)
+                    , (MkVoxel j k i, w)
+                    ]) m) u
+  in canonicalizeBoxel (MkBoxel terms)
+
+------------------------------------------------------------------------
+-- 9. 4D SPACETIME HYPERBOXEL TENSORS (Tesseract [x, y, z, t])
+------------------------------------------------------------------------
+
+||| A 4D Spacetime coordinate token [x, y, z, t].
+public export
+record Tesseract where
+  constructor MkTesseract
+  x : Nat
+  y : Nat
+  z : Nat
+  t : Nat
+
+public export
+Eq Tesseract where
+  (MkTesseract x1 y1 z1 t1) == (MkTesseract x2 y2 z2 t2) =
+    x1 == x2 && y1 == y2 && z1 == z2 && t1 == t2
+
+public export
+Show Tesseract where
+  show (MkTesseract x y z t) = "[" ++ show x ++ ", " ++ show y ++ ", " ++ show z ++ ", " ++ show t ++ "]"
+
+||| A 4D Spacetime HyperBoxel represents a 4D volume multiset of weighted Tesseract cells.
+public export
+record HyperBoxel where
+  constructor MkHyperBoxel
+  cells : List (Tesseract, BoxInt)
+
+public export
+Eq HyperBoxel where
+  (MkHyperBoxel c1) == (MkHyperBoxel c2) = c1 == c2
+
+public export
+Show HyperBoxel where
+  show (MkHyperBoxel c) = "HyperBoxel" ++ show c
+
+||| Canonicalizes a 4D HyperBoxel by pruning zeros and merging duplicate Tesseract coordinates.
+public export
+canonicalizeHyperBoxel : HyperBoxel -> HyperBoxel
+canonicalizeHyperBoxel (MkHyperBoxel raw) =
+  let nonZero = filter (\(_, w) => unwrapBox w /= 0) raw
+      merged = foldl insertOrAdd [] nonZero
+  in MkHyperBoxel merged
+  where
+    insertOrAdd : List (Tesseract, BoxInt) -> (Tesseract, BoxInt) -> List (Tesseract, BoxInt)
+    insertOrAdd [] item = [item]
+    insertOrAdd ((t, w) :: rest) (newT, newW) =
+      if t == newT
+        then let combined = w + newW
+             in if unwrapBox combined == 0 then rest else (t, combined) :: rest
+        else (t, w) :: insertOrAdd rest (newT, newW)
+
+||| Looks up the weight of a 4D Tesseract coordinate in a HyperBoxel.
+public export
+lookupTesseract : Tesseract -> HyperBoxel -> BoxInt
+lookupTesseract target (MkHyperBoxel raw) =
+  case find (\(t, _) => t == target) raw of
+    Just (_, w) => w
+    Nothing     => intToBoxInt 0
+
+||| Slices a 4D HyperBoxel at a fixed temporal coordinate t = targetT into a 3D spatial Boxel.
+public export
+sliceHyperBoxelT : Nat -> HyperBoxel -> Boxel
+sliceHyperBoxelT targetT (MkHyperBoxel cells) =
+  let extracted = mapMaybe (\(MkTesseract x y z t, w) =>
+                    if t == targetT then Just (MkVoxel x y z, w) else Nothing) cells
+  in canonicalizeBoxel (MkBoxel extracted)
+
+||| Outer product of a temporal Vexel and a spatial Boxel: T (x) S -> 4D HyperBoxel.
+public export
+outerProductVexelBoxel : Vexel -> Boxel -> HyperBoxel
+outerProductVexelBoxel (MkVexel times) (MkBoxel spaces) =
+  let productList = [ (MkTesseract x y z t, wt * ws)
+                    | (MkSingleton t, wt) <- times
+                    , (MkVoxel x y z, ws) <- spaces
+                    ]
+  in canonicalizeHyperBoxel (MkHyperBoxel productList)
+
+------------------------------------------------------------------------
+-- 10. COMPILE-TIME REFLECTION & INVARIANT AUDITORS
 ------------------------------------------------------------------------
 
 ||| Pure evaluator verifying that row extraction on an outer-product Maxel is proportional to the bra Vexel.
@@ -213,3 +555,21 @@ auditRowExtractionProof =
       m = outerProductVexel v1 v2
       row1 = extractRowVexel 1 m
   in row1 == MkVexel [(MkSingleton 1, intToBoxInt 2), (MkSingleton 2, intToBoxInt 8)]
+
+||| Proves that the Grassmann wedge product of any Vexel with itself is identically zero: v ^ v == 0.
+public export
+auditWedgeNilpotencyProof : Bool
+auditWedgeNilpotencyProof =
+  let v = MkVexel [(MkSingleton 1, intToBoxInt 3), (MkSingleton 2, intToBoxInt 5)]
+      w = wedgeVexel v v
+  in w == MkMaxel []
+
+||| Proves that slicing a 4D HyperBoxel at time t=2 extracts the exact 3D spatial Boxel.
+public export
+auditHyperBoxelSliceProof : Bool
+auditHyperBoxelSliceProof =
+  let tVex = MkVexel [(MkSingleton 1, intToBoxInt 1), (MkSingleton 2, intToBoxInt 1)]
+      sBox = MkBoxel [(MkVoxel 1 1 1, intToBoxInt 7), (MkVoxel 2 2 2, intToBoxInt 9)]
+      h4   = outerProductVexelBoxel tVex sBox
+      s2   = sliceHyperBoxelT 2 h4
+  in s2 == sBox

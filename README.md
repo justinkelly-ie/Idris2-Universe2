@@ -16,7 +16,7 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 
 1. **The Universal Mapping**: Dependent Types model physical laws, QTT Multiplicity `1` enforces thermodynamic conservation, Type Erasure `0` drops cosmic scaffolding, and Elaborator Reflection (`%runElab`) acts as a second-order cybernetic feedback engine.
 2. **Numbers as Physical Containers**: Natural numbers, multisets, and polynumbers are constructed purely as inductive tallies of empty boxes (`MSetSpec`, `Polynumber`, `WildNat`).
-3. **Singletons, Pixels, Vexels & Maxels**: Replaces rigid coordinate tensors with Wildberger's multiset linear algebra hierarchy (`Singleton` $[n]$, `Pixel` $[i, j]$, `Voxel` $[x, y, z]$, `Vexel`, `Maxel`).
+3. **Singletons, Pixels, Voxels, Vexels, Maxels & Boxels**: Replaces rigid coordinate tensors with Wildberger's multiset linear algebra hierarchy (`Singleton` $[n]$, `Pixel` $[i, j]$, `Voxel` $[x, y, z]$, `Vexel` 1D, `Maxel` 2D, `Boxel` 3D).
 4. **The 27-State Ternary Spacetime Multiverse**: Replaces arbitrary pre-declared geometries by permuting the fundamental 3-bit alphabet $\{-1, 0, 1\}$ (Identity, Presence, Parity) across symmetric Maxel metrics.
 5. **Dynamic `UniverseState`**: Eliminates magic numbers (`27`, `128`, `55`) by tracking dimensions as dependent parameters derived dynamically from prior epoch states.
 6. **Bootstrapping Epoch 1 to 37**: Simulates lattice expansion ($1\times 1 \to 2\times 2 \to 3\times 3$), 137-stage cycles, and contraction/folding where Dark Matter acts as the accumulated historical error ledger ($55 \to 56$ states).
@@ -31,8 +31,8 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 |---|---|
 | [`Core.BoxInt`](src/Core/BoxInt.idr) | Box arithmetic wrapper for exact signed integer scalars. |
 | [`Core.Multiset`](src/Core/Multiset.idr) | Type-indexed inductive multisets and reflected Box Arithmetic. |
-| [`Core.Polynomial`](src/Core/Polynomial.idr) | Nested polynomial multisets, Goh Factorization, and cyclotomic division. |
-| [`Core.VexelMaxel`](src/Core/VexelMaxel.idr) | Singletons, Pixels, Voxels, Vexels (vector multisets), and Maxels (matrix multisets). |
+| [`Core.Polynumber`](src/Core/Polynumber.idr) | Nested polynumber multisets, Spread Polynumbers $S_n(s)$, Goh Factorization, and cyclotomic division. |
+| [`Core.VexelMaxel`](src/Core/VexelMaxel.idr) | Singletons, Pixels, Voxels, Vexels (1D), Maxels (2D), and Boxels (3D volume tensors). |
 | [`Math.Infinitesimal`](src/Math/Infinitesimal.idr) | Nilpotent dual number matrix ($\epsilon^2 = 0$) for exact discrete calculus. |
 | [`Math.RationalTrig`](src/Math/RationalTrig.idr) | Rational Trigonometry: Quadrance, Spread, Cross, and Archimedes' Function. |
 | [`Math.FineStructure`](src/Math/FineStructure.idr) | Pure constructivist derivation of $\alpha^{-1} = 137$. |
@@ -53,8 +53,10 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Derivation.PureGeometricClassifier`](src/Derivation/PureGeometricClassifier.idr) | Relational inference of metric coordinates from internal memory density ratios. |
 | [`Compound.LinearEpsilonRouting`](src/Compound/LinearEpsilonRouting.idr) | Kinematic velocity routing across symmetric $g_{\text{EM}}$ vs asymmetric $g_{\text{Substrate}}$ Maxels. |
 | [`Compound.VelocityLensing`](src/Compound/VelocityLensing.idr) | Dark Matter inductive drag and gravitational deflection across scale jumps. |
-| [`Reflect.PermutationSolver`](src/Reflect/PermutationSolver.idr) | Reflection macros for automated multiset swap-chain proof generation. |
-| [`Reflect.InvariantAuditor`](src/Reflect/InvariantAuditor.idr) | Compile-time thermodynamic, closure, and causality auditors. |
+| [`Compound.SymplecticIntegrator`](src/Compound/SymplecticIntegrator.idr) | Discrete symplectic Leapfrog integrator and phase space Hamiltonian flow. |
+| [`Math.CliffordAlgebra`](src/Math/CliffordAlgebra.idr) | Multiset Geometric Clifford Algebra, Multivectors, and Spinor reflections. |
+| [`Reflect.PermutationSolver`](src/Reflect/PermutationSolver.idr) | Constructive $S_n$ swap factorization, permutation Maxels, and Young Tableaux Hook-Length. |
+| [`Reflect.InvariantAuditor`](src/Reflect/InvariantAuditor.idr) | Elaborator reflection macros verifying all cosmic invariants statically at compile-time. |
 
 ---
 

@@ -105,3 +105,13 @@ addOnSeqSingFraction = zipWith addSingFraction
 public export
 mulOnSeqSingFraction : OnSeq SingFraction -> OnSeq SingFraction -> OnSeq SingFraction
 mulOnSeqSingFraction = zipWith mulSingFraction
+
+------------------------------------------------------------------------
+-- 3. QUANTITATIVE TYPE THEORY (QTT) SEQUENCING
+------------------------------------------------------------------------
+
+||| Linearly advance an ongoing sequence by evaluating at term n and stepping the lower bound.
+public export
+linearStepOnSeq : (1 seq : OnSeq a) -> (n : Nat) -> (Maybe a, OnSeq a)
+linearStepOnSeq (MkOnSeq s at) n = (getTerm (MkOnSeq s at) n, MkOnSeq (S (max s n)) at)
+

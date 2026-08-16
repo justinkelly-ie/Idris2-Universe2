@@ -1,6 +1,7 @@
 module Geometry.LatticeTopology
 
 import Core.BoxInt
+import Core.VexelMaxel
 import Math.LinAlgebra.TernaryClassifier
 import Data.Vect
 import Data.Fin
@@ -150,3 +151,41 @@ stepFluxPropagation : BoxInt -> Vect 27 BoxInt -> Vect 27 BoxInt
 stepFluxPropagation kappa grid =
   let lap = discreteLaplacian27 grid
   in zipWith (\v, l => v + (kappa * l)) grid lap
+
+------------------------------------------------------------------------
+-- 4. PURE BOXEL MULTISET LATTICE & FLUX OPERATORS
+------------------------------------------------------------------------
+
+||| Maps a 1D cell index in Fin 27 to its 3D coordinate Voxel [x, y, z] in {0, 1, 2}^3.
+public export
+fin27ToVoxel : Fin 27 -> Voxel
+fin27ToVoxel idx =
+  let (MkCoord3D x y z) = fin27ToCoord idx
+  in MkVoxel (ternaryNat x) (ternaryNat y) (ternaryNat z)
+
+||| Converts a flat 27-cell scalar field into a 3D Boxel multiset.
+public export
+field27ToBoxel : Vect 27 BoxInt -> Boxel
+field27ToBoxel grid =
+  let paired = map (\idx => (fin27ToVoxel idx, lookupCell idx grid)) (allFin 27)
+  in canonicalizeBoxel (MkBoxel (toList paired))
+
+||| Converts a 3D Boxel multiset back into a flat 27-cell scalar field.
+public export
+boxelToField27 : Boxel -> Vect 27 BoxInt
+boxelToField27 b =
+  tabulate (\idx => lookupVoxel (fin27ToVoxel idx) b)
+
+||| Computes the Discrete 3D Laplacian field directly on a Boxel multiset.
+public export
+discreteLaplacianBoxel : Boxel -> Boxel
+discreteLaplacianBoxel b =
+  let field = boxelToField27 b
+      lap   = discreteLaplacian27 field
+  in field27ToBoxel lap
+
+||| Audits that discrete Laplacian flux on the compact 3-torus vanishes identically without leakage.
+public export
+auditToroidalBoxelFluxProof : Boxel -> Bool
+auditToroidalBoxelFluxProof b =
+  unwrapBox (totalBoxelWeight (discreteLaplacianBoxel b)) == 0

@@ -179,3 +179,65 @@ public export
 verifyAlkaneSaturation : (n : Nat) -> Bool
 verifyAlkaneSaturation n =
   (4 * n + alkaneHydrogenCount n) == 2 * alkaneTotalBonds n
+
+------------------------------------------------------------------------
+-- 4. 3D MOLECULAR CONFORMATIONS & EXACT RATIONAL SPREADS
+------------------------------------------------------------------------
+
+||| A Complete 3D Chemical Molecule represented constructively as:
+||| - atoms: 3D Boxel of atomic positions [x, y, z] mapped to atomic number Z.
+||| - bonds: 2D Maxel of covalent bond adjacency.
+public export
+record Molecule3D where
+  constructor MkMolecule3D
+  name  : String
+  atoms : Boxel
+  bonds : Maxel
+
+||| 3D Conformation of Methane (CH4) centered at [1, 1, 1] on the discrete 3x3x3 grid:
+||| - Carbon at [1, 1, 1] (Z=6)
+||| - Hydrogen 1 at [2, 2, 2] (Z=1)
+||| - Hydrogen 2 at [2, 0, 0] (Z=1)
+||| - Hydrogen 3 at [0, 2, 0] (Z=1)
+||| - Hydrogen 4 at [0, 0, 2] (Z=1)
+public export
+methaneMolecule3D : Molecule3D
+methaneMolecule3D =
+  let atomGrid = MkBoxel [ (MkVoxel 1 1 1, intToBoxInt 6)  -- Carbon
+                         , (MkVoxel 2 2 2, intToBoxInt 1)  -- H1
+                         , (MkVoxel 2 0 0, intToBoxInt 1)  -- H2
+                         , (MkVoxel 0 2 0, intToBoxInt 1)  -- H3
+                         , (MkVoxel 0 0 2, intToBoxInt 1)  -- H4
+                         ]
+      bondGrid = bondsToMaxel [ MkCovalentBond 1 2 1
+                              , MkCovalentBond 1 3 1
+                              , MkCovalentBond 1 4 1
+                              , MkCovalentBond 1 5 1
+                              ]
+  in MkMolecule3D "CH4" atomGrid bondGrid
+
+||| Proves that the bond angle between H1-C-H2 in Methane has exact Rational Spread s = 8/9
+||| (corresponding to the tetrahedral bond angle theta ~ 109.47 degrees):
+||| Q(C, H1) = 3, Q(C, H2) = 3, Q(H1, H2) = 8 => Spread = A(3,3,8) / (4*3*3) = 32/36 = 8/9.
+public export
+methaneTetrahedralSpreadProof : Bool
+methaneTetrahedralSpreadProof =
+  let carbon = MkVoxel 1 1 1
+      h1     = MkVoxel 2 2 2
+      h2     = MkVoxel 2 0 0
+      (num, den) = spread3D h1 carbon h2
+  in (num * intToBoxInt 9) == (den * intToBoxInt 8)
+
+||| 3D Conformation of Water (H2O):
+||| - Oxygen at [1, 1, 1] (Z=8)
+||| - Hydrogen 1 at [2, 1, 1] (Z=1)
+||| - Hydrogen 2 at [1, 2, 1] (Z=1)
+public export
+waterMolecule3D : Molecule3D
+waterMolecule3D =
+  let atomGrid = MkBoxel [ (MkVoxel 1 1 1, intToBoxInt 8)  -- Oxygen
+                         , (MkVoxel 2 1 1, intToBoxInt 1)  -- H1
+                         , (MkVoxel 1 2 1, intToBoxInt 1)  -- H2
+                         ]
+      bondGrid = bondsToMaxel [ MkCovalentBond 1 2 1, MkCovalentBond 1 3 1 ]
+  in MkMolecule3D "H2O" atomGrid bondGrid

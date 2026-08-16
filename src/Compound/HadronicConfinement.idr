@@ -1,6 +1,7 @@
 module Compound.HadronicConfinement
 
 import Core.BoxInt
+import Core.VexelMaxel
 import Math.LinAlgebra.TernaryClassifier
 import Geometry.LatticeTopology
 import Evolution.State
@@ -98,3 +99,41 @@ totalHadronFlux (MkHadronState grid) = sumField27 grid
 public export
 hadronCosmicStateEpoch3 : UniverseState 27 128 3
 hadronCosmicStateEpoch3 = seedCosmicVacuum 3 7 3
+
+------------------------------------------------------------------------
+-- 4. PURE BOXEL MULTISET QCD NUCLEONS & Z-SLICE CONFINEMENT
+------------------------------------------------------------------------
+
+||| Converts a HadronState into a 3D Boxel multiset.
+public export
+hadronStateToBoxel : HadronState -> Boxel
+hadronStateToBoxel (MkHadronState grid) = field27ToBoxel grid
+
+||| Converts a 3D Boxel multiset into a HadronState.
+public export
+boxelToHadronState : Boxel -> HadronState
+boxelToHadronState b = MkHadronState (boxelToField27 b)
+
+||| Ground-state Hadron Nucleon represented as a canonical 3D Boxel multiset.
+public export
+seedHadronBoxel : Boxel
+seedHadronBoxel = hadronStateToBoxel seedHadronEpoch3
+
+||| Validates QCD Color Neutrality directly on a 3D Boxel multiset:
+||| Evaluates that the 3 Z-slice Maxel planes (z=0 Red, z=1 Green, z=2 Blue)
+||| carry identically balanced color flux.
+public export
+isHadronBoxelColorNeutral : Boxel -> Bool
+isHadronBoxelColorNeutral b =
+  let redSlice   = sliceBoxelZ 0 b
+      greenSlice = sliceBoxelZ 1 b
+      blueSlice  = sliceBoxelZ 2 b
+      wRed   = totalMaxelWeight redSlice
+      wGreen = totalMaxelWeight greenSlice
+      wBlue  = totalMaxelWeight blueSlice
+  in wRed == wGreen && wGreen == wBlue
+
+||| Direct bridge from UniverseState 27 de dm to a 3D Boxel multiset.
+public export
+stateToEpoch3Boxel : UniverseState 27 de dm -> Boxel
+stateToEpoch3Boxel (MkUniverseState vm _ _) = field27ToBoxel vm

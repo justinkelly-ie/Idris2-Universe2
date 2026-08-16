@@ -1,18 +1,18 @@
 module Evolution.Contraction
 
 import Core.BoxInt
-import Core.Polynomial
+import Core.Polynumber
 import Evolution.State
 import Data.Vect
 
 %default total
 
-||| Converts a spatial visible matter vector into a state polynomial container:
+||| Converts a spatial visible matter vector into a state polynumber container:
 ||| P(x) = sum_{i=0}^{n-1} vm[i] * x^i
 public export
-gridToStatePolynomial : {n : Nat} -> Vect n BoxInt -> BoxPolynomial
-gridToStatePolynomial [] = zeroPoly
-gridToStatePolynomial vm = MkBoxPolynomial (toList vm)
+gridToStatePolynomial : {n : Nat} -> Vect n BoxInt -> Polynumber
+gridToStatePolynomial [] = zeroPolynumber
+gridToStatePolynomial vm = MkPolynumber (toList vm)
 
 ||| Computes the discrete scalar remainder token from an irreducible remainder polynomial:
 ||| RemainderToken = polyDegree(R) + |evalPoly(R, 1)|

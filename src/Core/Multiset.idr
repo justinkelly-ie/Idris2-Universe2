@@ -167,3 +167,49 @@ export
 %macro
 makeWildNat : Nat -> Elab TTImp
 makeWildNat n = pure (genWildNat n)
+
+------------------------------------------------------------------------
+-- 5. INTEGER PARTITIONS & YOUNG DIAGRAMS AS MULTISETS
+------------------------------------------------------------------------
+
+||| An Integer Partition lambda |- n represented canonically as a Multiset of part sizes:
+||| lambda = { p1^m1, p2^m2, ..., pk^mk } where sum (pi * mi) = n.
+public export
+record IntegerPartition where
+  constructor MkPartition
+  parts : List Multiplicity
+
+public export
+Eq IntegerPartition where
+  (MkPartition p1) == (MkPartition p2) = p1 == p2
+
+public export
+Show IntegerPartition where
+  show (MkPartition p) = "Partition" ++ show p
+
+||| Evaluates the total partition weight sum: sum (part_size * multiplicity).
+public export
+partitionSum : IntegerPartition -> Nat
+partitionSum (MkPartition ps) =
+  sum (map (\(Count size mult) => size * mult) ps)
+
+||| Validates if a partition is a valid partition of a target natural number n.
+public export
+isPartitionOf : IntegerPartition -> Nat -> Bool
+isPartitionOf part target =
+  partitionSum part == target
+
+||| Canonical 4th Primorial cosmic partition: { 128^1, 55^1, 27^1 } |- 210.
+public export
+cosmicPartition210 : IntegerPartition
+cosmicPartition210 =
+  MkPartition [ Count 128 1  -- Dark Energy ROM
+              , Count 55 1   -- Dark Matter Residue
+              , Count 27 1   -- Visible Spacetime Metric Basis
+              ]
+
+||| Proves that the cosmic partition multiset sums exactly to 210 = 2*3*5*7.
+public export
+auditCosmicPartition210Proof : Bool
+auditCosmicPartition210Proof =
+  isPartitionOf cosmicPartition210 210

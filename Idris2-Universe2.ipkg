@@ -9,6 +9,7 @@ sourcedir = "src"
 
 modules = Core.BoxInt,
           Core.Multiset,
+          Core.Polynumber,
           Core.Polynomial,
           Core.VexelMaxel,
           Core.SingFraction,
@@ -33,5 +34,7 @@ modules = Core.BoxInt,
           Derivation.PureGeometricClassifier,
           Compound.LinearEpsilonRouting,
           Compound.VelocityLensing,
+          Compound.SymplecticIntegrator,
+          Math.CliffordAlgebra,
           Reflect.PermutationSolver,
           Reflect.InvariantAuditor
