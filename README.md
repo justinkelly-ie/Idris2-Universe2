@@ -35,6 +35,7 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Core.VexelMaxel`](src/Core/VexelMaxel.idr) | Singletons, Pixels, Voxels, Vexels (1D), Maxels (2D), and Boxels (3D volume tensors). |
 | [`Math.Infinitesimal`](src/Math/Infinitesimal.idr) | Nilpotent dual number matrix ($\epsilon^2 = 0$) for exact discrete calculus. |
 | [`Math.QuantumTransition`](src/Math/QuantumTransition.idr) | Discrete quantum state vectors, unitary S-matrices, Born probability conservation, and Wilson loop holonomies. |
+| [`Math.WilsonPolyhedra`](src/Math/WilsonPolyhedra.idr) | 3D Wilson Polyhedra cubic holonomies, non-Abelian $\mathrm{SU}(3)$ color flux coupling, and discrete Bianchi closure. |
 | [`Math.RationalTrig`](src/Math/RationalTrig.idr) | Rational Trigonometry: Quadrance, Spread, Cross, and Archimedes' Function. |
 | [`Math.FineStructure`](src/Math/FineStructure.idr) | Pure constructivist derivation of $\alpha^{-1} = 137$. |
 | [`Math.LinAlgebra.MetricTensor`](src/Math/LinAlgebra/MetricTensor.idr) | Rational Maxel metrics with BoxInt entries and discriminant classification. |

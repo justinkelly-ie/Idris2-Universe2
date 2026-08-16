@@ -7,6 +7,7 @@ import Core.Polynumber
 import Core.SingFraction
 import Math.Infinitesimal
 import Math.QuantumTransition
+import Math.WilsonPolyhedra
 import Math.RationalTrig
 import Math.FineStructure
 import Math.LinAlgebra.MetricTensor
@@ -768,5 +769,46 @@ export
 %macro
 auditLinearQTTConservation : Elab (Reflect.InvariantAuditor.auditLinearQTTConservationProofExport = True)
 auditLinearQTTConservation = pure Refl
+
+------------------------------------------------------------------------
+-- 6. 3D WILSON POLYHEDRA & CHROMOGEOMETRIC GAUGE AUDIT MACROS
+------------------------------------------------------------------------
+
+||| Audit proving 3D Wilson Polyhedron Multiplicative Bianchi Closure (W_cube = I_3x3).
+public export
+auditWilsonPolyhedronBianchiClosureProofExport : Bool
+auditWilsonPolyhedronBianchiClosureProofExport =
+  auditWilsonPolyhedronBianchiClosureProof
+
+||| Audit proving Chromogeometric SU(3) non-Abelian gauge invariance of Polyhedral trace.
+public export
+auditChromogeometricColorGaugeInvarianceProofExport : Bool
+auditChromogeometricColorGaugeInvarianceProofExport =
+  auditChromogeometricColorGaugeInvarianceProof
+
+||| Audit proving Hadron Singlet state invariance under closed 3D Polyhedral holonomy.
+public export
+auditHadronSingletPolyhedralInvarianceProofExport : Bool
+auditHadronSingletPolyhedralInvarianceProofExport =
+  auditHadronSingletPolyhedralInvarianceProof
+
+||| Compile-time macro verifying 3D Wilson Polyhedron Multiplicative Bianchi Closure.
+export
+%macro
+auditWilsonPolyhedronBianchiClosure : Elab (Reflect.InvariantAuditor.auditWilsonPolyhedronBianchiClosureProofExport = True)
+auditWilsonPolyhedronBianchiClosure = pure Refl
+
+||| Compile-time macro verifying Chromogeometric SU(3) Color Gauge Invariance.
+export
+%macro
+auditChromogeometricColorGaugeInvariance : Elab (Reflect.InvariantAuditor.auditChromogeometricColorGaugeInvarianceProofExport = True)
+auditChromogeometricColorGaugeInvariance = pure Refl
+
+||| Compile-time macro verifying Hadron Singlet Polyhedral Invariance.
+export
+%macro
+auditHadronSingletPolyhedralInvariance : Elab (Reflect.InvariantAuditor.auditHadronSingletPolyhedralInvarianceProofExport = True)
+auditHadronSingletPolyhedralInvariance = pure Refl
+
 
 
