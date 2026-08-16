@@ -6,6 +6,7 @@ import Core.VexelMaxel
 import Core.Polynumber
 import Core.SingFraction
 import Math.Infinitesimal
+import Math.QuantumTransition
 import Math.RationalTrig
 import Math.FineStructure
 import Math.LinAlgebra.MetricTensor
@@ -707,3 +708,44 @@ export
 %macro
 auditWaterArchimedesQuadrea : Elab (Reflect.InvariantAuditor.auditWaterArchimedesQuadreaProof = True)
 auditWaterArchimedesQuadrea = pure Refl
+
+------------------------------------------------------------------------
+-- 4. QUANTUM STATE TRANSITIONS & WILSON LOOP AUDIT MACROS
+------------------------------------------------------------------------
+
+||| Audit proving Unitary Probability Conservation under beam splitter / Hadamard evolution.
+public export
+auditUnitaryProbabilityConservationProofExport : Bool
+auditUnitaryProbabilityConservationProofExport =
+  auditUnitaryProbabilityConservationProof
+
+||| Audit proving Wilson Loop gauge invariance under local vertex gauge rotations.
+public export
+auditWilsonLoopGaugeInvarianceProofExport : Bool
+auditWilsonLoopGaugeInvarianceProofExport =
+  auditWilsonLoopGaugeInvarianceProof
+
+||| Audit proving Born probability tally sum to 1/1 SingFraction.
+public export
+auditDiscreteBornTransitionTallyProofExport : Bool
+auditDiscreteBornTransitionTallyProofExport =
+  auditDiscreteBornTransitionTallyProof
+
+||| Compile-time macro verifying Unitary Probability Conservation.
+export
+%macro
+auditUnitaryProbabilityConservation : Elab (Reflect.InvariantAuditor.auditUnitaryProbabilityConservationProofExport = True)
+auditUnitaryProbabilityConservation = pure Refl
+
+||| Compile-time macro verifying Wilson Loop Gauge Invariance.
+export
+%macro
+auditWilsonLoopGaugeInvariance : Elab (Reflect.InvariantAuditor.auditWilsonLoopGaugeInvarianceProofExport = True)
+auditWilsonLoopGaugeInvariance = pure Refl
+
+||| Compile-time macro verifying Discrete Born Probability Tallies.
+export
+%macro
+auditDiscreteBornTransitionTally : Elab (Reflect.InvariantAuditor.auditDiscreteBornTransitionTallyProofExport = True)
+auditDiscreteBornTransitionTally = pure Refl
+

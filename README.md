@@ -34,6 +34,7 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Core.Polynumber`](src/Core/Polynumber.idr) | Nested polynumber multisets, Spread Polynumbers $S_n(s)$, Goh Factorization, and cyclotomic division. |
 | [`Core.VexelMaxel`](src/Core/VexelMaxel.idr) | Singletons, Pixels, Voxels, Vexels (1D), Maxels (2D), and Boxels (3D volume tensors). |
 | [`Math.Infinitesimal`](src/Math/Infinitesimal.idr) | Nilpotent dual number matrix ($\epsilon^2 = 0$) for exact discrete calculus. |
+| [`Math.QuantumTransition`](src/Math/QuantumTransition.idr) | Discrete quantum state vectors, unitary S-matrices, Born probability conservation, and Wilson loop holonomies. |
 | [`Math.RationalTrig`](src/Math/RationalTrig.idr) | Rational Trigonometry: Quadrance, Spread, Cross, and Archimedes' Function. |
 | [`Math.FineStructure`](src/Math/FineStructure.idr) | Pure constructivist derivation of $\alpha^{-1} = 137$. |
 | [`Math.LinAlgebra.MetricTensor`](src/Math/LinAlgebra/MetricTensor.idr) | Rational Maxel metrics with BoxInt entries and discriminant classification. |
@@ -41,6 +42,7 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Math.LinAlgebra.BilinearProduct`](src/Math/LinAlgebra/BilinearProduct.idr) | Bilinear inner product ($ds^2$) over infinitesimal dual complex vectors and Maxels. |
 | [`Geometry.LatticeTopology`](src/Geometry/LatticeTopology.idr) | 3D coordinate bijections, toroidal 6-face neighbors, and Laplacian flux conservation. |
 | [`Geometry.GrassmannCalculus`](src/Geometry/GrassmannCalculus.idr) | Grassmann cochains ($C_0, C_1, C_2, C_3$), coboundaries, Hodge duality, and Yang-Mills. |
+| [`Geometry.InformationGeometry`](src/Geometry/InformationGeometry.idr) | Hyperbolic geodesic Stern-Brocot bit duality, Clifford mutual information, and Yang-Mills plaquette cross-entropy. |
 | [`Compound.HadronicConfinement`](src/Compound/HadronicConfinement.idr) | Triadic Chromogeometry, color charges, and color-neutral nucleon singlets. |
 | [`Compound.AlphaReplication`](src/Compound/AlphaReplication.idr) | 4-nucleon hierarchical tetrahedral clustering into a 108-voxel $^4\text{He}$ core. |
 | [`Compound.MolecularBonding`](src/Compound/MolecularBonding.idr) | Tier 5 chemical molecular bonding, covalent Maxel contraction, and saturation. |
