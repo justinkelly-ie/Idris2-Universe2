@@ -20,6 +20,7 @@ import Geometry.InformationGeometry
 import Compound.HadronicConfinement
 import Compound.AlphaReplication
 import Compound.MolecularBonding
+import Compound.MacromolecularChirality
 import Compound.LinearEpsilonRouting
 import Compound.VelocityLensing
 import Compound.SymplecticIntegrator
@@ -838,6 +839,47 @@ export
 %macro
 auditFourGeometriesCosmicSynthesis : Elab (Reflect.InvariantAuditor.auditFourGeometriesCosmicSynthesisProofExport = True)
 auditFourGeometriesCosmicSynthesis = pure Refl
+
+------------------------------------------------------------------------
+-- 8. TIER 6 MACROMOLECULAR CHEMISTRY & CHIRALITY AUDIT MACROS
+------------------------------------------------------------------------
+
+||| Audit proving Peptide Condensation Conservation (AA1 + AA2 -> Dipeptide + H2O).
+public export
+auditPeptideCondensationConservationProofExport : Bool
+auditPeptideCondensationConservationProofExport =
+  auditPeptideCondensationConservationProof
+
+||| Audit proving 3D Chiral Enantiomer Inversion (v -> -v flips L <-> D).
+public export
+auditChiralEnantiomerInversionProofExport : Bool
+auditChiralEnantiomerInversionProofExport =
+  auditChiralEnantiomerInversionProof
+
+||| Audit proving Homochiral Peptide Chain Invariant (L-amino acid dipeptide).
+public export
+auditHomochiralPeptideChainProofExport : Bool
+auditHomochiralPeptideChainProofExport =
+  auditHomochiralPeptideChainProof
+
+||| Compile-time macro verifying Peptide Condensation Conservation.
+export
+%macro
+auditPeptideCondensationConservation : Elab (Reflect.InvariantAuditor.auditPeptideCondensationConservationProofExport = True)
+auditPeptideCondensationConservation = pure Refl
+
+||| Compile-time macro verifying 3D Chiral Enantiomer Inversion.
+export
+%macro
+auditChiralEnantiomerInversion : Elab (Reflect.InvariantAuditor.auditChiralEnantiomerInversionProofExport = True)
+auditChiralEnantiomerInversion = pure Refl
+
+||| Compile-time macro verifying Homochiral Peptide Chain Invariant.
+export
+%macro
+auditHomochiralPeptideChain : Elab (Reflect.InvariantAuditor.auditHomochiralPeptideChainProofExport = True)
+auditHomochiralPeptideChain = pure Refl
+
 
 
 

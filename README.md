@@ -47,8 +47,9 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Geometry.InformationGeometry`](src/Geometry/InformationGeometry.idr) | Hyperbolic geodesic Stern-Brocot bit duality, Clifford mutual information, and Yang-Mills plaquette cross-entropy. |
 | [`Compound.HadronicConfinement`](src/Compound/HadronicConfinement.idr) | Triadic Chromogeometry, color charges, and color-neutral nucleon singlets. |
 | [`Compound.AlphaReplication`](src/Compound/AlphaReplication.idr) | 4-nucleon hierarchical tetrahedral clustering into a 108-voxel $^4\text{He}$ core. |
-| [`Compound.MolecularBonding`](src/Compound/MolecularBonding.idr) | Tier 5 chemical molecular bonding, covalent Maxel contraction, and saturation. |
-| [`Evolution.State`](src/Evolution/State.idr) | Un-hardcoded `UniverseState vmSize deSize dmSize` record. |
+| [`Compound.MolecularBonding`](src/Compound/MolecularBonding.idr) | Chemical graph representation, covalent bond Maxels, Water quadrea ($A=3$), and alkane homologous saturation. |
+| [`Compound.MacromolecularChirality`](src/Compound/MacromolecularChirality.idr) | Tier 6 Macromolecules, amino acid stereocenters, peptide condensation, and L-homochirality selection. |
+| [`Evolution.State`](src/Evolution/State.idr) | Universe state $(vm, de, dm)$ dependent vectors, linear QTT vector splits/combines, and token relocation. |
 | [`Evolution.Init`](src/Evolution/Init.idr) | Dynamic vacuum seed initializer (`seedEvolutionaryVacuum`) for Epoch 1. |
 | [`Evolution.Expansion`](src/Evolution/Expansion.idr) | Generalized grid expansion into pure Maxels and outer product tensor inflation. |
 | [`Evolution.Contraction`](src/Evolution/Contraction.idr) | Multi-epoch collapse and folding (`contractAndFoldGeneric`). |
