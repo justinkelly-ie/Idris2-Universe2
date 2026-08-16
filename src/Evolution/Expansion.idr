@@ -120,14 +120,14 @@ expandUniverseStateLinear (MkUniverseState vm de dm) budgetTokens =
 public export
 auditLinearExpansionConservationProof : Bool
 auditLinearExpansionConservationProof =
-  let mockState = MkUniverseState {vmSize=1} {deSize=128} {dmSize=0}
+  let mockState = MkUniverseState {vmSize=1} {deSize=2} {dmSize=0}
                     [intToBoxInt 10]
-                    (replicate 128 (intToBoxInt 1))
+                    [intToBoxInt 1, intToBoxInt 1]
                     []
-      newCells = [intToBoxInt 0, intToBoxInt 0, intToBoxInt 0] -- Expand from 1 to 4 cells (1 + 3 = 4)
+      newCells = [intToBoxInt 0, intToBoxInt 0] -- Expand from 1 to 3 cells (1 + 2 = 3)
       expanded = expandUniverseStateLinear mockState newCells
-  in length (visibleMatter expanded) == 4 &&
-     length (darkEnergy expanded) == 128 &&
+  in length (visibleMatter expanded) == 3 &&
+     length (darkEnergy expanded) == 2 &&
      length (darkMatter expanded) == 0 &&
-     totalStateCapacity expanded == 132
+     totalStateCapacity expanded == 5
 

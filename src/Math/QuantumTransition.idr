@@ -199,13 +199,28 @@ applyQuantumOperator basis op st =
     sumAmplitudes [] = zeroAmplitude
     sumAmplitudes (x :: xs) = addAmplitude x (sumAmplitudes xs)
 
+||| Structurally recursive helper for finite range of Nat.
+public export
+natRangeHelper : Nat -> Nat -> List Nat
+natRangeHelper start Z = []
+natRangeHelper start (S k) = start :: natRangeHelper (S start) k
+
+||| Helper to generate a finite list of indices [from..to].
+public export
+natRange : Nat -> Nat -> List Nat
+natRange from to =
+  if from > to
+    then []
+    else natRangeHelper from (S (to `minus` from))
+
 ||| Multiplies two QuantumOperators: (A * B)_ik = sum_j A_ij * B_jk.
 public export
 mulQuantumOp : (dim : Nat) -> QuantumOperator -> QuantumOperator -> QuantumOperator
 mulQuantumOp dim opA opB =
-  let pixels = [ MkPixel i k | i <- [1..dim], k <- [1..dim] ]
+  let indices = natRange 1 dim
+      pixels = concatMap (\i => map (\k => MkPixel i k) indices) indices
       entries = map (\pix@(MkPixel i k) =>
-                      let dotProd = sumDot [1..dim] i k
+                      let dotProd = sumDot indices i k
                       in (pix, dotProd)) pixels
   in MkQuantumOperator (filter (\(_, v) => v /= zeroAmplitude) entries)
   where
@@ -221,7 +236,8 @@ mulQuantumOp dim opA opB =
 public export
 traceQuantumOp : (dim : Nat) -> QuantumOperator -> DualAmplitude
 traceQuantumOp dim op =
-  sumDiags [1..dim]
+  let indices = natRange 1 dim
+  in sumDiags indices
   where
     sumDiags : List Nat -> DualAmplitude
     sumDiags [] = zeroAmplitude

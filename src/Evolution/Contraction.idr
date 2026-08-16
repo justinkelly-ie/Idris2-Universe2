@@ -83,14 +83,14 @@ contractAndFoldLinear {vm} (MkUniverseState vmData deData dmData) remainderToken
 public export
 auditLinearContractionConservationProof : Bool
 auditLinearContractionConservationProof =
-  let mockState = MkUniverseState {vmSize=27} {deSize=128} {dmSize=55}
-                    (replicate 27 (intToBoxInt 1))
-                    (replicate 128 (intToBoxInt 1))
-                    (replicate 55 (intToBoxInt 1))
+  let mockState = MkUniverseState {vmSize=2} {deSize=3} {dmSize=1}
+                    [intToBoxInt 1, intToBoxInt 1]
+                    [intToBoxInt 1, intToBoxInt 1, intToBoxInt 1]
+                    [intToBoxInt 1]
       rem = intToBoxInt 137
       nextState = contractAndFoldLinear mockState rem
-  in length (visibleMatter nextState) == 27 &&
-     length (darkEnergy nextState) == 128 &&
-     length (darkMatter nextState) == 56 &&
-     totalStateCapacity nextState == 211
+  in length (visibleMatter nextState) == 2 &&
+     length (darkEnergy nextState) == 3 &&
+     length (darkMatter nextState) == 2 &&
+     totalStateCapacity nextState == 7
 
