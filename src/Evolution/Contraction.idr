@@ -59,3 +59,38 @@ contractWithCyclotomicDivision {vm} (MkUniverseState vmData deData dmData) =
       updatedDE = foldVisibleIntoDE vmData deData
       updatedDM = remToken :: dmData
   in MkUniverseState resetVM updatedDE updatedDM
+
+------------------------------------------------------------------------
+-- LINEAR QTT CONTRACTION & LANDAUER CONSERVATION
+------------------------------------------------------------------------
+
+||| Strictly linear multi-epoch contraction transformer:
+||| Consumes the previous UniverseState linearly, folds visible matter without leakage,
+||| and relocates the active cyclotomic remainder token into Dark Matter.
+public export
+contractAndFoldLinear : {vm, de, dm : Nat} ->
+                        (1 priorState : UniverseState vm de dm) ->
+                        (1 remainderToken : BoxInt) ->
+                        UniverseState vm de (S dm)
+contractAndFoldLinear {vm} (MkUniverseState vmData deData dmData) remainderToken =
+  let resetVM   = replicate vm (intToBoxInt 0)
+      updatedDE = foldVisibleIntoDE vmData deData
+      updatedDM = linearTokenRelocate remainderToken dmData
+  in MkUniverseState resetVM updatedDE updatedDM
+
+||| Audits that Linear QTT contraction increments the Dark Matter ledger length by 1
+||| while strictly preserving the total state dimension relationship.
+public export
+auditLinearContractionConservationProof : Bool
+auditLinearContractionConservationProof =
+  let mockState = MkUniverseState {vmSize=27} {deSize=128} {dmSize=55}
+                    (replicate 27 (intToBoxInt 1))
+                    (replicate 128 (intToBoxInt 1))
+                    (replicate 55 (intToBoxInt 1))
+      rem = intToBoxInt 137
+      nextState = contractAndFoldLinear mockState rem
+  in length (visibleMatter nextState) == 27 &&
+     length (darkEnergy nextState) == 128 &&
+     length (darkMatter nextState) == 56 &&
+     totalStateCapacity nextState == 211
+

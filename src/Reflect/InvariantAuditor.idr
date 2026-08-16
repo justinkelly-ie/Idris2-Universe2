@@ -22,6 +22,8 @@ import Compound.LinearEpsilonRouting
 import Compound.VelocityLensing
 import Compound.SymplecticIntegrator
 import Evolution.State
+import Evolution.Expansion
+import Evolution.Contraction
 import Reflect.PermutationSolver
 import Language.Reflection
 
@@ -748,4 +750,23 @@ export
 %macro
 auditDiscreteBornTransitionTally : Elab (Reflect.InvariantAuditor.auditDiscreteBornTransitionTallyProofExport = True)
 auditDiscreteBornTransitionTally = pure Refl
+
+------------------------------------------------------------------------
+-- 5. LINEAR QTT STATE TRANSITIONS & TOKEN CONSERVATION AUDIT MACROS
+------------------------------------------------------------------------
+
+||| Audit proving that Linear QTT vector operations strictly conserve dimension and token counts.
+public export
+auditLinearQTTConservationProofExport : Bool
+auditLinearQTTConservationProofExport =
+  auditLinearQTTConservationProof &&
+  auditLinearContractionConservationProof &&
+  auditLinearExpansionConservationProof
+
+||| Compile-time macro verifying Linear QTT Token and State Conservation.
+export
+%macro
+auditLinearQTTConservation : Elab (Reflect.InvariantAuditor.auditLinearQTTConservationProofExport = True)
+auditLinearQTTConservation = pure Refl
+
 

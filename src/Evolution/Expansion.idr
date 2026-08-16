@@ -98,3 +98,36 @@ expandAndUnfoldBoxel3D {currentVM} {de} {dm} {nextScale} (MkUniverseState vmStat
       ancestralAnchor = (MkVoxel nextScale nextScale nextScale, historyMass)
       activeCenter    = (MkVoxel 1 1 1, activeFieldWeight)
   in canonicalizeBoxel (MkBoxel [ancestralAnchor, activeCenter])
+
+------------------------------------------------------------------------
+-- LINEAR QTT EXPANSION & BUDGET CONSERVATION
+------------------------------------------------------------------------
+
+||| Strictly linear grid expansion transformer:
+||| Consumes the current UniverseState and a dedicated allocation vector of new cell tokens,
+||| linearly appending them without duplicating or dropping physical energy tokens.
+public export
+expandUniverseStateLinear : {vm, de, dm : Nat} ->
+                            {newCells : Nat} ->
+                            (1 currentState : UniverseState vm de dm) ->
+                            (1 budgetTokens : Vect newCells BoxInt) ->
+                            UniverseState (vm + newCells) de dm
+expandUniverseStateLinear (MkUniverseState vm de dm) budgetTokens =
+  let expandedVM = linearVectCombine vm budgetTokens
+  in MkUniverseState expandedVM de dm
+
+||| Audits that Linear QTT grid expansion conserves token multiplicities and dimensions.
+public export
+auditLinearExpansionConservationProof : Bool
+auditLinearExpansionConservationProof =
+  let mockState = MkUniverseState {vmSize=1} {deSize=128} {dmSize=0}
+                    [intToBoxInt 10]
+                    (replicate 128 (intToBoxInt 1))
+                    []
+      newCells = [intToBoxInt 0, intToBoxInt 0, intToBoxInt 0] -- Expand from 1 to 4 cells (1 + 3 = 4)
+      expanded = expandUniverseStateLinear mockState newCells
+  in length (visibleMatter expanded) == 4 &&
+     length (darkEnergy expanded) == 128 &&
+     length (darkMatter expanded) == 0 &&
+     totalStateCapacity expanded == 132
+

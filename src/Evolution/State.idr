@@ -66,3 +66,39 @@ auditCosmicMultisetBudgetProof =
                     (replicate 55 (intToBoxInt 1))
       cMultiset = stateToCosmicMultiset mockState
   in totalCosmicMultisetBudget cMultiset == 210
+
+------------------------------------------------------------------------
+-- QUANTITATIVE TYPE THEORY (QTT) LINEAR VECTOR & STATE TRANSITIONS
+------------------------------------------------------------------------
+
+||| Linear splitting of an active vector into two exact sub-vectors:
+||| Consumes the input vector linearly without cloning or leaking tokens.
+public export
+linearVectSplit : (n : Nat) -> (1 xs : Vect (n + m) a) -> ((1 _ : Vect n a), (1 _ : Vect m a))
+linearVectSplit Z xs = ([], xs)
+linearVectSplit (S k) (x :: xs) =
+  let (l, r) = linearVectSplit k xs
+  in (x :: l, r)
+
+||| Linear combination of two sub-vectors into a single active vector:
+||| Merges two linear resources without duplicating or dropping tokens.
+public export
+linearVectCombine : (1 l : Vect n a) -> (1 r : Vect m a) -> Vect (n + m) a
+linearVectCombine [] r = r
+linearVectCombine (x :: xs) r = x :: linearVectCombine xs r
+
+||| Linear token relocation (Landauer's Principle):
+||| Consumes an erased active spatial token and relocates it into the Dark Matter history ledger.
+public export
+linearTokenRelocate : (1 token : BoxInt) -> (1 dm : Vect k BoxInt) -> Vect (S k) BoxInt
+linearTokenRelocate token dm = token :: dm
+
+||| Audits that linear vector split and combine preserve vector length exactly.
+public export
+auditLinearQTTConservationProof : Bool
+auditLinearQTTConservationProof =
+  let v = [intToBoxInt 1, intToBoxInt 2, intToBoxInt 3, intToBoxInt 4, intToBoxInt 5]
+      (l, r) = linearVectSplit 2 v
+      recombined = linearVectCombine l r
+  in length recombined == 5
+
