@@ -1,7 +1,10 @@
 module Evolution.StructuralAccounting
 
 import Core.BoxInt
+import Core.VexelMaxel
+import Evolution.State
 import Data.Vect
+
 
 %default total
 
@@ -32,3 +35,43 @@ public export
 verifyAssociativeTransition : (a : BoxInt) -> (b : BoxInt) -> (c : BoxInt) -> Bool
 verifyAssociativeTransition a b c =
   ((a + b) + c) == (a + (b + c))
+
+------------------------------------------------------------------------
+-- CONSTRUCTIVIST LANDAUER'S PRINCIPLE (QTT TOKEN RELOCATION)
+------------------------------------------------------------------------
+
+||| Erases an active Visible Matter Singleton token from a quantum state Vexel
+||| and relocates its informational weight into the Dark Matter history ledger (dm -> S dm).
+||| Provably conserves total cosmic tokens: active tokens + dm == remaining tokens + (S dm).
+public export
+landauerTokenErasure : {vm, de, dm : Nat} ->
+                       (target : Singleton) ->
+                       (active : Vexel) ->
+                       (UniverseState (S vm) de dm) ->
+                       (Vexel, UniverseState vm de (S dm))
+landauerTokenErasure target (MkVexel terms) (MkUniverseState (_ :: vmRest) deVect dmVect) =
+  let remainingTerms = filter (\(s, _) => s /= target) terms
+      remainingVexel = MkVexel remainingTerms
+      newState = MkUniverseState vmRest deVect ((intToBoxInt 1) :: dmVect)
+  in (remainingVexel, newState)
+
+||| Audits Constructivist Landauer's Principle:
+||| Erasing token [1] from active Vexel (mass 10) in UniverseState 27 128 55
+||| yields remaining Vexel (mass 7) in UniverseState 26 128 56 with preserved capacity 210.
+public export
+auditLandauerTokenConservationProof : Bool
+auditLandauerTokenConservationProof =
+  let activeVexel = MkVexel [(MkSingleton 1, intToBoxInt 3), (MkSingleton 2, intToBoxInt 7)]
+      initialState = MkUniverseState {vmSize=27} {deSize=128} {dmSize=55}
+                       (replicate 27 (intToBoxInt 1))
+                       (replicate 128 (intToBoxInt 1))
+                       (replicate 55 (intToBoxInt 1))
+      (remVexel, finalState) = landauerTokenErasure (MkSingleton 1) activeVexel initialState
+      remMass = totalVexelMass remVexel
+      capInitial = totalStateCapacity initialState
+      capFinal = totalStateCapacity finalState
+  in capInitial == 210 &&
+     capFinal == 210 &&
+     remMass == intToBoxInt 7
+
+

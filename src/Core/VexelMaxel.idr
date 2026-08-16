@@ -26,7 +26,7 @@ public export
 Show Singleton where
   show (MkSingleton i) = "[" ++ show i ++ "]"
 
-||| A Pixel is a 2-list from Nat [i, j], representing a 2D coordinate cell or Grothendieck pair (pos, neg).
+||| A Pixel is a 2-list from Nat [i, j], representing a 2D coordinate cell or signed difference pair [pos, neg].
 public export
 record Pixel where
   constructor MkPixel
@@ -58,15 +58,15 @@ Show Voxel where
   show (MkVoxel x y z) = "[" ++ show x ++ ", " ++ show y ++ ", " ++ show z ++ "]"
 
 ------------------------------------------------------------------------
--- 2. GROTHENDIECK BOXINT <-> PIXEL ISOMORPHISM
+-- 2. SIGNED BOXINT <-> PIXEL DIFFERENCE PAIR ISOMORPHISM
 ------------------------------------------------------------------------
 
-||| Encodes a Grothendieck signed pair (pos, neg) as a 2D coordinate Pixel [pos, neg].
+||| Encodes a signed difference pair (pos, neg) as a 2D coordinate Pixel [pos, neg].
 public export
 boxIntToPixelPair : Nat -> Nat -> Pixel
 boxIntToPixelPair p n = MkPixel p n
 
-||| Evaluates the signed BoxInt integer value of a Grothendieck coordinate Pixel [pos, neg]: (pos - neg).
+||| Evaluates the signed BoxInt integer value of a difference pair Pixel [pos, neg]: (pos - neg).
 public export
 pixelToSignedBoxInt : Pixel -> BoxInt
 pixelToSignedBoxInt (MkPixel p n) = intToBoxInt (cast p - cast n)
@@ -108,16 +108,21 @@ Show Maxel where
 ||| Extracts the weight of a specific basis Singleton in a Vexel.
 public export
 lookupSingleton : Singleton -> Vexel -> BoxInt
-lookupSingleton _ (MkVexel []) = intToBoxInt 0
-lookupSingleton target (MkVexel ((s, w) :: rest)) =
-  if s == target then w else lookupSingleton target (MkVexel rest)
+lookupSingleton target (MkVexel sings) =
+  foldl (\acc, (s, w) => if s == target then acc + w else acc) (intToBoxInt 0) sings
+
+||| Computes the total integer mass of a Vexel vector.
+public export
+totalVexelMass : Vexel -> BoxInt
+totalVexelMass (MkVexel sings) =
+  foldl (\acc, (_, w) => acc + w) (intToBoxInt 0) sings
+
 
 ||| Extracts the weight of a specific coordinate Pixel in a Maxel.
 public export
 lookupPixel : Pixel -> Maxel -> BoxInt
-lookupPixel _ (MkMaxel []) = intToBoxInt 0
-lookupPixel target (MkMaxel ((p, w) :: rest)) =
-  if p == target then w else lookupPixel target (MkMaxel rest)
+lookupPixel target (MkMaxel ps) =
+  foldl (\acc, (p, w) => if p == target then acc + w else acc) (intToBoxInt 0) ps
 
 ||| A Boxel is a multiset of Voxels (Wildberger 3D Volume Tensor).
 ||| Stored as a list of weighted coordinate Voxels: sum rho_xyz * [x, y, z].
@@ -137,9 +142,9 @@ Show Boxel where
 ||| Extracts the weight of a specific coordinate Voxel in a Boxel.
 public export
 lookupVoxel : Voxel -> Boxel -> BoxInt
-lookupVoxel _ (MkBoxel []) = intToBoxInt 0
-lookupVoxel target (MkBoxel ((v, w) :: rest)) =
-  if v == target then w else lookupVoxel target (MkBoxel rest)
+lookupVoxel target (MkBoxel vs) =
+  foldl (\acc, (v, w) => if v == target then acc + w else acc) (intToBoxInt 0) vs
+
 
 ||| Adds two Boxels by concatenating their voxel multiset entries.
 public export
@@ -237,28 +242,37 @@ mulPixelSingleton (MkPixel l m) (MkSingleton k) =
 public export
 mulMaxel : Maxel -> Maxel -> Maxel
 mulMaxel (MkMaxel ps1) (MkMaxel ps2) =
-  let terms = [ (pOut, w1 * w2)
-              | (p1, w1) <- ps1
-              , (p2, w2) <- ps2
-              , Just pOut <- [mulPixel p1 p2]
-              ]
-  in MkMaxel terms
+  let step : (Pixel, BoxInt) -> List (Pixel, BoxInt)
+      step (p1, w1) = mapMaybe (\(p2, w2) => case mulPixel p1 p2 of
+                                               Just pOut => Just (pOut, w1 * w2)
+                                               Nothing   => Nothing) ps2
+  in MkMaxel (concatMap step ps1)
 
 ||| Contracts a Maxel matrix on a Vexel vector (M * v).
 public export
 actMaxelVexel : Maxel -> Vexel -> Vexel
 actMaxelVexel (MkMaxel pxs) (MkVexel sings) =
-  let terms = [ (sOut, pw * sw)
-              | (pix, pw) <- pxs
-              , (sing, sw) <- sings
-              , Just sOut <- [mulPixelSingleton pix sing]
-              ]
-  in MkVexel terms
+  let step : (Pixel, BoxInt) -> List (Singleton, BoxInt)
+      step (pix, pw) = mapMaybe (\(sing, sw) => case mulPixelSingleton pix sing of
+                                                  Just sOut => Just (sOut, pw * sw)
+                                                  Nothing   => Nothing) sings
+  in MkVexel (concatMap step pxs)
+
+
+||| Canonical 3D identity metric Maxel: [1, 1] + [2, 2] + [3, 3].
+public export
+identityMaxel : Maxel
+identityMaxel =
+  MkMaxel [ (MkPixel 1 1, intToBoxInt 1)
+          , (MkPixel 2 2, intToBoxInt 1)
+          , (MkPixel 3 3, intToBoxInt 1)
+          ]
 
 ||| Adds two Maxels by concatenating their pixel multiset entries.
 public export
 addMaxel : Maxel -> Maxel -> Maxel
 addMaxel (MkMaxel ps1) (MkMaxel ps2) = MkMaxel (ps1 ++ ps2)
+
 
 ||| Scales a Maxel by a BoxInt scalar.
 public export
@@ -271,15 +285,39 @@ public export
 addVexel : Vexel -> Vexel -> Vexel
 addVexel (MkVexel s1) (MkVexel s2) = MkVexel (s1 ++ s2)
 
+||| Subtracts two Vexels (u - v = u + (-1)*v).
+public export
+subVexel : Vexel -> Vexel -> Vexel
+subVexel (MkVexel s1) (MkVexel s2) =
+  MkVexel (s1 ++ map (\(s, w) => (s, -w)) s2)
+
 ||| Scales a Vexel by a BoxInt scalar.
 public export
 scaleVexel : BoxInt -> Vexel -> Vexel
 scaleVexel s (MkVexel sings) =
   MkVexel (map (\(sing, w) => (sing, s * w)) sings)
 
+||| Evaluates the standard Euclidean inner product between two Vexels.
+public export
+dotVexel : Vexel -> Vexel -> BoxInt
+dotVexel (MkVexel uTerms) v =
+  let step : (Singleton, BoxInt) -> BoxInt
+      step (s, uw) =
+        let vw = lookupSingleton s v
+        in uw * vw
+  in foldl (+) (intToBoxInt 0) (map step uTerms)
+
+||| Evaluates the metric inner product <u, v>_g = u^T (g * v).
+public export
+metricInnerVexel : Maxel -> Vexel -> Vexel -> BoxInt
+metricInnerVexel g u v =
+  let gv = actMaxelVexel g v
+  in dotVexel u gv
+
 ------------------------------------------------------------------------
 -- 5. ROW & COLUMN VEXEL EXTRACTIONS FROM MAXELS
 ------------------------------------------------------------------------
+
 
 ||| Extracts the i-th Row of a Maxel as a 1D Vexel: R_i(M) = [i] * M
 public export
@@ -443,10 +481,13 @@ translateGene (MkGene (MkBoxel voxs)) =
 public export
 wedgeVexel : Vexel -> Vexel -> Maxel
 wedgeVexel (MkVexel u) (MkVexel v) =
-  let pairs = [ (MkPixel i j, wu * wv) | (MkSingleton i, wu) <- u, (MkSingleton j, wv) <- v ]
+  let pairs = concatMap (\(MkSingleton i, wu) =>
+                map (\(MkSingleton j, wv) =>
+                  (MkPixel i j, wu * wv)) v) u
       antisym = concatMap (\(MkPixel i j, w) =>
         if i == j then [] else [(MkPixel i j, w), (MkPixel j i, -w)]) pairs
   in canonicalizeMaxel (MkMaxel antisym)
+
 
 ||| Evaluates the Grassmann exterior wedge product of a Vexel and a Maxel into a 3D Boxel:
 ||| [u] ^ [v, w] = [u, v, w] - [v, u, w] + [v, w, u].

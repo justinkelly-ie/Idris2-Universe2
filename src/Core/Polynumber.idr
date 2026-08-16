@@ -390,4 +390,6 @@ makePolynumber cs = pure (genPolyAST cs)
 export
 %macro
 makePolynomial : List Integer -> Elab TTImp
-makePolynomial = makePolynumber
+makePolynomial cs = pure (genPolyAST cs)
+
+

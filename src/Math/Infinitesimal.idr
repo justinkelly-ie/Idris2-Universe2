@@ -19,7 +19,7 @@ epsilon = MkMaxel [(MkPixel 1 2, intToBoxInt 1)]
 ||| Multiplication rule for the infinitesimal token: ε * ε = 0.
 ||| Computed purely via pixel multiset contraction [1, 2] * [1, 2] => [].
 public export
-mulEpsilon : (1 e1 : Maxel) -> (1 e2 : Maxel) -> Maxel
+mulEpsilon : Maxel -> Maxel -> Maxel
 mulEpsilon e1 e2 = mulMaxel e1 e2
 
 ------------------------------------------------------------------------
@@ -49,7 +49,7 @@ dualEps m = lookupPixel (MkPixel 1 2) m
 ||| Multiplies two dual numbers via standard Maxel multiset multiplication.
 ||| (r1 + i1 ε)(r2 + i2 ε) = r1*r2 + (r1*i2 + i1*r2)ε because ε² = 0.
 public export
-mulDual : (1 d1 : Maxel) -> (1 d2 : Maxel) -> Maxel
+mulDual : Maxel -> Maxel -> Maxel
 mulDual d1 d2 = mulMaxel d1 d2
 
 ||| Adds two dual numbers using Maxel addition.
@@ -86,8 +86,11 @@ public export
 formalDerivativePolynumber : Polynumber -> Polynumber
 formalDerivativePolynumber (MkPolynumber []) = zeroPolynumber
 formalDerivativePolynumber (MkPolynumber (_ :: cs)) =
-  let pairs = zipWith (\idx, c => intToBoxInt (natToInteger idx) * c) [1..(length cs)] cs
-  in trimPolynumber (MkPolynumber pairs)
+  let diffList : Nat -> List BoxInt -> List BoxInt
+      diffList _ [] = []
+      diffList idx (c :: rest) = (intToBoxInt (natToInteger idx) * c) :: diffList (S idx) rest
+  in trimPolynumber (MkPolynumber (diffList 1 cs))
+
 
 ||| Automatic Differentiation of a Polynumber at a point x = a:
 ||| Computes (P(a), P'(a)) simultaneously by evaluating P(a + 1*ε).

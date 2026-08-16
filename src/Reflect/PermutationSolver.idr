@@ -162,19 +162,40 @@ colLength rowLens col =
 public export
 hookLengthBox : List Nat -> (rowIdx : Nat) -> (rowLen : Nat) -> (colIdx : Nat) -> Nat
 hookLengthBox rowLens rowIdx rowLen colIdx =
-  let arm = if rowLen >= colIdx then rowLen - colIdx else 0
+  let arm = if rowLen >= colIdx then minus rowLen colIdx else 0
       colLen = colLength rowLens colIdx
-      leg = if colLen >= rowIdx then colLen - rowIdx else 0
+      leg = if colLen >= rowIdx then minus colLen rowIdx else 0
   in arm + leg + 1
 
 ||| Product of all hook lengths in a Young diagram for partition lambda.
 public export
 hookLengthProduct : List Nat -> Nat
 hookLengthProduct rowLens =
-  let allHooks = concat (zipWith (\rowIdx, rowLen =>
-                   map (\colIdx => hookLengthBox rowLens rowIdx rowLen colIdx) [1..rowLen])
-                   [1..(length rowLens)] rowLens)
-  in foldl (*) 1 allHooks
+  let colHooks : (rowIdx : Nat) -> (rowLen : Nat) -> (colCountdown : Nat) -> List Nat
+      colHooks _ _ Z = []
+      colHooks rowIdx rowLen (S remaining) =
+        let colIdx = minus rowLen remaining
+        in (hookLengthBox rowLens rowIdx rowLen colIdx) :: colHooks rowIdx rowLen remaining
+
+      allRows : Nat -> List Nat -> List Nat
+      allRows _ [] = []
+      allRows rowIdx (rLen :: rest) = colHooks rowIdx rLen rLen ++ allRows (S rowIdx) rest
+  in foldl (*) 1 (allRows 1 rowLens)
+
+
+
+||| Exact integer division on Nat reducing definitionally at compile-time.
+public export
+divExactNat : Nat -> Nat -> Nat
+divExactNat num Z = 0
+divExactNat num (S dMinus1) =
+  let step : Nat -> Nat -> Nat
+      step Z _ = 0
+      step (S n) remaining =
+        if remaining == 0
+          then S (step n dMinus1)
+          else step n (minus remaining 1)
+  in step num dMinus1
 
 ||| Dimension of the Irreducible Representation of Sn corresponding to partition lambda |- n:
 ||| dim(lambda) = n! / prod_{(i, j)} h(i, j).
@@ -183,7 +204,8 @@ representationDimension : List Nat -> Nat
 representationDimension rowLens =
   let n = sum rowLens
       hProd = hookLengthProduct rowLens
-  in if hProd == 0 then 0 else (factorialNat n) `div` hProd
+  in divExactNat (factorialNat n) hProd
+
 
 ||| Audits the Hook-Length Formula on S3:
 ||| Partitions of 3:

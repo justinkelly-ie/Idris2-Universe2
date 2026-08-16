@@ -50,10 +50,11 @@ totalCosmicMultisetBudget (MkCosmicMultiset (MkBoxel v) (MkMaxel de) (MkVexel dm
 public export
 stateToCosmicMultiset : {vm, de, dm : Nat} -> UniverseState vm de dm -> CosmicMultiset
 stateToCosmicMultiset (MkUniverseState vmVect deVect dmVect) =
-  let vmBoxel = MkBoxel (zipWith (\idx, val => (MkVoxel idx 1 1, val)) [1..vm] (toList vmVect))
-      deMaxel = MkMaxel (zipWith (\idx, val => (MkPixel idx 1, val)) [1..de] (toList deVect))
-      dmVexel = MkVexel (zipWith (\idx, val => (MkSingleton idx, val)) [1..dm] (toList dmVect))
-  in MkCosmicMultiset (canonicalizeBoxel vmBoxel) (canonicalizeMaxel deMaxel) (canonicalizeVexel dmVexel)
+  let vmTerms = toList (tabulate (\idx => (MkVoxel (finToNat idx + 1) 1 1, index idx vmVect)))
+      deTerms = toList (tabulate (\idx => (MkPixel (finToNat idx + 1) 1, index idx deVect)))
+      dmTerms = toList (tabulate (\idx => (MkSingleton (finToNat idx + 1), index idx dmVect)))
+  in MkCosmicMultiset (canonicalizeBoxel (MkBoxel vmTerms)) (canonicalizeMaxel (MkMaxel deTerms)) (canonicalizeVexel (MkVexel dmTerms))
+
 
 ||| Audits that Epoch 37 CosmicMultiset has total budget 210 = 27 + 128 + 55.
 public export

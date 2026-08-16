@@ -63,7 +63,7 @@ bivectorMultivector b =
 public export
 mulGeometricVector : Maxel -> Vexel -> Vexel -> Multivector
 mulGeometricVector metric u v =
-  let inner = bilinearInnerProduct metric u v
+  let inner = metricInnerVexel metric u v
       outer = wedgeVexel u v
   in MkMultivector inner (MkVexel []) outer (MkBoxel [])
 
@@ -83,12 +83,13 @@ reverseMultivector (MkMultivector s v b t) =
 public export
 reflectVector : Maxel -> (normal : Vexel) -> (v : Vexel) -> Vexel
 reflectVector metric n v =
-  let vDotN = bilinearInnerProduct metric v n
-      nDotN = bilinearInnerProduct metric n n
+  let vDotN = metricInnerVexel metric v n
+      nDotN = metricInnerVexel metric n n
       denom = if unwrapBox nDotN == 0 then intToBoxInt 1 else nDotN
       scaleFactor = (intToBoxInt 2 * vDotN) `div` denom
       scaledN = scaleVexel scaleFactor n
   in subVexel v scaledN
+
 
 ||| Pure evaluator verifying that the square of any vector in Geometric Algebra
 ||| equals its metric quadrance: v * v = Q(v) * 1.

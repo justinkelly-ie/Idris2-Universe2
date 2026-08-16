@@ -19,14 +19,15 @@ velocityVexel vA vB =
 ||| Linearly routes a velocity Vexel through a symmetric gEM metric transformation.
 ||| Computed directly via pure Maxel-Vexel multiset contraction (g * v).
 public export
-linearEpsilonRouting : Maxel -> (1 v : Vexel) -> Vexel
+linearEpsilonRouting : Maxel -> Vexel -> Vexel
 linearEpsilonRouting g v = actMaxelVexel g v
 
 ||| Linearly routes a velocity Vexel through an asymmetric gSubstrate metric transformation.
 ||| When g22 = 0, the temporal component cannot feed back into itself, enforcing a one-way causal arrow.
 public export
-linearEpsilonSubstrateRouting : Maxel -> (1 v : Vexel) -> Vexel
+linearEpsilonSubstrateRouting : Maxel -> Vexel -> Vexel
 linearEpsilonSubstrateRouting g v = actMaxelVexel g v
+
 
 ------------------------------------------------------------------------
 -- SYMPLECTIC PHASE SPACE & HAMILTONIAN FLOW ON VEXELS

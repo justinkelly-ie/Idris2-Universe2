@@ -167,8 +167,9 @@ fin27ToVoxel idx =
 public export
 field27ToBoxel : Vect 27 BoxInt -> Boxel
 field27ToBoxel grid =
-  let paired = map (\idx => (fin27ToVoxel idx, lookupCell idx grid)) (allFin 27)
+  let paired = tabulate (\idx => (fin27ToVoxel idx, lookupCell idx grid))
   in canonicalizeBoxel (MkBoxel (toList paired))
+
 
 ||| Converts a 3D Boxel multiset back into a flat 27-cell scalar field.
 public export

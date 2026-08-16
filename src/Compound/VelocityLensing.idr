@@ -17,9 +17,10 @@ public export
 lensVelocityAcrossScale : {vm, de, dm : Nat} ->
                           (state : UniverseState vm de dm) ->
                           (metric : Maxel) ->
-                          (1 velocity : Vexel) ->
+                          (velocity : Vexel) ->
                           Vexel
 lensVelocityAcrossScale (MkUniverseState vm de dm) metric vel =
+
   let drag = sumStructural dm
       scaleFactor = intToBoxInt 1 + drag
       (MkVexel unscaledTerms) = actMaxelVexel metric vel

@@ -213,3 +213,172 @@ public export
 auditCosmicPartition210Proof : Bool
 auditCosmicPartition210Proof =
   isPartitionOf cosmicPartition210 210
+
+------------------------------------------------------------------------
+-- 6. FIRST-CLASS MULTISET CONTAINERS & INFORMATION GEOMETRY
+------------------------------------------------------------------------
+
+||| A discrete Multiset (bag) of elements with integer multiplicities.
+public export
+record MSet a where
+  constructor MkMSet
+  items : List (a, BoxInt)
+
+public export
+Eq a => Eq (MSet a) where
+  (MkMSet xs) == (MkMSet ys) = xs == ys
+
+public export
+Show a => Show (MSet a) where
+  show (MkMSet xs) = "MSet(" ++ show xs ++ ")"
+
+||| Canonical empty multiset.
+public export
+emptyMSet : MSet a
+emptyMSet = MkMSet []
+
+||| Creates a singleton multiset.
+public export
+singletonMSet : a -> BoxInt -> MSet a
+singletonMSet x w = MkMSet [(x, w)]
+
+||| Lookups the multiplicity of an element in a multiset.
+public export
+lookupMSet : Eq a => a -> MSet a -> BoxInt
+lookupMSet target (MkMSet xs) =
+  case find (\(x, _) => x == target) xs of
+    Just (_, w) => w
+    Nothing     => intToBoxInt 0
+
+||| Inserts or updates the multiplicity of an element.
+public export
+insertMSet : Eq a => a -> BoxInt -> MSet a -> MSet a
+insertMSet x w (MkMSet xs) =
+  let current = lookupMSet x (MkMSet xs)
+      newWeight = current + w
+      filtered = filter (\(k, _) => k /= x) xs
+  in if unwrapBox newWeight == 0
+       then MkMSet filtered
+       else MkMSet ((x, newWeight) :: filtered)
+
+||| Multiset Union (pouring containers together): adds multiplicities.
+public export
+unionMSet : Eq a => MSet a -> MSet a -> MSet a
+unionMSet (MkMSet []) ys = ys
+unionMSet (MkMSet ((x, w) :: xs)) ys =
+  insertMSet x w (unionMSet (MkMSet xs) ys)
+
+||| Multiset Difference: subtracts multiplicities (bounded below by 0).
+public export
+subMSet : Eq a => MSet a -> MSet a -> MSet a
+subMSet (MkMSet xs) ys =
+  let nonZeroDiff = mapMaybe (\(k, w) => 
+        let subW = lookupMSet k ys
+            remW = w - subW
+        in if unwrapBox remW > 0 then Just (k, remW) else Nothing) xs
+  in MkMSet nonZeroDiff
+
+
+||| Computes total multiset mass: sum of all item multiplicities.
+public export
+totalMassMSet : MSet a -> BoxInt
+totalMassMSet (MkMSet xs) =
+  sum (map snd xs)
+
+||| Filters a multiset by a predicate.
+public export
+filterMSet : (a -> Bool) -> MSet a -> MSet a
+filterMSet p (MkMSet xs) =
+  MkMSet (filter (\(x, _) => p x) xs)
+
+||| Multiset Symmetric Difference Information Distance:
+||| D_MSet(A, B) = |A \ B| + |B \ A| = sum_{x} |w_A(x) - w_B(x)|
+public export
+multisetSymmetricDifference : Eq a => MSet a -> MSet a -> Nat
+multisetSymmetricDifference (MkMSet xs) (MkMSet ys) =
+  let allKeys = nub (map fst xs ++ map fst ys)
+      diffs = map (\k => 
+        let w1 = lookupMSet k (MkMSet xs)
+            w2 = lookupMSet k (MkMSet ys)
+            d = unwrapBox (if w1 >= w2 then w1 - w2 else w2 - w1)
+        in integerToNat (if d >= 0 then d else -d)) allKeys
+  in sum diffs
+
+||| Theorem & Audit: Validates Multiset Information Distance metric axioms:
+||| 1. Identity of Indiscernibles: D(A, A) == 0.
+||| 2. Triangle Inequality: D(A, C) <= D(A, B) + D(B, C).
+public export
+auditMultisetInformationDistanceProof : Bool
+auditMultisetInformationDistanceProof =
+  let a = MkMSet [(1, intToBoxInt 10), (2, intToBoxInt 5)]
+      b = MkMSet [(1, intToBoxInt 7),  (2, intToBoxInt 5), (3, intToBoxInt 4)]
+      c = MkMSet [(1, intToBoxInt 2),  (3, intToBoxInt 8)]
+      dAA = multisetSymmetricDifference a a
+      dAB = multisetSymmetricDifference a b
+      dBC = multisetSymmetricDifference b c
+      dAC = multisetSymmetricDifference a c
+  in dAA == 0 && (dAC <= dAB + dBC)
+
+------------------------------------------------------------------------
+-- 7. MULTISET CROSS-ENTROPY & PREDICTIVE COMPACTNESS
+------------------------------------------------------------------------
+
+||| Multiset Intersection: Computes the common shared tokens min(w_A, w_B).
+public export
+intersectMSet : Eq a => MSet a -> MSet a -> MSet a
+intersectMSet (MkMSet xs) (MkMSet ys) =
+  let commonKeys = filter (\k => lookupMSet k (MkMSet ys) /= intToBoxInt 0) (nub (map fst xs))
+      itemsList = map (\k => 
+        let w1 = lookupMSet k (MkMSet xs)
+            w2 = lookupMSet k (MkMSet ys)
+            minW = if w1 <= w2 then w1 else w2
+        in (k, minW)) commonKeys
+  in MkMSet (filter (\(_, w) => unwrapBox w > 0) itemsList)
+
+||| Computes total mass of common shared tokens between two multisets |A ∩ B|.
+public export
+multisetIntersectionMass : Eq a => MSet a -> MSet a -> Nat
+multisetIntersectionMass a b =
+  let inter = intersectMSet a b
+      mass = unwrapBox (totalMassMSet inter)
+  in if mass <= 0 then 0 else integerToNat mass
+
+||| Computes total union mass |A ∪ B| = sum max(w_A, w_B).
+public export
+multisetUnionMass : Eq a => MSet a -> MSet a -> Nat
+multisetUnionMass (MkMSet xs) (MkMSet ys) =
+  let allKeys = nub (map fst xs ++ map fst ys)
+      maxWeights = map (\k => 
+        let w1 = lookupMSet k (MkMSet xs)
+            w2 = lookupMSet k (MkMSet ys)
+            maxW = if w1 >= w2 then w1 else w2
+            mw = unwrapBox maxW
+        in if mw <= 0 then 0 else integerToNat mw) allKeys
+  in sum maxWeights
+
+||| Multiset Cross-Entropy: Measures the informational cost of explaining environment P using model Q:
+||| H_MSet(P, Q) = |P| + |P \ Q| = 2|P| - |P ∩ Q|
+public export
+multisetCrossEntropyMass : Eq a => (envP : MSet a) -> (modelQ : MSet a) -> Nat
+multisetCrossEntropyMass envP modelQ =
+  let pMass = unwrapBox (totalMassMSet envP)
+      pNat = if pMass <= 0 then 0 else integerToNat pMass
+      unexplainedMSet = subMSet envP modelQ
+      unexplainedMass = unwrapBox (totalMassMSet unexplainedMSet)
+      unexplainedNat = if unexplainedMass <= 0 then 0 else integerToNat unexplainedMass
+  in pNat + unexplainedNat
+
+||| Audits that Multiset Cross-Entropy:
+||| 1. Equals self-entropy |P| when the model is perfectly aligned (P == Q).
+||| 2. Maximizes at 2*|P| when the model has zero predictive overlap (P ∩ Q == empty).
+public export
+auditMultisetCrossEntropyProof : Bool
+auditMultisetCrossEntropyProof =
+  let envP = MkMSet [(1, intToBoxInt 10), (2, intToBoxInt 5)]
+      perfectModel = envP
+      disjointModel = MkMSet [(3, intToBoxInt 8)]
+      hPerfect = multisetCrossEntropyMass envP perfectModel
+      hDisjoint = multisetCrossEntropyMass envP disjointModel
+  in hPerfect == 15 && hDisjoint == 30
+
+
