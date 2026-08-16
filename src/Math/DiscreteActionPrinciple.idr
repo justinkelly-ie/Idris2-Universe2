@@ -164,3 +164,36 @@ auditDiscreteMomentumConservationProof =
      unwrapBox p0x == unwrapBox p1x &&
      unwrapBox p0y == unwrapBox p1y
 
+||| Audits Parabolic Null Momentum Zero Invariant:
+||| Proves that in Parabolic geometry (det g = 0), momentum along the degenerate
+||| null direction (0, 1) evaluates to exactly (0, 0), allowing frictionless remainder
+||| drainage into Dark Matter without back-reaction or drag.
+public export
+auditParabolicNullMomentumZeroProof : Bool
+auditParabolicNullMomentumZeroProof =
+  let metric = geometryToMetric ParabolicGeom
+      p0 = (intToBoxInt 0, intToBoxInt 0)
+      pNull = (intToBoxInt 0, intToBoxInt 1)
+      (px, py) = discreteCanonicalMomentum metric p0 pNull
+  in unwrapBox px == 0 && unwrapBox py == 0
+
+||| Audits Sector-Specific Action Signatures across the 4 Geometries:
+||| For displacement Δx = (1, 1):
+||| - Elliptic: Q_Ell = 1² + 1² = 2 > 0 (Positive Bound State)
+||| - Hyperbolic: Q_Hyp = 1² - 1² = 0 (Null Lightcone Phase)
+||| - Parabolic: Q_Par = 1² + 0 = 1 (Dissipative Drain)
+||| - Substrate: Q_Sub = 1² + 2(1)(1) + 0 = 3 (Asymmetric Causal Drive)
+public export
+auditSectorSpecificActionSignaturesProof : Bool
+auditSectorSpecificActionSignaturesProof =
+  let diff = (intToBoxInt 1, intToBoxInt 1)
+      qEll = metricKineticQuadrance (geometryToMetric EllipticGeom) diff
+      qHyp = metricKineticQuadrance (geometryToMetric HyperbolicGeom) diff
+      qPar = metricKineticQuadrance (geometryToMetric ParabolicGeom) diff
+      qSub = metricKineticQuadrance (geometryToMetric SubstrateGeom) diff
+  in unwrapBox qEll == 2 &&
+     unwrapBox qHyp == 0 &&
+     unwrapBox qPar == 1 &&
+     unwrapBox qSub == 3
+
+

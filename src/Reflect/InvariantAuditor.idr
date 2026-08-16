@@ -1001,6 +1001,31 @@ export
 auditDiscreteMomentumConservation : Elab (Reflect.InvariantAuditor.auditDiscreteMomentumConservationProofExport = True)
 auditDiscreteMomentumConservation = pure Refl
 
+||| Audit proving Parabolic Null Momentum Zero Invariant.
+public export
+auditParabolicNullMomentumZeroProofExport : Bool
+auditParabolicNullMomentumZeroProofExport =
+  auditParabolicNullMomentumZeroProof
+
+||| Audit proving Sector-Specific Action Signatures across the 4 Geometries.
+public export
+auditSectorSpecificActionSignaturesProofExport : Bool
+auditSectorSpecificActionSignaturesProofExport =
+  auditSectorSpecificActionSignaturesProof
+
+||| Compile-time macro verifying Parabolic Null Momentum Zero Invariant.
+export
+%macro
+auditParabolicNullMomentumZero : Elab (Reflect.InvariantAuditor.auditParabolicNullMomentumZeroProofExport = True)
+auditParabolicNullMomentumZero = pure Refl
+
+||| Compile-time macro verifying Sector-Specific Action Signatures.
+export
+%macro
+auditSectorSpecificActionSignatures : Elab (Reflect.InvariantAuditor.auditSectorSpecificActionSignaturesProofExport = True)
+auditSectorSpecificActionSignatures = pure Refl
+
+
 
 
 
