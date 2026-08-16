@@ -989,6 +989,19 @@ export
 auditGeodesicLeastActionOptimality : Elab (Reflect.InvariantAuditor.auditGeodesicLeastActionOptimalityProofExport = True)
 auditGeodesicLeastActionOptimality = pure Refl
 
+||| Audit proving Discrete Noether Momentum Conservation.
+public export
+auditDiscreteMomentumConservationProofExport : Bool
+auditDiscreteMomentumConservationProofExport =
+  auditDiscreteMomentumConservationProof
+
+||| Compile-time macro verifying Discrete Noether Momentum Conservation.
+export
+%macro
+auditDiscreteMomentumConservation : Elab (Reflect.InvariantAuditor.auditDiscreteMomentumConservationProofExport = True)
+auditDiscreteMomentumConservation = pure Refl
+
+
 
 
 

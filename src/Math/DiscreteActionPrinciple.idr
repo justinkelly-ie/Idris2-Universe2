@@ -117,6 +117,16 @@ auditSubstrateActionAsymmetryProof =
      unwrapBox sReverse == 3 &&
      unwrapBox (sForward - sReverse) == 2
 
+||| Computes discrete canonical momentum token: p_k = g · (x_{k+1} - x_k).
+public export
+discreteCanonicalMomentum : MaxelMetric -> Coord2D -> Coord2D -> Coord2D
+discreteCanonicalMomentum (MkMaxelMetric g11 g12 g21 g22) (x1, y1) (x2, y2) =
+  let dx = x2 - x1
+      dy = y2 - y1
+      px = (g11 * dx) + (g12 * dy)
+      py = (g21 * dx) + (g22 * dy)
+  in (px, py)
+
 ||| Audits Geodesic Least Action Optimality:
 ||| Proves that the straight geodesic path [(0,0), (1,1), (2,2)] strictly minimizes
 ||| Action over the deflected path [(0,0), (0,2), (2,2)]: S_straight (4) < S_perturbed (8).
@@ -136,3 +146,21 @@ auditGeodesicLeastActionOptimalityProof =
   in unwrapBox sStraight == 4 &&
      unwrapBox sPerturbed == 8 &&
      unwrapBox sStraight < unwrapBox sPerturbed
+
+||| Audits Discrete Noether Momentum Conservation:
+||| Proves that for free motion along a geodesic, discrete momentum p_k = g · Δx
+||| is strictly identical across consecutive steps: p_0 = (1, 1) == p_1 = (1, 1).
+public export
+auditDiscreteMomentumConservationProof : Bool
+auditDiscreteMomentumConservationProof =
+  let p0 = (intToBoxInt 0, intToBoxInt 0)
+      p1 = (intToBoxInt 1, intToBoxInt 1)
+      p2 = (intToBoxInt 2, intToBoxInt 2)
+      metric = geometryToMetric EllipticGeom
+      (p0x, p0y) = discreteCanonicalMomentum metric p0 p1
+      (p1x, p1y) = discreteCanonicalMomentum metric p1 p2
+  in unwrapBox p0x == 1 && unwrapBox p0y == 1 &&
+     unwrapBox p1x == 1 && unwrapBox p1y == 1 &&
+     unwrapBox p0x == unwrapBox p1x &&
+     unwrapBox p0y == unwrapBox p1y
+
