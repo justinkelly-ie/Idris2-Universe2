@@ -46,8 +46,12 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Geometry.GrassmannCalculus`](src/Geometry/GrassmannCalculus.idr) | Grassmann cochains ($C_0, C_1, C_2, C_3$), coboundaries, Hodge duality, and Yang-Mills. |
 | [`Geometry.InformationGeometry`](src/Geometry/InformationGeometry.idr) | Hyperbolic geodesic Stern-Brocot bit duality, Clifford mutual information, and Yang-Mills plaquette cross-entropy. |
 | [`Compound.HadronicConfinement`](src/Compound/HadronicConfinement.idr) | Triadic Chromogeometry, color charges, and color-neutral nucleon singlets. |
+| [`Compound.PlasmaRecombination`](src/Compound/PlasmaRecombination.idr) | Phase 3 plasma recombination, proton-electron binding, and photon decoupling. |
 | [`Compound.AlphaReplication`](src/Compound/AlphaReplication.idr) | 4-nucleon hierarchical tetrahedral clustering into a 108-voxel $^4\text{He}$ core. |
+| [`Compound.StellarNucleosynthesis`](src/Compound/StellarNucleosynthesis.idr) | Phase 4 Triple-Alpha Carbon fusion ($3\alpha \to {}^{12}\text{C}$) and Phosphorus ($Z=15$) synthesis. |
 | [`Compound.MolecularBonding`](src/Compound/MolecularBonding.idr) | Chemical graph representation, covalent bond Maxels, Water quadrea ($A=3$), and alkane homologous saturation. |
+| [`Compound.HydrogenBonding`](src/Compound/HydrogenBonding.idr) | Phase 5 non-covalent Hydrogen bonding Maxels, liquid water percolation, and ice network. |
+| [`Compound.WatsonCrickBasePairing`](src/Compound/WatsonCrickBasePairing.idr) | Phase 6 & 7 high-energy polyphosphate ATP coupling and Watson-Crick A-T (2 H-bonds) / G-C (3 H-bonds) pairing. |
 | [`Compound.MacromolecularChirality`](src/Compound/MacromolecularChirality.idr) | Tier 6 Macromolecules, amino acid stereocenters, peptide condensation, and L-homochirality selection. |
 | [`Evolution.State`](src/Evolution/State.idr) | Universe state $(vm, de, dm)$ dependent vectors, linear QTT vector splits/combines, and token relocation. |
 | [`Evolution.Init`](src/Evolution/Init.idr) | Dynamic vacuum seed initializer (`seedEvolutionaryVacuum`) for Epoch 1. |

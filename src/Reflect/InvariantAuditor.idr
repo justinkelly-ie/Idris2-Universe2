@@ -18,8 +18,12 @@ import Geometry.LatticeTopology
 import Geometry.GrassmannCalculus
 import Geometry.InformationGeometry
 import Compound.HadronicConfinement
+import Compound.PlasmaRecombination
 import Compound.AlphaReplication
+import Compound.StellarNucleosynthesis
 import Compound.MolecularBonding
+import Compound.HydrogenBonding
+import Compound.WatsonCrickBasePairing
 import Compound.MacromolecularChirality
 import Compound.LinearEpsilonRouting
 import Compound.VelocityLensing
@@ -879,6 +883,71 @@ export
 %macro
 auditHomochiralPeptideChain : Elab (Reflect.InvariantAuditor.auditHomochiralPeptideChainProofExport = True)
 auditHomochiralPeptideChain = pure Refl
+
+------------------------------------------------------------------------
+-- 9. INTERMEDIATE COSMOLOGICAL PHASES & HYDROGEN BONDING AUDIT MACROS
+------------------------------------------------------------------------
+
+||| Audit proving Plasma Recombination & Photon Decoupling Invariant.
+public export
+auditPlasmaRecombinationDecouplingProofExport : Bool
+auditPlasmaRecombinationDecouplingProofExport =
+  auditPlasmaRecombinationDecouplingProof
+
+||| Audit proving Triple-Alpha Carbon & Phosphorus Synthesis Invariant.
+public export
+auditTripleAlphaCarbonPhosphorusSynthesisProofExport : Bool
+auditTripleAlphaCarbonPhosphorusSynthesisProofExport =
+  auditTripleAlphaCarbonPhosphorusSynthesisProof
+
+||| Audit proving Hydrogen Bond Network & Water Quadrea Invariant.
+public export
+auditHydrogenBondNetworkQuadreaProofExport : Bool
+auditHydrogenBondNetworkQuadreaProofExport =
+  auditHydrogenBondNetworkQuadreaProof
+
+||| Audit proving Watson-Crick Complementary Hydrogen Bond Ratios (A=T 2, G≡C 3).
+public export
+auditWatsonCrickHydrogenBondRatioProofExport : Bool
+auditWatsonCrickHydrogenBondRatioProofExport =
+  auditWatsonCrickHydrogenBondRatioProof
+
+||| Audit proving Pyrophosphate (ATP) Thermodynamic Coupling Invariant.
+public export
+auditPyrophosphateThermodynamicCouplingProofExport : Bool
+auditPyrophosphateThermodynamicCouplingProofExport =
+  auditPyrophosphateThermodynamicCouplingProof
+
+||| Compile-time macro verifying Plasma Recombination & Decoupling.
+export
+%macro
+auditPlasmaRecombinationDecoupling : Elab (Reflect.InvariantAuditor.auditPlasmaRecombinationDecouplingProofExport = True)
+auditPlasmaRecombinationDecoupling = pure Refl
+
+||| Compile-time macro verifying Triple-Alpha Carbon & Phosphorus Synthesis.
+export
+%macro
+auditTripleAlphaCarbonPhosphorusSynthesis : Elab (Reflect.InvariantAuditor.auditTripleAlphaCarbonPhosphorusSynthesisProofExport = True)
+auditTripleAlphaCarbonPhosphorusSynthesis = pure Refl
+
+||| Compile-time macro verifying Hydrogen Bond Network & Water Quadrea.
+export
+%macro
+auditHydrogenBondNetworkQuadrea : Elab (Reflect.InvariantAuditor.auditHydrogenBondNetworkQuadreaProofExport = True)
+auditHydrogenBondNetworkQuadrea = pure Refl
+
+||| Compile-time macro verifying Watson-Crick Complementary Hydrogen Bond Ratios.
+export
+%macro
+auditWatsonCrickHydrogenBondRatio : Elab (Reflect.InvariantAuditor.auditWatsonCrickHydrogenBondRatioProofExport = True)
+auditWatsonCrickHydrogenBondRatio = pure Refl
+
+||| Compile-time macro verifying Pyrophosphate (ATP) Thermodynamic Coupling.
+export
+%macro
+auditPyrophosphateThermodynamicCoupling : Elab (Reflect.InvariantAuditor.auditPyrophosphateThermodynamicCouplingProofExport = True)
+auditPyrophosphateThermodynamicCoupling = pure Refl
+
 
 
 
