@@ -9,6 +9,7 @@ import Math.Infinitesimal
 import Math.QuantumTransition
 import Math.WilsonPolyhedra
 import Math.FourGeometries
+import Math.DiscreteActionPrinciple
 import Math.RationalTrig
 import Math.FineStructure
 import Math.LinAlgebra.MetricTensor
@@ -947,6 +948,47 @@ export
 %macro
 auditPyrophosphateThermodynamicCoupling : Elab (Reflect.InvariantAuditor.auditPyrophosphateThermodynamicCouplingProofExport = True)
 auditPyrophosphateThermodynamicCoupling = pure Refl
+
+------------------------------------------------------------------------
+-- 10. DISCRETE PRINCIPLE OF LEAST ACTION & EULER-LAGRANGE AUDIT MACROS
+------------------------------------------------------------------------
+
+||| Audit proving Discrete Euler-Lagrange Equivalence to Newtonian acceleration.
+public export
+auditDiscreteEulerLagrangeEquivalenceProofExport : Bool
+auditDiscreteEulerLagrangeEquivalenceProofExport =
+  auditDiscreteEulerLagrangeEquivalenceProof
+
+||| Audit proving Substrate Action Asymmetry (Causal Arrow in Hamilton's Principle).
+public export
+auditSubstrateActionAsymmetryProofExport : Bool
+auditSubstrateActionAsymmetryProofExport =
+  auditSubstrateActionAsymmetryProof
+
+||| Audit proving Geodesic Least Action Optimality on the discrete lattice.
+public export
+auditGeodesicLeastActionOptimalityProofExport : Bool
+auditGeodesicLeastActionOptimalityProofExport =
+  auditGeodesicLeastActionOptimalityProof
+
+||| Compile-time macro verifying Discrete Euler-Lagrange Equivalence.
+export
+%macro
+auditDiscreteEulerLagrangeEquivalence : Elab (Reflect.InvariantAuditor.auditDiscreteEulerLagrangeEquivalenceProofExport = True)
+auditDiscreteEulerLagrangeEquivalence = pure Refl
+
+||| Compile-time macro verifying Substrate Action Asymmetry.
+export
+%macro
+auditSubstrateActionAsymmetry : Elab (Reflect.InvariantAuditor.auditSubstrateActionAsymmetryProofExport = True)
+auditSubstrateActionAsymmetry = pure Refl
+
+||| Compile-time macro verifying Geodesic Least Action Optimality.
+export
+%macro
+auditGeodesicLeastActionOptimality : Elab (Reflect.InvariantAuditor.auditGeodesicLeastActionOptimalityProofExport = True)
+auditGeodesicLeastActionOptimality = pure Refl
+
 
 
 
