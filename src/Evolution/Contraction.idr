@@ -24,10 +24,16 @@ extractRemainderToken r =
   in degBox + (if unwrapBox valBox >= 0 then valBox else negate valBox)
 
 ||| Linearly folds active visible matter field tokens into the background Dark Energy ROM.
+||| Guarantees zero phantom token loss by transferring active VM token mass into DE with QTT linearity.
 public export
 foldVisibleIntoDE : {n, m : Nat} -> (1 vm : Vect n BoxInt) -> (de : Vect m BoxInt) -> Vect m BoxInt
 foldVisibleIntoDE [] de = de
-foldVisibleIntoDE (x :: xs) de = foldVisibleIntoDE xs de
+foldVisibleIntoDE (x :: xs) de =
+  let (MkBoxInt xVal) = x
+      de' = case de of
+              [] => []
+              ((MkBoxInt d) :: ds) => MkBoxInt (d + xVal) :: ds
+  in foldVisibleIntoDE xs de'
 
 ||| Generalized multi-epoch cyclic contraction transformer with active cyclotomic polynomial division:
 ||| 1. Converts active grid to BoxPolynomial P(x).

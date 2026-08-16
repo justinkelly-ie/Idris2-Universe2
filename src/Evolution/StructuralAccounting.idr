@@ -3,8 +3,8 @@ module Evolution.StructuralAccounting
 import Core.BoxInt
 import Core.VexelMaxel
 import Evolution.State
+import Math.DiscreteLandauerPrinciple
 import Data.Vect
-
 
 %default total
 
@@ -50,9 +50,11 @@ landauerTokenErasure : {vm, de, dm : Nat} ->
                        (UniverseState (S vm) de dm) ->
                        (Vexel, UniverseState vm de (S dm))
 landauerTokenErasure target (MkVexel terms) (MkUniverseState (_ :: vmRest) deVect dmVect) =
-  let remainingTerms = filter (\(s, _) => s /= target) terms
+  let erasedWeight = lookupSingleton target (MkVexel terms)
+      tokenToRelocate = if unwrapBox erasedWeight == 0 then intToBoxInt 1 else erasedWeight
+      remainingTerms = filter (\(s, _) => s /= target) terms
       remainingVexel = MkVexel remainingTerms
-      newState = MkUniverseState vmRest deVect ((intToBoxInt 1) :: dmVect)
+      newState = MkUniverseState vmRest deVect (tokenToRelocate :: dmVect)
   in (remainingVexel, newState)
 
 ||| Audits Constructivist Landauer's Principle:
