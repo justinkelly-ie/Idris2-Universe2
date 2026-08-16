@@ -203,8 +203,7 @@ applyQuantumOperator basis op st =
 public export
 mulQuantumOp : (dim : Nat) -> QuantumOperator -> QuantumOperator -> QuantumOperator
 mulQuantumOp dim opA opB =
-  let indices = map (\k => k + 1) [0..(dim - 1)]
-      pixels = [ MkPixel i k | i <- indices, k <- indices ]
+  let pixels = [ MkPixel i k | i <- [1..dim], k <- [1..dim] ]
       entries = map (\pix@(MkPixel i k) =>
                       let dotProd = sumDot [1..dim] i k
                       in (pix, dotProd)) pixels

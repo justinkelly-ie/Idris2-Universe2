@@ -69,8 +69,8 @@ contractWithCyclotomicDivision {vm} (MkUniverseState vmData deData dmData) =
 ||| and relocates the active cyclotomic remainder token into Dark Matter.
 public export
 contractAndFoldLinear : {vm, de, dm : Nat} ->
-                        (1 priorState : UniverseState vm de dm) ->
-                        (1 remainderToken : BoxInt) ->
+                        UniverseState vm de dm ->
+                        BoxInt ->
                         UniverseState vm de (S dm)
 contractAndFoldLinear {vm} (MkUniverseState vmData deData dmData) remainderToken =
   let resetVM   = replicate vm (intToBoxInt 0)

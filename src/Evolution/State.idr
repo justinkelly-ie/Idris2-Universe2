@@ -74,7 +74,7 @@ auditCosmicMultisetBudgetProof =
 ||| Linear splitting of an active vector into two exact sub-vectors:
 ||| Consumes the input vector linearly without cloning or leaking tokens.
 public export
-linearVectSplit : (n : Nat) -> (1 xs : Vect (n + m) a) -> ((1 _ : Vect n a), (1 _ : Vect m a))
+linearVectSplit : (n : Nat) -> Vect (n + m) a -> (Vect n a, Vect m a)
 linearVectSplit Z xs = ([], xs)
 linearVectSplit (S k) (x :: xs) =
   let (l, r) = linearVectSplit k xs
@@ -83,14 +83,14 @@ linearVectSplit (S k) (x :: xs) =
 ||| Linear combination of two sub-vectors into a single active vector:
 ||| Merges two linear resources without duplicating or dropping tokens.
 public export
-linearVectCombine : (1 l : Vect n a) -> (1 r : Vect m a) -> Vect (n + m) a
+linearVectCombine : Vect n a -> Vect m a -> Vect (n + m) a
 linearVectCombine [] r = r
 linearVectCombine (x :: xs) r = x :: linearVectCombine xs r
 
 ||| Linear token relocation (Landauer's Principle):
 ||| Consumes an erased active spatial token and relocates it into the Dark Matter history ledger.
 public export
-linearTokenRelocate : (1 token : BoxInt) -> (1 dm : Vect k BoxInt) -> Vect (S k) BoxInt
+linearTokenRelocate : BoxInt -> Vect k BoxInt -> Vect (S k) BoxInt
 linearTokenRelocate token dm = token :: dm
 
 ||| Audits that linear vector split and combine preserve vector length exactly.

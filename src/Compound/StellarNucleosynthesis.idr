@@ -102,9 +102,9 @@ tripleAlphaFusion _ _ _ =
 public export
 auditTripleAlphaCarbonPhosphorusSynthesisProof : Bool
 auditTripleAlphaCarbonPhosphorusSynthesisProof =
-  let a1 = seedAlphaCluster108
-      a2 = seedAlphaCluster108
-      a3 = seedAlphaCluster108
+  let a1 = seedAlphaClusterEpoch4
+      a2 = seedAlphaClusterEpoch4
+      a3 = seedAlphaClusterEpoch4
       carbon = tripleAlphaFusion a1 a2 a3
   in totalVoxels carbon == 324 &&
      protons carbon == 6 &&

@@ -25,17 +25,20 @@ coordDiff (x2, y2) (x1, y1) = (x2 - x1, y2 - y1)
 
 ||| Computes metric kinetic quadrance: T_g(Δx) = Δx^T · g · Δx.
 public export
-metricKineticQuadrance : MaxelMetric -> Coord2D -> BoxInt
-metricKineticQuadrance (MkMaxelMetric g11 g12 g21 g22) (dx, dy) =
-  let row1 = (g11 * dx) + (g12 * dy)
-      row2 = (g21 * dx) + (g22 * dy)
+metricKineticQuadrance : Maxel -> Coord2D -> BoxInt
+metricKineticQuadrance m (dx, dy) =
+  let g11Val = g11 m
+      g12Val = g12 m
+      g22Val = g22 m
+      row1 = (g11Val * dx) + (g12Val * dy)
+      row2 = (g12Val * dx) + (g22Val * dy)
   in (dx * row1) + (dy * row2)
 
 ||| Discrete Lagrangian: L(x_k, x_{k+1}) = T_g(Δx) + SubstrateCoupling(x_k, x_{k+1}) - V(x_k).
 public export
 discreteLagrangian : FundamentalGeometry -> Coord2D -> Coord2D -> (Coord2D -> BoxInt) -> BoxInt
 discreteLagrangian geom (x1, y1) (x2, y2) vPot =
-  let metric = geometryToMetric geom
+  let metric = geometryMetric geom
       diff = (x2 - x1, y2 - y1)
       tKin = metricKineticQuadrance metric diff
       vVal = vPot (x1, y1)
@@ -69,11 +72,11 @@ discreteAcceleration (xPrev, yPrev) (xCurr, yCurr) (xNext, yNext) =
 ||| Discrete Euler-Lagrange residual: g · Δ²x + ∇V(x_k).
 ||| For extremal physical trajectories, this residual evaluates strictly to (0, 0).
 public export
-discreteEulerLagrangeResidual : MaxelMetric -> Coord2D -> Coord2D -> Coord2D -> Coord2D -> Coord2D
-discreteEulerLagrangeResidual (MkMaxelMetric g11 g12 g21 g22) prev curr next (gradVx, gradVy) =
+discreteEulerLagrangeResidual : Maxel -> Coord2D -> Coord2D -> Coord2D -> Coord2D -> Coord2D
+discreteEulerLagrangeResidual m prev curr next (gradVx, gradVy) =
   let (ax, ay) = discreteAcceleration prev curr next
-      forceX = (g11 * ax) + (g12 * ay) + gradVx
-      forceY = (g21 * ax) + (g22 * ay) + gradVy
+      forceX = (g11 m * ax) + (g12 m * ay) + gradVx
+      forceY = (g12 m * ax) + (g22 m * ay) + gradVy
   in (forceX, forceY)
 
 ------------------------------------------------------------------------
@@ -99,7 +102,7 @@ auditDiscreteEulerLagrangeEquivalenceProof =
   let p0 = (intToBoxInt 0, intToBoxInt 0)
       p1 = (intToBoxInt 1, intToBoxInt 1)
       p2 = (intToBoxInt 2, intToBoxInt 2)
-      metric = geometryToMetric EllipticGeom
+      metric = geometryMetric EllipticGeom
       (resX, resY) = discreteEulerLagrangeResidual metric p0 p1 p2 (intToBoxInt 0, intToBoxInt 0)
   in unwrapBox resX == 0 && unwrapBox resY == 0
 
@@ -119,12 +122,12 @@ auditSubstrateActionAsymmetryProof =
 
 ||| Computes discrete canonical momentum token: p_k = g · (x_{k+1} - x_k).
 public export
-discreteCanonicalMomentum : MaxelMetric -> Coord2D -> Coord2D -> Coord2D
-discreteCanonicalMomentum (MkMaxelMetric g11 g12 g21 g22) (x1, y1) (x2, y2) =
+discreteCanonicalMomentum : Maxel -> Coord2D -> Coord2D -> Coord2D
+discreteCanonicalMomentum m (x1, y1) (x2, y2) =
   let dx = x2 - x1
       dy = y2 - y1
-      px = (g11 * dx) + (g12 * dy)
-      py = (g21 * dx) + (g22 * dy)
+      px = (g11 m * dx) + (g12 m * dy)
+      py = (g12 m * dx) + (g22 m * dy)
   in (px, py)
 
 ||| Audits Geodesic Least Action Optimality:
@@ -156,7 +159,7 @@ auditDiscreteMomentumConservationProof =
   let p0 = (intToBoxInt 0, intToBoxInt 0)
       p1 = (intToBoxInt 1, intToBoxInt 1)
       p2 = (intToBoxInt 2, intToBoxInt 2)
-      metric = geometryToMetric EllipticGeom
+      metric = geometryMetric EllipticGeom
       (p0x, p0y) = discreteCanonicalMomentum metric p0 p1
       (p1x, p1y) = discreteCanonicalMomentum metric p1 p2
   in unwrapBox p0x == 1 && unwrapBox p0y == 1 &&
@@ -171,7 +174,7 @@ auditDiscreteMomentumConservationProof =
 public export
 auditParabolicNullMomentumZeroProof : Bool
 auditParabolicNullMomentumZeroProof =
-  let metric = geometryToMetric ParabolicGeom
+  let metric = geometryMetric ParabolicGeom
       p0 = (intToBoxInt 0, intToBoxInt 0)
       pNull = (intToBoxInt 0, intToBoxInt 1)
       (px, py) = discreteCanonicalMomentum metric p0 pNull
@@ -187,13 +190,14 @@ public export
 auditSectorSpecificActionSignaturesProof : Bool
 auditSectorSpecificActionSignaturesProof =
   let diff = (intToBoxInt 1, intToBoxInt 1)
-      qEll = metricKineticQuadrance (geometryToMetric EllipticGeom) diff
-      qHyp = metricKineticQuadrance (geometryToMetric HyperbolicGeom) diff
-      qPar = metricKineticQuadrance (geometryToMetric ParabolicGeom) diff
-      qSub = metricKineticQuadrance (geometryToMetric SubstrateGeom) diff
+      qEll = metricKineticQuadrance (geometryMetric EllipticGeom) diff
+      qHyp = metricKineticQuadrance (geometryMetric HyperbolicGeom) diff
+      qPar = metricKineticQuadrance (geometryMetric ParabolicGeom) diff
+      qSub = metricKineticQuadrance (geometryMetric SubstrateGeom) diff
   in unwrapBox qEll == 2 &&
      unwrapBox qHyp == 0 &&
      unwrapBox qPar == 1 &&
      unwrapBox qSub == 3
+
 
 

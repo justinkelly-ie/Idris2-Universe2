@@ -38,6 +38,7 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Math.WilsonPolyhedra`](src/Math/WilsonPolyhedra.idr) | 3D Wilson Polyhedra cubic holonomies, non-Abelian $\mathrm{SU}(3)$ color flux coupling, and discrete Bianchi closure. |
 | [`Math.FourGeometries`](src/Math/FourGeometries.idr) | The 4 Fundamental Geometries: Elliptic (Confinement), Hyperbolic (Phase), Parabolic (Dissipation), and Substrate (Causality). |
 | [`Math.DiscreteActionPrinciple`](src/Math/DiscreteActionPrinciple.idr) | Law 1: The Discrete Principle of Least Action, Euler-Lagrange equations, and Substrate causal arrow asymmetry. |
+| [`Math.DiscreteBoltzmannDistribution`](src/Math/DiscreteBoltzmannDistribution.idr) | Law 2: The Discrete Boltzmann Distribution, sector partition functions ($Z$), and ground-state collapse. |
 | [`Math.RationalTrig`](src/Math/RationalTrig.idr) | Rational Trigonometry: Quadrance, Spread, Cross, and Archimedes' Function. |
 | [`Math.FineStructure`](src/Math/FineStructure.idr) | Pure constructivist derivation of $\alpha^{-1} = 137$. |
 | [`Math.LinAlgebra.MetricTensor`](src/Math/LinAlgebra/MetricTensor.idr) | Rational Maxel metrics with BoxInt entries and discriminant classification. |

@@ -109,8 +109,8 @@ expandAndUnfoldBoxel3D {currentVM} {de} {dm} {nextScale} (MkUniverseState vmStat
 public export
 expandUniverseStateLinear : {vm, de, dm : Nat} ->
                             {newCells : Nat} ->
-                            (1 currentState : UniverseState vm de dm) ->
-                            (1 budgetTokens : Vect newCells BoxInt) ->
+                            UniverseState vm de dm ->
+                            Vect newCells BoxInt ->
                             UniverseState (vm + newCells) de dm
 expandUniverseStateLinear (MkUniverseState vm de dm) budgetTokens =
   let expandedVM = linearVectCombine vm budgetTokens

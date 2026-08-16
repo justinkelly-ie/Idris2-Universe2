@@ -10,6 +10,7 @@ import Math.QuantumTransition
 import Math.WilsonPolyhedra
 import Math.FourGeometries
 import Math.DiscreteActionPrinciple
+import Math.DiscreteBoltzmannDistribution
 import Math.RationalTrig
 import Math.FineStructure
 import Math.LinAlgebra.MetricTensor
@@ -1024,6 +1025,47 @@ export
 %macro
 auditSectorSpecificActionSignatures : Elab (Reflect.InvariantAuditor.auditSectorSpecificActionSignaturesProofExport = True)
 auditSectorSpecificActionSignatures = pure Refl
+
+------------------------------------------------------------------------
+-- 11. DISCRETE BOLTZMANN DISTRIBUTION & SECTOR PARTITIONS AUDIT MACROS
+------------------------------------------------------------------------
+
+||| Audit proving Discrete Boltzmann Probability Normalization (∑ P(E_k) = 1/1).
+public export
+auditBoltzmannProbabilityNormalizationProofExport : Bool
+auditBoltzmannProbabilityNormalizationProofExport =
+  auditBoltzmannProbabilityNormalizationProof
+
+||| Audit proving Cosmic Budget Partition Factorization (27 + 128 + 55 = 210).
+public export
+auditCosmicBudgetPartitionFactorizationProofExport : Bool
+auditCosmicBudgetPartitionFactorizationProofExport =
+  auditCosmicBudgetPartitionFactorizationProof
+
+||| Audit proving Zero-Temperature Ground State Collapse (q -> 0 ==> P(E_0) = 1/1).
+public export
+auditZeroTemperatureGroundStateCollapseProofExport : Bool
+auditZeroTemperatureGroundStateCollapseProofExport =
+  auditZeroTemperatureGroundStateCollapseProof
+
+||| Compile-time macro verifying Discrete Boltzmann Probability Normalization.
+export
+%macro
+auditBoltzmannProbabilityNormalization : Elab (Reflect.InvariantAuditor.auditBoltzmannProbabilityNormalizationProofExport = True)
+auditBoltzmannProbabilityNormalization = pure Refl
+
+||| Compile-time macro verifying Cosmic Budget Partition Factorization.
+export
+%macro
+auditCosmicBudgetPartitionFactorization : Elab (Reflect.InvariantAuditor.auditCosmicBudgetPartitionFactorizationProofExport = True)
+auditCosmicBudgetPartitionFactorization = pure Refl
+
+||| Compile-time macro verifying Zero-Temperature Ground State Collapse.
+export
+%macro
+auditZeroTemperatureGroundStateCollapse : Elab (Reflect.InvariantAuditor.auditZeroTemperatureGroundStateCollapseProofExport = True)
+auditZeroTemperatureGroundStateCollapse = pure Refl
+
 
 
 
