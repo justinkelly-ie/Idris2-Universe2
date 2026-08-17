@@ -46,14 +46,14 @@ CellCochain = Boxel
 
 ||| Helper lookup for vertex point values in a PointCochain (Vexel).
 public export
-lookupPoint : Singleton -> Vexel -> BoxInt
-lookupPoint s v = lookupSingleton s v
+lookupPoint : Unixel -> Vexel -> BoxInt
+lookupPoint s v = lookupUnixel s v
 
 ||| Helper lookup for edge connection values in an EdgeCochain (Maxel).
 ||| Supports antisymmetric orientation: [v, u] = - [u, v].
 public export
-lookupEdge : (Singleton, Singleton) -> Maxel -> BoxInt
-lookupEdge (MkSingleton u, MkSingleton v) m =
+lookupEdge : (Unixel, Unixel) -> Maxel -> BoxInt
+lookupEdge (MkUnixel u, MkUnixel v) m =
   let direct = lookupPixel (MkPixel u v) m
   in if unwrapBox direct /= 0
        then direct
@@ -75,9 +75,9 @@ lookupCell v b = lookupVoxel v b
 ||| 0-Coboundary Operator d0 : Vexel -> Maxel (Discrete Gradient).
 ||| Evaluates difference of potential across directed edge [u -> v]: (Phi_v - Phi_u).
 public export
-grassmannCoboundary0 : List (Singleton, Singleton) -> Vexel -> Maxel
+grassmannCoboundary0 : List (Unixel, Unixel) -> Vexel -> Maxel
 grassmannCoboundary0 edges phi =
-  let computed = map (\(u@(MkSingleton uIdx), v@(MkSingleton vIdx)) => 
+  let computed = map (\(u@(MkUnixel uIdx), v@(MkUnixel vIdx)) => 
                     let vu = lookupPoint u phi
                         vv = lookupPoint v phi
                     in (MkPixel uIdx vIdx, vv - vu)) edges
@@ -86,7 +86,7 @@ grassmannCoboundary0 edges phi =
 ||| 1-Coboundary Operator d1 : Maxel -> Maxel (Discrete Curl / Curvature F = dA).
 ||| Evaluates circulation along 4-edge boundary loop of each face: A_12 + A_23 + A_34 + A_41.
 public export
-grassmannCoboundary1 : List (Pixel, Vect 4 (Singleton, Singleton)) -> Maxel -> Maxel
+grassmannCoboundary1 : List (Pixel, Vect 4 (Unixel, Unixel)) -> Maxel -> Maxel
 grassmannCoboundary1 faces conn =
   let computed = map (\(pix, loop) =>
                     let loopSum = sum (map (\e => lookupEdge e conn) (toList loop))
@@ -158,30 +158,30 @@ auditHodgeStarInvolutionProof =
 ||| [T_Red, T_Green] = +T_Blue,   [T_Green, T_Blue] = +T_Red,   [T_Blue, T_Red] = +T_Green
 ||| [T_Green, T_Red] = -T_Blue,   [T_Blue, T_Green] = -T_Red,   [T_Red, T_Blue] = -T_Green
 public export
-su3ColorBracket : Singleton -> Singleton -> (Singleton, BoxInt)
-su3ColorBracket (MkSingleton 1) (MkSingleton 2) = (MkSingleton 3, intToBoxInt 1)
-su3ColorBracket (MkSingleton 2) (MkSingleton 3) = (MkSingleton 1, intToBoxInt 1)
-su3ColorBracket (MkSingleton 3) (MkSingleton 1) = (MkSingleton 2, intToBoxInt 1)
-su3ColorBracket (MkSingleton 2) (MkSingleton 1) = (MkSingleton 3, intToBoxInt (-1))
-su3ColorBracket (MkSingleton 3) (MkSingleton 2) = (MkSingleton 1, intToBoxInt (-1))
-su3ColorBracket (MkSingleton 1) (MkSingleton 3) = (MkSingleton 2, intToBoxInt (-1))
-su3ColorBracket (MkSingleton a) _               = (MkSingleton a, intToBoxInt 0)
+su3ColorBracket : Unixel -> Unixel -> (Unixel, BoxInt)
+su3ColorBracket (MkUnixel 1) (MkUnixel 2) = (MkUnixel 3, intToBoxInt 1)
+su3ColorBracket (MkUnixel 2) (MkUnixel 3) = (MkUnixel 1, intToBoxInt 1)
+su3ColorBracket (MkUnixel 3) (MkUnixel 1) = (MkUnixel 2, intToBoxInt 1)
+su3ColorBracket (MkUnixel 2) (MkUnixel 1) = (MkUnixel 3, intToBoxInt (-1))
+su3ColorBracket (MkUnixel 3) (MkUnixel 2) = (MkUnixel 1, intToBoxInt (-1))
+su3ColorBracket (MkUnixel 1) (MkUnixel 3) = (MkUnixel 2, intToBoxInt (-1))
+su3ColorBracket (MkUnixel a) _               = (MkUnixel a, intToBoxInt 0)
 
 ||| Evaluates Dihedron commutator bracket on weighted color singletons.
 public export
-dihedronColorBracket : (Singleton, BoxInt) -> (Singleton, BoxInt) -> (Singleton, BoxInt)
+dihedronColorBracket : (Unixel, BoxInt) -> (Unixel, BoxInt) -> (Unixel, BoxInt)
 dihedronColorBracket (s1, w1) (s2, w2) =
   let (sOut, sign) = su3ColorBracket s1 s2
   in (sOut, sign * w1 * w2)
 
 ||| Non-Abelian Yang-Mills curvature 2-Blade on a face pixel: F_YM = d1(A) + [A_1, A_2].
 public export
-yangMillsFaceCurvature : Maxel -> Pixel -> Vect 4 (Singleton, Singleton) -> BoxInt
+yangMillsFaceCurvature : Maxel -> Pixel -> Vect 4 (Unixel, Unixel) -> BoxInt
 yangMillsFaceCurvature conn pix loop =
   let abelianCurv = sum (map (\e => lookupEdge e conn) (toList loop))
       e1Val = lookupEdge (index 0 loop) conn
       e2Val = lookupEdge (index 1 loop) conn
-      (_, bracketVal) = dihedronColorBracket (MkSingleton 1, e1Val) (MkSingleton 2, e2Val)
+      (_, bracketVal) = dihedronColorBracket (MkUnixel 1, e1Val) (MkUnixel 2, e2Val)
   in abelianCurv + bracketVal
 
 ||| Evaluates the bilinear Lie bracket of two color generator Vexels:
@@ -198,9 +198,9 @@ lieBracketVexel (MkVexel u) (MkVexel v) =
 public export
 auditJacobiIdentityProof : Bool
 auditJacobiIdentityProof =
-  let u = MkVexel [(MkSingleton 1, intToBoxInt 1)] -- Red generator
-      v = MkVexel [(MkSingleton 2, intToBoxInt 1)] -- Green generator
-      w = MkVexel [(MkSingleton 3, intToBoxInt 1)] -- Blue generator
+  let u = MkVexel [(MkUnixel 1, intToBoxInt 1)] -- Red generator
+      v = MkVexel [(MkUnixel 2, intToBoxInt 1)] -- Green generator
+      w = MkVexel [(MkUnixel 3, intToBoxInt 1)] -- Blue generator
       j1 = lieBracketVexel u (lieBracketVexel v w) -- [R, [G, B]] = [R, R] = 0
       j2 = lieBracketVexel v (lieBracketVexel w u) -- [G, [B, R]] = [G, G] = 0
       j3 = lieBracketVexel w (lieBracketVexel u v) -- [B, [R, G]] = [B, B] = 0

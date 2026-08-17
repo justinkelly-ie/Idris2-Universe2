@@ -126,14 +126,14 @@ public export
 auditPermutationMaxelActionProof : Bool
 auditPermutationMaxelActionProof =
   let perm = [2, 3, 1]
-      v = MkVexel [ (MkSingleton 1, intToBoxInt 10)
-                  , (MkSingleton 2, intToBoxInt 20)
-                  , (MkSingleton 3, intToBoxInt 30)
+      v = MkVexel [ (MkUnixel 1, intToBoxInt 10)
+                  , (MkUnixel 2, intToBoxInt 20)
+                  , (MkUnixel 3, intToBoxInt 30)
                   ]
       vPerm = permuteVexel perm v
-  in lookupSingleton (MkSingleton 1) vPerm == intToBoxInt 20 &&
-     lookupSingleton (MkSingleton 2) vPerm == intToBoxInt 30 &&
-     lookupSingleton (MkSingleton 3) vPerm == intToBoxInt 10
+  in lookupUnixel (MkUnixel 1) vPerm == intToBoxInt 20 &&
+     lookupUnixel (MkUnixel 2) vPerm == intToBoxInt 30 &&
+     lookupUnixel (MkUnixel 3) vPerm == intToBoxInt 10
 
 ||| Compile-time macro verifying permutation action on Vexels via permutation Maxels.
 export

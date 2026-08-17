@@ -2,7 +2,7 @@ module Math.WilsonPolyhedra
 
 import Core.BoxInt
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.QuantumTransition
 import Compound.HadronicConfinement
 import Geometry.LatticeTopology

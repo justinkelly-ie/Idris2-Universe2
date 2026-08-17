@@ -1,4 +1,4 @@
-module Core.SingFraction
+module Core.UnixelFraction
 
 import Core.BoxInt
 import Core.VexelMaxel
@@ -10,148 +10,148 @@ import Core.Multiset
 -- 1. WILDBERGER'S FRACTIONAL MULTISETS & SINGLETON DENOMINATORS
 ------------------------------------------------------------------------
 
-||| A Fractional Multiset with a multiset or token numerator and a strictly non-zero Singleton denominator.
+||| A Fractional Multiset with a multiset or token numerator and a strictly non-zero Unixel denominator.
 ||| Establishes compile-time division-by-zero protection.
 public export
-record FractionalMultiset (numType : Type) where
-  constructor OverSingleton
+record FractionalBox (numType : Type) where
+  constructor OverUnixel
   numerator   : numType
-  denominator : Singleton
+  denominator : Unixel
 
-||| Smart constructor for FractionalMultiset ensuring non-zero denominator.
+||| Smart constructor for FractionalBox ensuring non-zero denominator.
 public export
-mkFractionalMultiset : numType -> Nat -> FractionalMultiset numType
-mkFractionalMultiset num Z     = OverSingleton num (MkSingleton 1)
-mkFractionalMultiset num (S k) = OverSingleton num (MkSingleton (S k))
+mkFractionalBox : numType -> Nat -> FractionalBox numType
+mkFractionalBox num Z     = OverUnixel num (MkUnixel 1)
+mkFractionalBox num (S k) = OverUnixel num (MkUnixel (S k))
 
 ------------------------------------------------------------------------
 -- 2. SING FRACTION (EXACT RATIONAL TALLIES)
 ------------------------------------------------------------------------
 
-||| A SingFraction represents an exact rational observable Q = N / [D],
-||| where N is a signed BoxInt numerator and [D] is a non-zero Singleton denominator.
+||| A UnixelFraction represents an exact rational observable Q = N / [D],
+||| where N is a signed BoxInt numerator and [D] is a non-zero Unixel denominator.
 public export
-record SingFraction where
-  constructor MkSingFraction
+record UnixelFraction where
+  constructor MkUnixelFraction
   num : BoxInt
-  den : Singleton
+  den : Unixel
 
-||| Smart constructor building a SingFraction with clamped non-zero denominator.
+||| Smart constructor building a UnixelFraction with clamped non-zero denominator.
 public export
-mkSingFraction : BoxInt -> Nat -> SingFraction
-mkSingFraction n Z     = MkSingFraction n (MkSingleton 1)
-mkSingFraction n (S k) = MkSingFraction n (MkSingleton (S k))
+mkUnixelFraction : BoxInt -> Nat -> UnixelFraction
+mkUnixelFraction n Z     = MkUnixelFraction n (MkUnixel 1)
+mkUnixelFraction n (S k) = MkUnixelFraction n (MkUnixel (S k))
 
 ||| Canonical zero fraction: 0 / [1]
 public export
-zeroSingFraction : SingFraction
-zeroSingFraction = mkSingFraction (intToBoxInt 0) 1
+zeroUnixelFraction : UnixelFraction
+zeroUnixelFraction = mkUnixelFraction (intToBoxInt 0) 1
 
 ||| Canonical unit fraction: 1 / [1]
 public export
-unitSingFraction : SingFraction
-unitSingFraction = mkSingFraction (intToBoxInt 1) 1
+unitUnixelFraction : UnixelFraction
+unitUnixelFraction = mkUnixelFraction (intToBoxInt 1) 1
 
 ||| Addition of SingFractions: (n1/d1) + (n2/d2) = (n1*d2 + n2*d1) / (d1*d2)
 public export
-addSingFraction : SingFraction -> SingFraction -> SingFraction
-addSingFraction (MkSingFraction n1 (MkSingleton d1)) (MkSingFraction n2 (MkSingleton d2)) =
+addUnixelFraction : UnixelFraction -> UnixelFraction -> UnixelFraction
+addUnixelFraction (MkUnixelFraction n1 (MkUnixel d1)) (MkUnixelFraction n2 (MkUnixel d2)) =
   let d1Int = natToBoxInt d1
       d2Int = natToBoxInt d2
       newNum = (n1 * d2Int) + (n2 * d1Int)
       newDen = d1 * d2
-  in mkSingFraction newNum newDen
+  in mkUnixelFraction newNum newDen
 
 ||| Subtraction of SingFractions: (n1/d1) - (n2/d2) = (n1*d2 - n2*d1) / (d1*d2)
 public export
-subSingFraction : SingFraction -> SingFraction -> SingFraction
-subSingFraction (MkSingFraction n1 (MkSingleton d1)) (MkSingFraction n2 (MkSingleton d2)) =
+subUnixelFraction : UnixelFraction -> UnixelFraction -> UnixelFraction
+subUnixelFraction (MkUnixelFraction n1 (MkUnixel d1)) (MkUnixelFraction n2 (MkUnixel d2)) =
   let d1Int = natToBoxInt d1
       d2Int = natToBoxInt d2
       newNum = (n1 * d2Int) - (n2 * d1Int)
       newDen = d1 * d2
-  in mkSingFraction newNum newDen
+  in mkUnixelFraction newNum newDen
 
 ||| Multiplication of SingFractions: (n1/d1) * (n2/d2) = (n1*n2) / (d1*d2)
 public export
-mulSingFraction : SingFraction -> SingFraction -> SingFraction
-mulSingFraction (MkSingFraction n1 (MkSingleton d1)) (MkSingFraction n2 (MkSingleton d2)) =
+mulUnixelFraction : UnixelFraction -> UnixelFraction -> UnixelFraction
+mulUnixelFraction (MkUnixelFraction n1 (MkUnixel d1)) (MkUnixelFraction n2 (MkUnixel d2)) =
   let newNum = n1 * n2
       newDen = d1 * d2
-  in mkSingFraction newNum newDen
+  in mkUnixelFraction newNum newDen
 
 ||| Cross-multiplication equivalence between two SingFractions: n1 * d2 == n2 * d1.
 public export
-rationalEquiv : SingFraction -> SingFraction -> Bool
-rationalEquiv (MkSingFraction n1 (MkSingleton d1)) (MkSingFraction n2 (MkSingleton d2)) =
+rationalEquiv : UnixelFraction -> UnixelFraction -> Bool
+rationalEquiv (MkUnixelFraction n1 (MkUnixel d1)) (MkUnixelFraction n2 (MkUnixel d2)) =
   let d1Int = natToBoxInt d1
       d2Int = natToBoxInt d2
   in (n1 * d2Int) == (n2 * d1Int)
 
-||| Negation of a SingFraction.
+||| Negation of a UnixelFraction.
 public export
-negateSingFraction : SingFraction -> SingFraction
-negateSingFraction (MkSingFraction n d) = MkSingFraction (-n) d
+negateUnixelFraction : UnixelFraction -> UnixelFraction
+negateUnixelFraction (MkUnixelFraction n d) = MkUnixelFraction (-n) d
 
-||| Scalar multiplication of a SingFraction by a BoxInt.
+||| Scalar multiplication of a UnixelFraction by a BoxInt.
 public export
-scaleSingFraction : BoxInt -> SingFraction -> SingFraction
-scaleSingFraction s (MkSingFraction n d) = MkSingFraction (s * n) d
+scaleUnixelFraction : BoxInt -> UnixelFraction -> UnixelFraction
+scaleUnixelFraction s (MkUnixelFraction n d) = MkUnixelFraction (s * n) d
 
 ||| Inversion / Division: (n1/d1) / (n2/d2) where n2 != 0.
 public export
-divSingFraction : SingFraction -> SingFraction -> SingFraction
-divSingFraction (MkSingFraction n1 (MkSingleton d1)) (MkSingFraction n2 (MkSingleton d2)) =
+divSingFraction : UnixelFraction -> UnixelFraction -> UnixelFraction
+divSingFraction (MkUnixelFraction n1 (MkUnixel d1)) (MkUnixelFraction n2 (MkUnixel d2)) =
   let d2Int = natToBoxInt d2
       newNum = n1 * d2Int
       denomAbs = unwrapBox (if n2 >= 0 then n2 else -n2)
       dDenom = if denomAbs == 0 then 1 else integerToNat denomAbs
       signAdj = if n2 < 0 then -1 else 1
-  in mkSingFraction (newNum * intToBoxInt signAdj) (d1 * dDenom)
+  in mkUnixelFraction (newNum * intToBoxInt signAdj) (d1 * dDenom)
 
 ||| Rational Equality via cross-multiplication: n1 * d2 == n2 * d1
 public export
-Eq SingFraction where
-  (MkSingFraction n1 (MkSingleton d1)) == (MkSingFraction n2 (MkSingleton d2)) =
+Eq UnixelFraction where
+  (MkUnixelFraction n1 (MkUnixel d1)) == (MkUnixelFraction n2 (MkUnixel d2)) =
     (n1 * natToBoxInt d2) == (n2 * natToBoxInt d1)
 
 public export
-Show SingFraction where
-  show (MkSingFraction n (MkSingleton d)) = show n ++ "/" ++ show (MkSingleton d)
+Show UnixelFraction where
+  show (MkUnixelFraction n (MkUnixel d)) = show n ++ "/" ++ show (MkUnixel d)
 
 ------------------------------------------------------------------------
 -- 3. QUANTITATIVE TYPE THEORY (QTT) LINEAR OPERATIONS
 ------------------------------------------------------------------------
 
-||| Pure linear consumption of a SingFraction token.
+||| Pure linear consumption of a UnixelFraction token.
 ||| Guarantees exactly one usage with zero leakage.
 public export
-linearConsumeSingFraction : (1 frac : SingFraction) -> SingFraction
-linearConsumeSingFraction (MkSingFraction n d) = MkSingFraction n d
+linearConsumeSingFraction : (1 frac : UnixelFraction) -> UnixelFraction
+linearConsumeSingFraction (MkUnixelFraction n d) = MkUnixelFraction n d
 
 ||| Linear scaling of a fractional multiset by a linear BoxInt factor.
 public export
-linearScaleSingFraction : (1 frac : SingFraction) -> (1 scale : BoxInt) -> SingFraction
-linearScaleSingFraction (MkSingFraction (MkBoxInt n) d) (MkBoxInt s) =
-  MkSingFraction (MkBoxInt (s * n)) d
+linearScaleSingFraction : (1 frac : UnixelFraction) -> (1 scale : BoxInt) -> UnixelFraction
+linearScaleSingFraction (MkUnixelFraction (MkBoxInt n) d) (MkBoxInt s) =
+  MkUnixelFraction (MkBoxInt (s * n)) d
 
-||| Linearly split a SingFraction into two parts according to an integer partition p.
+||| Linearly split a UnixelFraction into two parts according to an integer partition p.
 ||| Conserves total numerator energy: p + (n - p) == n.
 public export
-linearSplitSingFraction : (1 frac : SingFraction) -> (p : BoxInt) -> (SingFraction, SingFraction)
-linearSplitSingFraction (MkSingFraction (MkBoxInt n) d) (MkBoxInt p) =
-  (MkSingFraction (MkBoxInt p) d, MkSingFraction (MkBoxInt (n - p)) d)
+linearSplitSingFraction : (1 frac : UnixelFraction) -> (p : BoxInt) -> (UnixelFraction, UnixelFraction)
+linearSplitSingFraction (MkUnixelFraction (MkBoxInt n) d) (MkBoxInt p) =
+  (MkUnixelFraction (MkBoxInt p) d, MkUnixelFraction (MkBoxInt (n - p)) d)
 
 ------------------------------------------------------------------------
 -- 4. CONTINUED FRACTIONS & OPTIMAL RATIONAL CONVERGENTS
 ------------------------------------------------------------------------
 
-||| Decomposes an exact SingFraction into a list of continued fraction coefficients [a0; a1, a2, ...]:
+||| Decomposes an exact UnixelFraction into a list of continued fraction coefficients [a0; a1, a2, ...]:
 ||| q = a0 + 1 / (a1 + 1 / (a2 + ...))
 public export
-toContinuedFraction : (fuel : Nat) -> SingFraction -> List BoxInt
+toContinuedFraction : (fuel : Nat) -> UnixelFraction -> List BoxInt
 toContinuedFraction Z _ = []
-toContinuedFraction (S fuel) (MkSingFraction n (MkSingleton d)) =
+toContinuedFraction (S fuel) (MkUnixelFraction n (MkUnixel d)) =
   let dInt = natToBoxInt d
   in if d == 0
        then []
@@ -162,27 +162,27 @@ toContinuedFraction (S fuel) (MkSingFraction n (MkSingleton d)) =
               then [a0]
               else
                 let remNat = integerToNat (unwrapBox (if remVal >= 0 then remVal else -remVal))
-                    inverted = MkSingFraction (if remVal >= 0 then dInt else -dInt) (MkSingleton remNat)
+                    inverted = MkUnixelFraction (if remVal >= 0 then dInt else -dInt) (MkUnixel remNat)
                 in a0 :: toContinuedFraction fuel inverted
 
-||| Reconstructs an exact SingFraction from a list of continued fraction coefficients:
+||| Reconstructs an exact UnixelFraction from a list of continued fraction coefficients:
 ||| fromContinuedFraction [a0, a1, a2, ...] = a0 + 1 / (a1 + 1 / ...)
 public export
-fromContinuedFraction : List BoxInt -> SingFraction
-fromContinuedFraction [] = zeroSingFraction
-fromContinuedFraction [a] = mkSingFraction a 1
+fromContinuedFraction : List BoxInt -> UnixelFraction
+fromContinuedFraction [] = zeroUnixelFraction
+fromContinuedFraction [a] = mkUnixelFraction a 1
 fromContinuedFraction (a :: rest) =
   let restFrac = fromContinuedFraction rest
-      oneOverRest = divSingFraction unitSingFraction restFrac
-      aFrac = mkSingFraction a 1
-  in addSingFraction aFrac oneOverRest
+      oneOverRest = divSingFraction unitUnixelFraction restFrac
+      aFrac = mkUnixelFraction a 1
+  in addUnixelFraction aFrac oneOverRest
 
 ||| Audits that Continued Fraction decomposition and reconstruction preserve exact rational equivalence:
 ||| For q = 43 / 19, continued fraction is [2; 3, 1, 4] (2 + 1/(3 + 1/(1 + 1/4)) = 2 + 1/(3 + 4/5) = 2 + 5/19 = 43/19).
 public export
 auditContinuedFractionProof : Bool
 auditContinuedFractionProof =
-  let q = mkSingFraction (intToBoxInt 43) 19
+  let q = mkUnixelFraction (intToBoxInt 43) 19
       cf = toContinuedFraction 10 q
       reconstructed = fromContinuedFraction cf
   in cf == [intToBoxInt 2, intToBoxInt 3, intToBoxInt 1, intToBoxInt 4] &&
@@ -210,23 +210,23 @@ Show SternBrocotBranch where
 ||| Computes the Mediant of two positive fractions:
 ||| (n1 / d1) (+) (n2 / d2) = (n1 + n2) / (d1 + d2).
 public export
-mediantSingFraction : SingFraction -> SingFraction -> SingFraction
-mediantSingFraction (MkSingFraction n1 (MkSingleton d1)) (MkSingFraction n2 (MkSingleton d2)) =
-  MkSingFraction (n1 + n2) (MkSingleton (d1 + d2))
+mediantSingFraction : UnixelFraction -> UnixelFraction -> UnixelFraction
+mediantSingFraction (MkUnixelFraction n1 (MkUnixel d1)) (MkUnixelFraction n2 (MkUnixel d2)) =
+  MkUnixelFraction (n1 + n2) (MkUnixel (d1 + d2))
 
-||| Computes the unique Stern-Brocot binary path for any positive SingFraction.
+||| Computes the unique Stern-Brocot binary path for any positive UnixelFraction.
 public export
-toSternBrocotPath : (fuel : Nat) -> SingFraction -> List SternBrocotBranch
+toSternBrocotPath : (fuel : Nat) -> UnixelFraction -> List SternBrocotBranch
 toSternBrocotPath fuel target =
-  helper fuel (MkSingFraction (intToBoxInt 0) (MkSingleton 1)) (MkSingFraction (intToBoxInt 1) (MkSingleton 0)) target
+  helper fuel (MkUnixelFraction (intToBoxInt 0) (MkUnixel 1)) (MkUnixelFraction (intToBoxInt 1) (MkUnixel 0)) target
   where
-    helper : Nat -> SingFraction -> SingFraction -> SingFraction -> List SternBrocotBranch
+    helper : Nat -> UnixelFraction -> UnixelFraction -> UnixelFraction -> List SternBrocotBranch
     helper Z _ _ _ = []
     helper (S f) l r q =
       let m = mediantSingFraction l r
           -- Compare q with m via cross multiplication: n_q * d_m vs n_m * d_q
-          (MkSingFraction nq (MkSingleton dq)) = q
-          (MkSingFraction nm (MkSingleton dm)) = m
+          (MkUnixelFraction nq (MkUnixel dq)) = q
+          (MkUnixelFraction nm (MkUnixel dm)) = m
           crossDiff = (nq * natToBoxInt dm) - (nm * natToBoxInt dq)
       in if unwrapBox crossDiff == 0
            then []
@@ -234,13 +234,13 @@ toSternBrocotPath fuel target =
                   then BranchL :: helper f l m q
                   else BranchR :: helper f m r q
 
-||| Reconstructs the exact SingFraction at the end of a Stern-Brocot binary path.
+||| Reconstructs the exact UnixelFraction at the end of a Stern-Brocot binary path.
 public export
-fromSternBrocotPath : List SternBrocotBranch -> SingFraction
+fromSternBrocotPath : List SternBrocotBranch -> UnixelFraction
 fromSternBrocotPath path =
-  helper path (MkSingFraction (intToBoxInt 0) (MkSingleton 1)) (MkSingFraction (intToBoxInt 1) (MkSingleton 0))
+  helper path (MkUnixelFraction (intToBoxInt 0) (MkUnixel 1)) (MkUnixelFraction (intToBoxInt 1) (MkUnixel 0))
   where
-    helper : List SternBrocotBranch -> SingFraction -> SingFraction -> SingFraction
+    helper : List SternBrocotBranch -> UnixelFraction -> UnixelFraction -> UnixelFraction
     helper [] l r = mediantSingFraction l r
     helper (BranchL :: rest) l r =
       let m = mediantSingFraction l r
@@ -253,7 +253,7 @@ fromSternBrocotPath path =
 public export
 auditSternBrocotProof : Bool
 auditSternBrocotProof =
-  let q = mkSingFraction (intToBoxInt 5) 3
+  let q = mkUnixelFraction (intToBoxInt 5) 3
       path = toSternBrocotPath 10 q
       reconstructed = fromSternBrocotPath path
   in path == [BranchR, BranchL, BranchR] && reconstructed == q
@@ -265,7 +265,7 @@ auditSternBrocotProof =
 ||| Hehner Bit Scale: The exact binary path-depth on the Stern-Brocot state tree.
 ||| Replaces irrational logarithms b = -log2(c) with constructive tree depth.
 public export
-hehnerBitDepth : (fuel : Nat) -> SingFraction -> Nat
+hehnerBitDepth : (fuel : Nat) -> UnixelFraction -> Nat
 hehnerBitDepth fuel frac = length (toSternBrocotPath fuel frac)
 
 ||| Hehner State Scale: Computes state cardinality s = 2^b from integer bit depth b.
@@ -276,13 +276,13 @@ hehnerBitsToStates (S k) = 2 * hehnerBitsToStates k
 
 ||| Hehner Chance Scale: Computes reciprocal unit chance c = 1 / [s] from state count s.
 public export
-hehnerStatesToChance : Nat -> SingFraction
-hehnerStatesToChance s = mkSingFraction (intToBoxInt 1) (if s == 0 then 1 else s)
+hehnerStatesToChance : Nat -> UnixelFraction
+hehnerStatesToChance s = mkUnixelFraction (intToBoxInt 1) (if s == 0 then 1 else s)
 
-||| Hehner Tally Chance: Converts a discrete tally over total states to an exact SingFraction.
+||| Hehner Tally Chance: Converts a discrete tally over total states to an exact UnixelFraction.
 public export
-hehnerTallyToChance : (tally : Nat) -> (totalStates : Nat) -> SingFraction
-hehnerTallyToChance t sTot = mkSingFraction (natToBoxInt t) (if sTot == 0 then 1 else sTot)
+hehnerTallyToChance : (tally : Nat) -> (totalStates : Nat) -> UnixelFraction
+hehnerTallyToChance t sTot = mkUnixelFraction (natToBoxInt t) (if sTot == 0 then 1 else sTot)
 
 
 ||| Audits Hehner Scale Conversion:
@@ -295,47 +295,47 @@ auditHehnerScaleConversionProof : Bool
 auditHehnerScaleConversionProof =
   let deStates = hehnerBitsToStates 7
       deChance = hehnerStatesToChance deStates
-      sbBits = hehnerBitDepth 10 (mkSingFraction (intToBoxInt 5) 3)
+      sbBits = hehnerBitDepth 10 (mkUnixelFraction (intToBoxInt 5) 3)
       vmChance = hehnerTallyToChance 27 210
       deCosmoChance = hehnerTallyToChance 128 210
       dmChance = hehnerTallyToChance 55 210
-      totalChance = addSingFraction (addSingFraction vmChance deCosmoChance) dmChance
+      totalChance = addUnixelFraction (addUnixelFraction vmChance deCosmoChance) dmChance
   in deStates == 128 &&
-     deChance == mkSingFraction (intToBoxInt 1) 128 &&
+     deChance == mkUnixelFraction (intToBoxInt 1) 128 &&
      sbBits == 3 &&
-     rationalEquiv totalChance unitSingFraction
+     rationalEquiv totalChance unitUnixelFraction
 
 ------------------------------------------------------------------------
 -- 7. STRICTLY MULTISET-BASED HEHNER SCALE & BORN RULE
 ------------------------------------------------------------------------
 
 ||| Evaluates the exact multiset chance of an event / item target inside a total ensemble Omega:
-||| c(target, Omega) = lookupMSet(target, Omega) / [ totalMass(Omega) ]
+||| c(target, Omega) = lookupBox(target, Omega) / [ totalMass(Omega) ]
 public export
-multisetChance : Eq a => a -> MSet a -> SingFraction
+multisetChance : Eq a => a -> Box a -> UnixelFraction
 multisetChance target omega =
-  let w = lookupMSet target omega
-      totVal = unwrapBox (totalMassMSet omega)
+  let w = lookupBox target omega
+      totVal = unwrapBox (totalMassBox omega)
       d = if totVal <= 0 then 1 else integerToNat totVal
-  in mkSingFraction w d
+  in mkUnixelFraction w d
 
 ||| Multiset Born Rule: Given a quantum state Vexel v = sum c_k [k],
 ||| the measurement probability of singleton basis state [target] is:
-||| P([target]) = lookupSingleton([target], v) / [ totalMass(v) ]
+||| P([target]) = lookupUnixel([target], v) / [ totalMass(v) ]
 public export
-multisetBornRule : Singleton -> Vexel -> SingFraction
+multisetBornRule : Unixel -> Vexel -> UnixelFraction
 multisetBornRule target v =
-  let w = lookupSingleton target v
+  let w = lookupUnixel target v
       totVal = unwrapBox (totalVexelMass v)
       d = if totVal <= 0 then 1 else integerToNat totVal
-  in mkSingFraction w d
+  in mkUnixelFraction w d
 
 
 ||| Converts a Stern-Brocot path into an exact Multiset of decision branch tokens (Left and Right).
 public export
-hehnerMultisetBitBag : List SternBrocotBranch -> MSet SternBrocotBranch
+hehnerMultisetBitBag : List SternBrocotBranch -> Box SternBrocotBranch
 hehnerMultisetBitBag branches =
-  foldl (\acc, b => insertMSet b (intToBoxInt 1) acc) emptyMSet branches
+  foldl (\acc, b => insertBox b (intToBoxInt 1) acc) emptyBox branches
 
 ||| Audits the Multiset Born Rule and Multiset Hehner Triad:
 ||| 1. Quantum state v = 3 [1] + 7 [2] (total mass 10).
@@ -345,17 +345,17 @@ hehnerMultisetBitBag branches =
 public export
 auditMultisetHehnerTriadProof : Bool
 auditMultisetHehnerTriadProof =
-  let psi = MkVexel [(MkSingleton 1, intToBoxInt 3), (MkSingleton 2, intToBoxInt 7)]
-      p1 = multisetBornRule (MkSingleton 1) psi
-      p2 = multisetBornRule (MkSingleton 2) psi
-      totalP = addSingFraction p1 p2
-      path = toSternBrocotPath 10 (mkSingFraction (intToBoxInt 5) 3)
+  let psi = MkVexel [(MkUnixel 1, intToBoxInt 3), (MkUnixel 2, intToBoxInt 7)]
+      p1 = multisetBornRule (MkUnixel 1) psi
+      p2 = multisetBornRule (MkUnixel 2) psi
+      totalP = addUnixelFraction p1 p2
+      path = toSternBrocotPath 10 (mkUnixelFraction (intToBoxInt 5) 3)
       bitBag = hehnerMultisetBitBag path
-      rCount = lookupMSet BranchR bitBag
-      lCount = lookupMSet BranchL bitBag
-  in p1 == mkSingFraction (intToBoxInt 3) 10 &&
-     p2 == mkSingFraction (intToBoxInt 7) 10 &&
-     rationalEquiv totalP unitSingFraction &&
+      rCount = lookupBox BranchR bitBag
+      lCount = lookupBox BranchL bitBag
+  in p1 == mkUnixelFraction (intToBoxInt 3) 10 &&
+     p2 == mkUnixelFraction (intToBoxInt 7) 10 &&
+     rationalEquiv totalP unitUnixelFraction &&
      rCount == intToBoxInt 2 &&
      lCount == intToBoxInt 1
 
@@ -368,22 +368,22 @@ auditMultisetHehnerTriadProof =
 ||| Compactness(P, Q) = |P ∩ Q| / [ |P ∪ Q| ]
 ||| Measures model predictive intelligence: 1/1 = perfect compression, 0/1 = complete failure.
 public export
-multisetCompactnessRatio : Eq a => (envP : MSet a) -> (modelQ : MSet a) -> SingFraction
+multisetCompactnessRatio : Eq a => (envP : Box a) -> (modelQ : Box a) -> UnixelFraction
 multisetCompactnessRatio envP modelQ =
-  let interMass = multisetIntersectionMass envP modelQ
-      unionMass = multisetUnionMass envP modelQ
+  let interMass = boxIntersectionMass envP modelQ
+      unionMass = boxUnionMass envP modelQ
       denom = if unionMass == 0 then 1 else unionMass
-  in mkSingFraction (natToBoxInt interMass) denom
+  in mkUnixelFraction (natToBoxInt interMass) denom
 
 ||| Evaluates the exact Multiset Jaccard Distance (Dissimilarity Divergence) in [0, 1]:
 ||| JaccardDistance(P, Q) = |P Δ Q| / [ |P ∪ Q| ]
 public export
-multisetJaccardDistance : Eq a => (envP : MSet a) -> (modelQ : MSet a) -> SingFraction
+multisetJaccardDistance : Eq a => (envP : Box a) -> (modelQ : Box a) -> UnixelFraction
 multisetJaccardDistance envP modelQ =
-  let diffMass = multisetSymmetricDifference envP modelQ
-      unionMass = multisetUnionMass envP modelQ
+  let diffMass = boxSymmetricDifference envP modelQ
+      unionMass = boxUnionMass envP modelQ
       denom = if unionMass == 0 then 1 else unionMass
-  in mkSingFraction (natToBoxInt diffMass) denom
+  in mkUnixelFraction (natToBoxInt diffMass) denom
 
 ||| Audits that Multiset Compactness Ratio and Jaccard Distance:
 ||| 1. Compactness(P, P) == 1 / 1 (100% predictive intelligence).
@@ -393,16 +393,16 @@ multisetJaccardDistance envP modelQ =
 public export
 auditMultisetCompactnessRatioProof : Bool
 auditMultisetCompactnessRatioProof =
-  let p = MkMSet [(1, intToBoxInt 10), (2, intToBoxInt 5)]
-      q = MkMSet [(1, intToBoxInt 10), (2, intToBoxInt 5), (3, intToBoxInt 15)]
+  let p = MkBox [(1, intToBoxInt 10), (2, intToBoxInt 5)]
+      q = MkBox [(1, intToBoxInt 10), (2, intToBoxInt 5), (3, intToBoxInt 15)]
       compSelf = multisetCompactnessRatio p p
       distSelf = multisetJaccardDistance p p
       compPQ = multisetCompactnessRatio p q
       distPQ = multisetJaccardDistance p q
-  in compSelf == unitSingFraction &&
-     distSelf == zeroSingFraction &&
-     compPQ == mkSingFraction (intToBoxInt 15) 30 &&
-     distPQ == mkSingFraction (intToBoxInt 15) 30
+  in compSelf == unitUnixelFraction &&
+     distSelf == zeroUnixelFraction &&
+     compPQ == mkUnixelFraction (intToBoxInt 15) 30 &&
+     distPQ == mkUnixelFraction (intToBoxInt 15) 30
 
 
 

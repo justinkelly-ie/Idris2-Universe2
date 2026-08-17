@@ -15,8 +15,8 @@
 Traditional computational physics relies on hardcoded dimensions, fixed background metric assertions, and continuous approximations. `Idris2-Universe2` replaces these assumptions with a **self-compiling, un-hardcoded, and scale-invariant multiset architecture**:
 
 1. **The Universal Mapping**: Dependent Types model physical laws, QTT Multiplicity `1` enforces thermodynamic conservation, Type Erasure `0` drops cosmic scaffolding, and Elaborator Reflection (`%runElab`) acts as a second-order cybernetic feedback engine.
-2. **Numbers as Physical Containers**: Natural numbers, multisets, and polynumbers are constructed purely as inductive tallies of empty boxes (`MSetSpec`, `Polynumber`, `WildNat`).
-3. **Singletons, Pixels, Voxels, Vexels, Maxels & Boxels**: Replaces rigid coordinate tensors with Wildberger's multiset linear algebra hierarchy (`Singleton` $[n]$, `Pixel` $[i, j]$, `Voxel` $[x, y, z]$, `Vexel` 1D, `Maxel` 2D, `Boxel` 3D).
+2. **Numbers as Physical Containers**: Natural numbers, multisets, and polynumbers are constructed purely as inductive tallies of empty boxes (`BoxSpec`, `Polynumber`, `WildNat`).
+3. **Unixels, Pixels, Voxels, Vexels, Maxels & Boxels**: Replaces rigid coordinate tensors with Wildberger's multiset linear algebra hierarchy (`Unixel` $[n]$, `Pixel` $[i, j]$, `Voxel` $[x, y, z]$, `Vexel` 1D, `Maxel` 2D, `Boxel` 3D).
 4. **The 27-State Ternary Spacetime Multiverse**: Replaces arbitrary pre-declared geometries by permuting the fundamental 3-bit alphabet $\{-1, 0, 1\}$ (Identity, Presence, Parity) across symmetric Maxel metrics.
 5. **Dynamic `UniverseState`**: Eliminates magic numbers (`27`, `128`, `55`) by tracking dimensions as dependent parameters derived dynamically from prior epoch states.
 6. **Bootstrapping Epoch 1 to 37**: Simulates lattice expansion ($1\times 1 \to 2\times 2 \to 3\times 3$), 137-stage cycles, and contraction/folding where Dark Matter acts as the accumulated historical error ledger ($55 \to 56$ states).
@@ -32,7 +32,7 @@ Traditional computational physics relies on hardcoded dimensions, fixed backgrou
 | [`Core.BoxInt`](src/Core/BoxInt.idr) | Box arithmetic wrapper for exact signed integer scalars. |
 | [`Core.Multiset`](src/Core/Multiset.idr) | Type-indexed inductive multisets and reflected Box Arithmetic. |
 | [`Core.Polynumber`](src/Core/Polynumber.idr) | Nested polynumber multisets, Spread Polynumbers $S_n(s)$, Goh Factorization, and cyclotomic division. |
-| [`Core.VexelMaxel`](src/Core/VexelMaxel.idr) | Singletons, Pixels, Voxels, Vexels (1D), Maxels (2D), and Boxels (3D volume tensors). |
+| [`Core.VexelMaxel`](src/Core/VexelMaxel.idr) | Unixels, Pixels, Voxels, Vexels (1D), Maxels (2D), and Boxels (3D volume tensors). |
 | [`Math.Infinitesimal`](src/Math/Infinitesimal.idr) | Nilpotent dual number matrix ($\epsilon^2 = 0$) for exact discrete calculus. |
 | [`Math.QuantumTransition`](src/Math/QuantumTransition.idr) | Discrete quantum state vectors, unitary S-matrices, Born probability conservation, and Wilson loop holonomies. |
 | [`Math.WilsonPolyhedra`](src/Math/WilsonPolyhedra.idr) | 3D Wilson Polyhedra cubic holonomies, non-Abelian $\mathrm{SU}(3)$ color flux coupling, and discrete Bianchi closure. |

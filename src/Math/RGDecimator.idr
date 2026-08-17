@@ -2,10 +2,12 @@ module Math.RGDecimator
 
 import Core.BoxInt
 import Core.Multiset
+import Core.Polynumber
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.FourGeometries
 import Data.List
+import Data.Vect
 
 %default total
 
@@ -95,3 +97,67 @@ auditMultiBlockTopologicalFixedPointProof =
       m2 = decimate b2
       cMacro = decimatedChernNumber [m1, m2]
   in unwrapBox cMacro == 7
+
+------------------------------------------------------------------------
+-- 5. MULTI-SCALE CARET COMPOSITION OF RG TRANSFORMATIONS
+------------------------------------------------------------------------
+
+||| A scale transformation operator represented as a scale monomial α^s.
+public export
+rgScaleOperator : Nat -> Polynumber
+rgScaleOperator s = monomialPolynumber 1 s
+
+||| Caret composition of successive RG scaling steps:
+||| rgScaleOperator s1 ^ rgScaleOperator s2 = rgScaleOperator (s1 * s2)
+public export
+composeRGScaleSteps : Polynumber -> Polynumber -> Polynumber
+composeRGScaleSteps = caretPolynumber
+
+||| Audits that successive 2x and 3x RG scale decimation compose under Caret to 6x:
+||| (1 α^2) ^ (1 α^3) = 1 α^6.
+public export
+auditRGScaleCaretCompositionProof : Bool
+auditRGScaleCaretCompositionProof =
+  let s2 = rgScaleOperator 2
+      s3 = rgScaleOperator 3
+      s6 = composeRGScaleSteps s2 s3
+  in polynumberDegree s6 == 6 &&
+     unwrapBox (summationPolynumber s6) == 1
+
+------------------------------------------------------------------------
+-- 6. DOUBLY STOCHASTIC RG DECIMATION KERNELS (CH. 27)
+------------------------------------------------------------------------
+
+||| A 4x4 Magic Maxel RG Decimation Kernel (Sigma = 4):
+||| Governs discrete token redistribution between 4 micro-cells and 4 macro-channels.
+public export
+rgDecimationMagicMaxel : MagicMaxel 4
+rgDecimationMagicMaxel =
+  MkMagicMaxel [ [1, 2, 0, 1]
+               , [2, 0, 1, 1]
+               , [0, 1, 2, 1]
+               , [1, 1, 1, 1]
+               ]
+
+||| Applies the 4x4 Doubly Stochastic RG Decimation Kernel to a 4-channel microstate:
+public export
+applyRGMagicDecimation : Vect 4 Nat -> Vect 4 Nat
+applyRGMagicDecimation = applyMagicMaxel rgDecimationMagicMaxel
+
+||| Audits Doubly Stochastic RG Decimation Kernel properties:
+||| 1. Uniform row & col line sum Sigma = 4.
+||| 2. Acts on microstate [2, 3, 1, 4] (sum = 10) producing output state [12, 9, 9, 10] (sum = 40 = 4 * 10).
+||| 3. Preserves discrete information tokens without loss or dissipation.
+public export
+auditRGMagicMaxelDecimationProof : Bool
+auditRGMagicMaxelDecimationProof =
+  let m4 = rgDecimationMagicMaxel
+      vIn : Vect 4 Nat = [2, 3, 1, 4]
+      vOut = applyRGMagicDecimation vIn
+      inSum = foldl (+) 0 vIn
+      outSum = foldl (+) 0 vOut
+  in isMagicMaxel m4 4 &&
+     vOut == [12, 9, 9, 10] &&
+     inSum == 10 &&
+     outSum == 40 &&
+     outSum == 4 * inSum

@@ -28,48 +28,190 @@ Show Multiplicity where
 ||| - Leaf: An empty box [] (Base zero token).
 ||| - Node xs: A parent box containing a collection of child boxes [x1, x2, ...].
 public export
-data MSetSpec : Type where
-  Leaf : MSetSpec
-  Node : {n : Nat} -> Vect n MSetSpec -> MSetSpec
+data BoxSpec : Type where
+  Leaf : BoxSpec
+  Node : {n : Nat} -> Vect n BoxSpec -> BoxSpec
 
 mutual
   public export
-  eqMSetSpec : MSetSpec -> MSetSpec -> Bool
-  eqMSetSpec Leaf Leaf = True
-  eqMSetSpec (Node {n=n1} xs) (Node {n=n2} ys) =
+  eqBoxSpec : BoxSpec -> BoxSpec -> Bool
+  eqBoxSpec Leaf Leaf = True
+  eqBoxSpec (Node {n=n1} xs) (Node {n=n2} ys) =
     case decEq n1 n2 of
-      Yes Refl => eqSpecVect xs ys
+      Yes Refl => eqBoxSpecVect xs ys
       No _     => False
-  eqMSetSpec _ _ = False
+  eqBoxSpec _ _ = False
 
   public export
-  eqSpecVect : {n : Nat} -> Vect n MSetSpec -> Vect n MSetSpec -> Bool
-  eqSpecVect [] [] = True
-  eqSpecVect (x :: xs) (y :: ys) = eqMSetSpec x y && eqSpecVect xs ys
+  eqBoxSpecVect : {n : Nat} -> Vect n BoxSpec -> Vect n BoxSpec -> Bool
+  eqBoxSpecVect [] [] = True
+  eqBoxSpecVect (x :: xs) (y :: ys) = eqBoxSpec x y && eqBoxSpecVect xs ys
 
 public export
-Eq MSetSpec where
-  (==) = eqMSetSpec
+Eq BoxSpec where
+  (==) = eqBoxSpec
+
+mutual
+  ||| Total number of nodes and leaves in a BoxSpec tree.
+  public export
+  boxSize : BoxSpec -> Nat
+  boxSize Leaf = 1
+  boxSize (Node xs) = 1 + boxSizeVect xs
+
+  public export
+  boxSizeVect : {n : Nat} -> Vect n BoxSpec -> Nat
+  boxSizeVect [] = 0
+  boxSizeVect (x :: xs) = boxSize x + boxSizeVect xs
+
+mutual
+  ||| Maximum nesting depth of a BoxSpec tree.
+  public export
+  boxDepth : BoxSpec -> Nat
+  boxDepth Leaf = 0
+  boxDepth (Node xs) = 1 + boxDepthVect xs
+
+  public export
+  boxDepthVect : {n : Nat} -> Vect n BoxSpec -> Nat
+  boxDepthVect [] = 0
+  boxDepthVect (x :: xs) = max (boxDepth x) (boxDepthVect xs)
+
+mutual
+  ||| Canonical total ordering on BoxSpec trees:
+  ||| 1. Leaf < Node
+  ||| 2. Compare branch count
+  ||| 3. Lexicographical comparison of child trees
+  public export
+  orderBoxSpec : BoxSpec -> BoxSpec -> Ordering
+  orderBoxSpec Leaf Leaf = EQ
+  orderBoxSpec Leaf (Node _) = LT
+  orderBoxSpec (Node _) Leaf = GT
+  orderBoxSpec (Node {n=n1} xs) (Node {n=n2} ys) =
+    case compare n1 n2 of
+      LT => LT
+      GT => GT
+      EQ => case decEq n1 n2 of
+              Yes Refl => orderBoxSpecVect xs ys
+              No _     => EQ
+
+  public export
+  orderBoxSpecVect : {n : Nat} -> Vect n BoxSpec -> Vect n BoxSpec -> Ordering
+  orderBoxSpecVect [] [] = EQ
+  orderBoxSpecVect (x :: xs) (y :: ys) =
+    case orderBoxSpec x y of
+      LT => LT
+      GT => GT
+      EQ => orderBoxSpecVect xs ys
+
+public export
+Ord BoxSpec where
+  compare = orderBoxSpec
+
+||| Boolean less-than-or-equal test on BoxSpec.
+public export
+boxLTE : BoxSpec -> BoxSpec -> Bool
+boxLTE a b = case orderBoxSpec a b of
+  LT => True
+  EQ => True
+  GT => False
+
+------------------------------------------------------------------------
+-- CONTOUR WALK & DYCK WORD ISOMORPHISM (MF 240-243)
+------------------------------------------------------------------------
+
+mutual
+  ||| Encodes a BoxSpec tree as a Dyck path bitstring:
+  ||| True  = [ (descent into sub-box / open bracket)
+  ||| False = ] (ascent out of sub-box / close bracket)
+  public export
+  contourWalk : BoxSpec -> List Bool
+  contourWalk Leaf = [True, False]
+  contourWalk (Node xs) = True :: (contourWalkVect xs ++ [False])
+
+  public export
+  contourWalkVect : {n : Nat} -> Vect n BoxSpec -> List Bool
+  contourWalkVect [] = []
+  contourWalkVect (x :: xs) = contourWalk x ++ contourWalkVect xs
+
+||| Validates that a bitstring is a valid Dyck path (balanced bracket sequence).
+public export
+isDyckPath : List Bool -> Bool
+isDyckPath bits =
+  let (validPrefix, finalBal) = foldl step (True, the Nat 0) bits
+  in validPrefix && finalBal == 0
+  where
+    step : (Bool, Nat) -> Bool -> (Bool, Nat)
+    step (False, bal) _ = (False, bal)
+    step (True, bal) True = (True, S bal)
+    step (True, Z) False = (False, 0)
+    step (True, S k) False = (True, k)
+
+mutual
+  public export
+  parseBoxSpecFuel : (fuel : Nat) -> List Bool -> Maybe (BoxSpec, List Bool)
+  parseBoxSpecFuel Z _ = Nothing
+  parseBoxSpecFuel (S f) [] = Nothing
+  parseBoxSpecFuel (S f) (False :: _) = Nothing
+  parseBoxSpecFuel (S f) (True :: rest) =
+    case rest of
+      False :: remaining => Just (Leaf, remaining)
+      _ =>
+        case parseChildrenFuel f rest of
+          Just (children, remaining) => Just (listToBoxNode children, remaining)
+          Nothing => Nothing
+
+  public export
+  parseChildrenFuel : (fuel : Nat) -> List Bool -> Maybe (List BoxSpec, List Bool)
+  parseChildrenFuel Z _ = Nothing
+  parseChildrenFuel (S f) [] = Nothing
+  parseChildrenFuel (S f) (False :: rest) = Just ([], rest)
+  parseChildrenFuel (S f) (True :: rest) =
+    case parseBoxSpecFuel f (True :: rest) of
+      Just (child, remaining) =>
+        case parseChildrenFuel f remaining of
+          Just (siblingChildren, finalRest) => Just (child :: siblingChildren, finalRest)
+          Nothing => Nothing
+      Nothing => Nothing
+
+  public export
+  listToBoxNode : List BoxSpec -> BoxSpec
+  listToBoxNode xs =
+    let n = length xs
+        v = toVect n xs
+    in Node v
+    where
+      toVect : (len : Nat) -> (l : List BoxSpec) -> Vect len BoxSpec
+      toVect Z _ = []
+      toVect (S k) [] = replicate (S k) Leaf
+      toVect (S k) (y :: ys) = y :: toVect k ys
+
+||| Decodes a Dyck path bitstring back into its canonical BoxSpec tree.
+public export
+fromContourWalk : List Bool -> Maybe BoxSpec
+fromContourWalk bits =
+  let fuel = (length bits) + 10
+  in case parseBoxSpecFuel fuel bits of
+       Just (b, []) => Just b
+       _            => Nothing
 
 ------------------------------------------------------------------------
 -- 2. DERIVING NATURAL NUMBERS FROM MULTISETS OF EMPTY BOXES
 --    [] = 0, [[]] = 1, [[] []] = 2, [[] [] []] = 3, ...
 ------------------------------------------------------------------------
 
-||| Generates the exact MSetSpec for any natural number n.
+||| Generates the exact BoxSpec for any natural number n.
 ||| 0 = Leaf ([])
 ||| 1 = Node [Leaf] ([[]])
 ||| 2 = Node [Leaf, Leaf] ([[] []])
 ||| 3 = Node [Leaf, Leaf, Leaf] ([[] [] []])
 public export
-fromNatSpec : (n : Nat) -> MSetSpec
-fromNatSpec Z     = Leaf
-fromNatSpec (S k) = Node (replicate (S k) Leaf)
+fromNatBoxSpec : (n : Nat) -> BoxSpec
+fromNatBoxSpec Z     = Leaf
+fromNatBoxSpec (S k) = Node (replicate (S k) Leaf)
 
 ||| The physical, linear QTT structural type representing a Multiset / Polynumber.
 ||| The '1' annotations ensure full data conservation across nested operations.
 public export
-data Polynumber : (0 spec : MSetSpec) -> Type where
+data Polynumber : (0 spec : BoxSpec) -> Type where
   Zero : Polynumber Leaf
   Nest : (1 elements : Vect n (Polynumber childSpec)) -> 
          Polynumber (Node (replicate n childSpec))
@@ -80,24 +222,24 @@ data Polynumber : (0 spec : MSetSpec) -> Type where
 ||| - WSucc WZero WNil = Node [Leaf] ([[]]) = 1
 ||| - WSucc WZero (WSucc WZero WNil) = Node [Leaf, Leaf] ([[] []]) = 2
 public export
-data WildNat : (0 spec : MSetSpec) -> Type where
+data WildNat : (0 spec : BoxSpec) -> Type where
   WZero : WildNat Leaf
   WNil  : WildNat (Node [])
-  WSucc : {0 xs : Vect n MSetSpec} -> 
+  WSucc : {0 xs : Vect n BoxSpec} -> 
           (1 zeroElement : WildNat Leaf) -> 
           (1 rest : WildNat (Node xs)) -> 
           WildNat (Node (Leaf :: xs))
 
 ||| Tallies the physical count of empty box tokens inside a WildNat.
 public export
-tallyWildNat : {0 spec : MSetSpec} -> WildNat spec -> Nat
+tallyWildNat : {0 spec : BoxSpec} -> WildNat spec -> Nat
 tallyWildNat WZero = 0
 tallyWildNat WNil  = 0
 tallyWildNat (WSucc zeroElement rest) = 1 + tallyWildNat rest
 
 ||| Constructs a WildNat directly from a standard Nat count as nested empty boxes.
 public export
-toWildNat : (n : Nat) -> WildNat (fromNatSpec n)
+toWildNat : (n : Nat) -> WildNat (fromNatBoxSpec n)
 toWildNat Z = WZero
 toWildNat (S k) = toWildNatSucc k
   where
@@ -108,7 +250,7 @@ toWildNat (S k) = toWildNatSucc k
 ||| Direct, constructive conversion from a WildNat multiset to a BoxInt scalar.
 ||| Zero casts, zero continuous approximations.
 public export
-wildNatToBoxInt : {0 spec : MSetSpec} -> WildNat spec -> BoxInt
+wildNatToBoxInt : {0 spec : BoxSpec} -> WildNat spec -> BoxInt
 wildNatToBoxInt w = natToBoxInt (tallyWildNat w)
 
 ------------------------------------------------------------------------
@@ -121,9 +263,9 @@ appendSpec : Vect n Multiplicity -> Vect m Multiplicity -> Vect (n + m) Multipli
 appendSpec [] ys = ys
 appendSpec (x :: xs) ys = x :: appendSpec xs ys
 
-||| Recursive Type-Level Specification Merger for MSetSpec.
+||| Recursive Type-Level Specification Merger for BoxSpec.
 public export
-addMSetSpec : MSetSpec -> MSetSpec -> MSetSpec
+addMSetSpec : BoxSpec -> BoxSpec -> BoxSpec
 addMSetSpec Leaf Leaf = Leaf
 addMSetSpec Leaf (Node ys) = Node ys
 addMSetSpec (Node xs) Leaf = Node xs
@@ -220,86 +362,88 @@ auditCosmicPartition210Proof =
 
 ||| A discrete Multiset (bag) of elements with integer multiplicities.
 public export
-record MSet a where
-  constructor MkMSet
+record Box a where
+  constructor MkBox
   items : List (a, BoxInt)
 
 public export
-Eq a => Eq (MSet a) where
-  (MkMSet xs) == (MkMSet ys) = xs == ys
+Eq a => Eq (Box a) where
+  (MkBox xs) == (MkBox ys) = xs == ys
 
 public export
-Show a => Show (MSet a) where
-  show (MkMSet xs) = "MSet(" ++ show xs ++ ")"
+Show a => Show (Box a) where
+  show (MkBox xs) = "Box(" ++ show xs ++ ")"
 
 ||| Canonical empty multiset.
 public export
-emptyMSet : MSet a
-emptyMSet = MkMSet []
+emptyBox : Box a
+emptyBox = MkBox []
 
 ||| Creates a singleton multiset.
 public export
-singletonMSet : a -> BoxInt -> MSet a
-singletonMSet x w = MkMSet [(x, w)]
+unixelBox : a -> BoxInt -> Box a
+unixelBox x w = MkBox [(x, w)]
 
+||| @deprecated Linear O(N) lookupBox is suitable for small token sets.
+||| For large or performance-critical token trees, use Core.MultisetTree.lookupTokenTree (O(log N)).
 ||| Lookups the multiplicity of an element in a multiset.
 public export
-lookupMSet : Eq a => a -> MSet a -> BoxInt
-lookupMSet target (MkMSet xs) =
+lookupBox : Eq a => a -> Box a -> BoxInt
+lookupBox target (MkBox xs) =
   case find (\(x, _) => x == target) xs of
     Just (_, w) => w
     Nothing     => intToBoxInt 0
 
 ||| Inserts or updates the multiplicity of an element.
 public export
-insertMSet : Eq a => a -> BoxInt -> MSet a -> MSet a
-insertMSet x w (MkMSet xs) =
-  let current = lookupMSet x (MkMSet xs)
+insertBox : Eq a => a -> BoxInt -> Box a -> Box a
+insertBox x w (MkBox xs) =
+  let current = lookupBox x (MkBox xs)
       newWeight = current + w
       filtered = filter (\(k, _) => k /= x) xs
   in if unwrapBox newWeight == 0
-       then MkMSet filtered
-       else MkMSet ((x, newWeight) :: filtered)
+       then MkBox filtered
+       else MkBox ((x, newWeight) :: filtered)
 
 ||| Multiset Union (pouring containers together): adds multiplicities.
 public export
-unionMSet : Eq a => MSet a -> MSet a -> MSet a
-unionMSet (MkMSet []) ys = ys
-unionMSet (MkMSet ((x, w) :: xs)) ys =
-  insertMSet x w (unionMSet (MkMSet xs) ys)
+unionBox : Eq a => Box a -> Box a -> Box a
+unionBox (MkBox []) ys = ys
+unionBox (MkBox ((x, w) :: xs)) ys =
+  insertBox x w (unionBox (MkBox xs) ys)
 
 ||| Multiset Difference: subtracts multiplicities (bounded below by 0).
 public export
-subMSet : Eq a => MSet a -> MSet a -> MSet a
-subMSet (MkMSet xs) ys =
+subBox : Eq a => Box a -> Box a -> Box a
+subBox (MkBox xs) ys =
   let nonZeroDiff = mapMaybe (\(k, w) => 
-        let subW = lookupMSet k ys
+        let subW = lookupBox k ys
             remW = w - subW
         in if unwrapBox remW > 0 then Just (k, remW) else Nothing) xs
-  in MkMSet nonZeroDiff
+  in MkBox nonZeroDiff
 
 
 ||| Computes total multiset mass: sum of all item multiplicities.
 public export
-totalMassMSet : MSet a -> BoxInt
-totalMassMSet (MkMSet xs) =
+totalMassBox : Box a -> BoxInt
+totalMassBox (MkBox xs) =
   sum (map snd xs)
 
 ||| Filters a multiset by a predicate.
 public export
-filterMSet : (a -> Bool) -> MSet a -> MSet a
-filterMSet p (MkMSet xs) =
-  MkMSet (filter (\(x, _) => p x) xs)
+filterBox : (a -> Bool) -> Box a -> Box a
+filterBox p (MkBox xs) =
+  MkBox (filter (\(x, _) => p x) xs)
 
 ||| Multiset Symmetric Difference Information Distance:
 ||| D_MSet(A, B) = |A \ B| + |B \ A| = sum_{x} |w_A(x) - w_B(x)|
 public export
-multisetSymmetricDifference : Eq a => MSet a -> MSet a -> Nat
-multisetSymmetricDifference (MkMSet xs) (MkMSet ys) =
+boxSymmetricDifference : Eq a => Box a -> Box a -> Nat
+boxSymmetricDifference (MkBox xs) (MkBox ys) =
   let allKeys = nub (map fst xs ++ map fst ys)
       diffs = map (\k => 
-        let w1 = lookupMSet k (MkMSet xs)
-            w2 = lookupMSet k (MkMSet ys)
+        let w1 = lookupBox k (MkBox xs)
+            w2 = lookupBox k (MkBox ys)
             d = unwrapBox (if w1 >= w2 then w1 - w2 else w2 - w1)
         in integerToNat (if d >= 0 then d else -d)) allKeys
   in sum diffs
@@ -310,13 +454,13 @@ multisetSymmetricDifference (MkMSet xs) (MkMSet ys) =
 public export
 auditMultisetInformationDistanceProof : Bool
 auditMultisetInformationDistanceProof =
-  let a = MkMSet [(1, intToBoxInt 10), (2, intToBoxInt 5)]
-      b = MkMSet [(1, intToBoxInt 7),  (2, intToBoxInt 5), (3, intToBoxInt 4)]
-      c = MkMSet [(1, intToBoxInt 2),  (3, intToBoxInt 8)]
-      dAA = multisetSymmetricDifference a a
-      dAB = multisetSymmetricDifference a b
-      dBC = multisetSymmetricDifference b c
-      dAC = multisetSymmetricDifference a c
+  let a = MkBox [(1, intToBoxInt 10), (2, intToBoxInt 5)]
+      b = MkBox [(1, intToBoxInt 7),  (2, intToBoxInt 5), (3, intToBoxInt 4)]
+      c = MkBox [(1, intToBoxInt 2),  (3, intToBoxInt 8)]
+      dAA = boxSymmetricDifference a a
+      dAB = boxSymmetricDifference a b
+      dBC = boxSymmetricDifference b c
+      dAC = boxSymmetricDifference a c
   in dAA == 0 && (dAC <= dAB + dBC)
 
 ------------------------------------------------------------------------
@@ -325,32 +469,32 @@ auditMultisetInformationDistanceProof =
 
 ||| Multiset Intersection: Computes the common shared tokens min(w_A, w_B).
 public export
-intersectMSet : Eq a => MSet a -> MSet a -> MSet a
-intersectMSet (MkMSet xs) (MkMSet ys) =
-  let commonKeys = filter (\k => lookupMSet k (MkMSet ys) /= intToBoxInt 0) (nub (map fst xs))
+intersectBox : Eq a => Box a -> Box a -> Box a
+intersectBox (MkBox xs) (MkBox ys) =
+  let commonKeys = filter (\k => lookupBox k (MkBox ys) /= intToBoxInt 0) (nub (map fst xs))
       itemsList = map (\k => 
-        let w1 = lookupMSet k (MkMSet xs)
-            w2 = lookupMSet k (MkMSet ys)
+        let w1 = lookupBox k (MkBox xs)
+            w2 = lookupBox k (MkBox ys)
             minW = if w1 <= w2 then w1 else w2
         in (k, minW)) commonKeys
-  in MkMSet (filter (\(_, w) => unwrapBox w > 0) itemsList)
+  in MkBox (filter (\(_, w) => unwrapBox w > 0) itemsList)
 
 ||| Computes total mass of common shared tokens between two multisets |A ∩ B|.
 public export
-multisetIntersectionMass : Eq a => MSet a -> MSet a -> Nat
-multisetIntersectionMass a b =
-  let inter = intersectMSet a b
-      mass = unwrapBox (totalMassMSet inter)
+boxIntersectionMass : Eq a => Box a -> Box a -> Nat
+boxIntersectionMass a b =
+  let inter = intersectBox a b
+      mass = unwrapBox (totalMassBox inter)
   in if mass <= 0 then 0 else integerToNat mass
 
 ||| Computes total union mass |A ∪ B| = sum max(w_A, w_B).
 public export
-multisetUnionMass : Eq a => MSet a -> MSet a -> Nat
-multisetUnionMass (MkMSet xs) (MkMSet ys) =
+boxUnionMass : Eq a => Box a -> Box a -> Nat
+boxUnionMass (MkBox xs) (MkBox ys) =
   let allKeys = nub (map fst xs ++ map fst ys)
       maxWeights = map (\k => 
-        let w1 = lookupMSet k (MkMSet xs)
-            w2 = lookupMSet k (MkMSet ys)
+        let w1 = lookupBox k (MkBox xs)
+            w2 = lookupBox k (MkBox ys)
             maxW = if w1 >= w2 then w1 else w2
             mw = unwrapBox maxW
         in if mw <= 0 then 0 else integerToNat mw) allKeys
@@ -359,12 +503,12 @@ multisetUnionMass (MkMSet xs) (MkMSet ys) =
 ||| Multiset Cross-Entropy: Measures the informational cost of explaining environment P using model Q:
 ||| H_MSet(P, Q) = |P| + |P \ Q| = 2|P| - |P ∩ Q|
 public export
-multisetCrossEntropyMass : Eq a => (envP : MSet a) -> (modelQ : MSet a) -> Nat
+multisetCrossEntropyMass : Eq a => (envP : Box a) -> (modelQ : Box a) -> Nat
 multisetCrossEntropyMass envP modelQ =
-  let pMass = unwrapBox (totalMassMSet envP)
+  let pMass = unwrapBox (totalMassBox envP)
       pNat = if pMass <= 0 then 0 else integerToNat pMass
-      unexplainedMSet = subMSet envP modelQ
-      unexplainedMass = unwrapBox (totalMassMSet unexplainedMSet)
+      unexplainedMSet = subBox envP modelQ
+      unexplainedMass = unwrapBox (totalMassBox unexplainedMSet)
       unexplainedNat = if unexplainedMass <= 0 then 0 else integerToNat unexplainedMass
   in pNat + unexplainedNat
 
@@ -374,11 +518,54 @@ multisetCrossEntropyMass envP modelQ =
 public export
 auditMultisetCrossEntropyProof : Bool
 auditMultisetCrossEntropyProof =
-  let envP = MkMSet [(1, intToBoxInt 10), (2, intToBoxInt 5)]
+  let envP = MkBox [(1, intToBoxInt 10), (2, intToBoxInt 5)]
       perfectModel = envP
-      disjointModel = MkMSet [(3, intToBoxInt 8)]
+      disjointModel = MkBox [(3, intToBoxInt 8)]
       hPerfect = multisetCrossEntropyMass envP perfectModel
       hDisjoint = multisetCrossEntropyMass envP disjointModel
   in hPerfect == 15 && hDisjoint == 30
+
+||| Audits the Canonical Box Ordering (Leaf < Node [Leaf] < Node [Leaf, Leaf]).
+public export
+auditBoxOrderingProof : Bool
+auditBoxOrderingProof =
+  let b0 = fromNatBoxSpec 0 -- Leaf
+      b1 = fromNatBoxSpec 1 -- Node [Leaf]
+      b2 = fromNatBoxSpec 2 -- Node [Leaf, Leaf]
+      b3 = fromNatBoxSpec 3 -- Node [Leaf, Leaf, Leaf]
+  in orderBoxSpec b0 b1 == LT &&
+     orderBoxSpec b1 b2 == LT &&
+     orderBoxSpec b2 b3 == LT &&
+     orderBoxSpec b3 b3 == EQ &&
+     orderBoxSpec b3 b0 == GT &&
+     boxSize b0 == 1 &&
+     boxSize b1 == 2 &&
+     boxSize b2 == 3 &&
+     boxSize b3 == 4
+
+||| Audits the Dyck Path Contour Walk isomorphism and lossless roundtrip.
+public export
+auditContourWalkRoundtripProof : Bool
+auditContourWalkRoundtripProof =
+  let b0 = fromNatBoxSpec 0
+      b1 = fromNatBoxSpec 1
+      b2 = fromNatBoxSpec 2
+      b3 = fromNatBoxSpec 3
+      w0 = contourWalk b0
+      w1 = contourWalk b1
+      w2 = contourWalk b2
+      w3 = contourWalk b3
+      r0 = fromContourWalk w0
+      r1 = fromContourWalk w1
+      r2 = fromContourWalk w2
+      r3 = fromContourWalk w3
+  in isDyckPath w0 &&
+     isDyckPath w1 &&
+     isDyckPath w2 &&
+     isDyckPath w3 &&
+     r0 == Just b0 &&
+     r1 == Just b1 &&
+     r2 == Just b2 &&
+     r3 == Just b3
 
 

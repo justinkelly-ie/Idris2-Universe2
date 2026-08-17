@@ -1,7 +1,7 @@
 module Math.DiscreteCasimirEffect
 
 import Core.BoxInt
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.FourGeometries
 
 %default total

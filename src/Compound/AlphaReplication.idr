@@ -109,3 +109,18 @@ alphaClusterToBoxel (MkNuclearCluster _) =
 public export
 stateToEpoch4AlphaBoxel : UniverseState 108 de dm -> Boxel
 stateToEpoch4AlphaBoxel _ = alphaCoreBoxel
+
+||| A 2-Vexel Balance Array representing Triple-Alpha Carbon Nucleosynthesis:
+||| 3 * Alpha (108 tokens) = 1 * Carbon-12 (324 tokens)
+public export
+tripleAlphaCarbonBalanceArray : BalanceArray 2
+tripleAlphaCarbonBalanceArray = MkBalanceArray [3, 0] [0, 1]
+
+||| Audits that 3 Alpha particle vexels exactly balance 1 Carbon-12 nuclear vexel.
+public export
+auditTripleAlphaCarbonBalanceProof : Bool
+auditTripleAlphaCarbonBalanceProof =
+  let alphaVex = MkVexel [(MkUnixel 1, intToBoxInt 108)]
+      carbonVex = MkVexel [(MkUnixel 1, intToBoxInt 324)]
+  in isBalanced [alphaVex, carbonVex] tripleAlphaCarbonBalanceArray &&
+     isDisjointBalance tripleAlphaCarbonBalanceArray

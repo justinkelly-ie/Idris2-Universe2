@@ -60,8 +60,8 @@ harmonicOscillatorGrad k q =
 public export
 harmonicEnergy : BoxInt -> PhaseState -> BoxInt
 harmonicEnergy k (MkPhaseState q p) =
-  let q1 = lookupSingleton (MkSingleton 1) q
-      p1 = lookupSingleton (MkSingleton 1) p
+  let q1 = lookupUnixel (MkUnixel 1) q
+      p1 = lookupUnixel (MkUnixel 1) p
       kinetic = (p1 * p1) `div` intToBoxInt 2
       potential = (k * q1 * q1) `div` intToBoxInt 2
   in kinetic + potential
@@ -70,14 +70,14 @@ harmonicEnergy k (MkPhaseState q p) =
 public export
 auditSymplecticStepProof : Bool
 auditSymplecticStepProof =
-  let q0 = MkVexel [(MkSingleton 1, intToBoxInt 10)]
-      p0 = MkVexel [(MkSingleton 1, intToBoxInt 0)]
+  let q0 = MkVexel [(MkUnixel 1, intToBoxInt 10)]
+      p0 = MkVexel [(MkUnixel 1, intToBoxInt 0)]
       s0 = MkPhaseState q0 p0
       dt = intToBoxInt 2
       k  = intToBoxInt 1
       s1 = symplecticLeapfrogStep (harmonicOscillatorGrad k) dt s0
-      q1 = lookupSingleton (MkSingleton 1) (position s1)
-      p1 = lookupSingleton (MkSingleton 1) (momentum s1)
+      q1 = lookupUnixel (MkUnixel 1) (position s1)
+      p1 = lookupUnixel (MkUnixel 1) (momentum s1)
   in unwrapBox q1 /= 10 && unwrapBox p1 /= 0
 
 ------------------------------------------------------------------------
@@ -88,8 +88,8 @@ auditSymplecticStepProof =
 public export
 evaluateNoetherCharge : PhaseState -> Vexel -> BoxInt
 evaluateNoetherCharge (MkPhaseState _ p) deltaQ =
-  let p1 = lookupSingleton (MkSingleton 1) p
-      dq1 = lookupSingleton (MkSingleton 1) deltaQ
+  let p1 = lookupUnixel (MkUnixel 1) p
+      dq1 = lookupUnixel (MkUnixel 1) deltaQ
   in p1 * dq1
 
 ||| Executes a symplectic step and simultaneously computes the conserved Noether invariant.
@@ -109,13 +109,13 @@ public export
 auditNoetherConservationProof : Bool
 auditNoetherConservationProof =
   let zeroGrad = (\_ => MkVexel [])
-      q0 = MkVexel [(MkSingleton 1, intToBoxInt 5)]
-      p0 = MkVexel [(MkSingleton 1, intToBoxInt 12)]
+      q0 = MkVexel [(MkUnixel 1, intToBoxInt 5)]
+      p0 = MkVexel [(MkUnixel 1, intToBoxInt 12)]
       s0 = MkPhaseState q0 p0
       dt = intToBoxInt 3
       s1 = symplecticLeapfrogStep zeroGrad dt s0
       s2 = symplecticLeapfrogStep zeroGrad dt s1
-      deltaQ = MkVexel [(MkSingleton 1, intToBoxInt 1)]
+      deltaQ = MkVexel [(MkUnixel 1, intToBoxInt 1)]
       q0Charge = evaluateNoetherCharge s0 deltaQ
       q1Charge = evaluateNoetherCharge s1 deltaQ
       q2Charge = evaluateNoetherCharge s2 deltaQ

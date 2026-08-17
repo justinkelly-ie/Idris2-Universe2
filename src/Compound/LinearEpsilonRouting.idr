@@ -4,6 +4,7 @@ import Core.BoxInt
 import Core.VexelMaxel
 import Math.LinAlgebra.MetricTensor
 import Math.Infinitesimal
+import Data.Vect
 
 %default total
 
@@ -12,8 +13,8 @@ import Math.Infinitesimal
 public export
 velocityVexel : (vAlpha : BoxInt) -> (vBeta : BoxInt) -> Vexel
 velocityVexel vA vB =
-  MkVexel [ (MkSingleton 1, vA)
-          , (MkSingleton 2, vB)
+  MkVexel [ (MkUnixel 1, vA)
+          , (MkUnixel 2, vB)
           ]
 
 ||| Linearly routes a velocity Vexel through a symmetric gEM metric transformation.
@@ -63,3 +64,29 @@ auditSymplecticInvarianceProof =
       j21 = lookupPixel (MkPixel 2 1) jSq
   in unwrapBox j11 == -1 && unwrapBox j22 == -1 &&
      unwrapBox j12 == 0  && unwrapBox j21 == 0
+
+------------------------------------------------------------------------
+-- DOUBLY STOCHASTIC EPSILON PACKET ROUTING (MAGIC MAXELS)
+------------------------------------------------------------------------
+
+||| Routes an n-channel token packet vector using an exact doubly stochastic MagicMaxel.
+||| Guarantees exact channel sum mass conservation without packet duplication or loss.
+public export
+doublyStochasticEpsilonRouting : {n : Nat} -> MagicMaxel n -> Vect n Nat -> Vect n Nat
+doublyStochasticEpsilonRouting m v = applyMagicMaxel m v
+
+||| Audits that a 2-channel cross-switch MagicMaxel routes packets with exact conservation.
+public export
+auditDoublyStochasticEpsilonRoutingProof : Bool
+auditDoublyStochasticEpsilonRoutingProof =
+  let switch2 : MagicMaxel 2 = MkMagicMaxel [
+        [0, 1],
+        [1, 0]
+      ]
+      packetsIn : Vect 2 Nat = [42, 99]
+      packetsOut = doublyStochasticEpsilonRouting switch2 packetsIn
+      sumIn = foldl (+) 0 packetsIn
+      sumOut = foldl (+) 0 packetsOut
+  in isMagicMaxel switch2 1 &&
+     packetsOut == [99, 42] &&
+     sumIn == sumOut

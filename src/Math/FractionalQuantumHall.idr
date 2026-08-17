@@ -1,7 +1,7 @@
 module Math.FractionalQuantumHall
 
 import Core.BoxInt
-import Core.SingFraction
+import Core.UnixelFraction
 import Core.Multiset
 import Math.FourGeometries
 
@@ -25,9 +25,9 @@ Eq LaughlinState where
 
 ||| Computes the fractional charge of a Laughlin quasiparticle excitation e* = (p/q) * e:
 public export
-fractionalQuasiparticleCharge : LaughlinState -> SingFraction
+fractionalQuasiparticleCharge : LaughlinState -> UnixelFraction
 fractionalQuasiparticleCharge (MkLaughlinState p q) =
-  mkSingFraction (natToBoxInt p) q
+  mkUnixelFraction (natToBoxInt p) q
 
 ||| Computes the anyonic statistical exchange angle denominator:
 ||| Exchanging two anyons yields topological phase θ = π / q.
@@ -39,7 +39,7 @@ anyonicExchangePeriod (MkLaughlinState _ q) = 2 * q
 ||| Computes the Quantized Fractional Hall Conductance:
 ||| σ_{xy} = (p / q) * (e^2 / h).
 public export
-fractionalHallConductance : LaughlinState -> SingFraction
+fractionalHallConductance : LaughlinState -> UnixelFraction
 fractionalHallConductance = fractionalQuasiparticleCharge
 
 ------------------------------------------------------------------------
@@ -54,7 +54,7 @@ auditFractionalChargeQuantizationProof : Bool
 auditFractionalChargeQuantizationProof =
   let state13 = MkLaughlinState 1 3
       charge = fractionalQuasiparticleCharge state13
-      expected = mkSingFraction (intToBoxInt 1) 3
+      expected = mkUnixelFraction (intToBoxInt 1) 3
   in rationalEquiv charge expected
 
 ||| Audits Anyonic Topological Braiding Phase:
@@ -74,6 +74,6 @@ auditFractionalHallConductanceProof : Bool
 auditFractionalHallConductanceProof =
   let sigma13 = fractionalHallConductance (MkLaughlinState 1 3)
       sigma25 = fractionalHallConductance (MkLaughlinState 2 5)
-      exp13 = mkSingFraction (intToBoxInt 1) 3
-      exp25 = mkSingFraction (intToBoxInt 2) 5
+      exp13 = mkUnixelFraction (intToBoxInt 1) 3
+      exp25 = mkUnixelFraction (intToBoxInt 2) 5
   in rationalEquiv sigma13 exp13 && rationalEquiv sigma25 exp25

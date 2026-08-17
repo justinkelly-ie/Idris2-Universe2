@@ -1,6 +1,7 @@
 module Math.LinAlgebra.TernaryClassifier
 
 import Core.BoxInt
+import Core.VexelMaxel
 import Math.LinAlgebra.MetricTensor
 import Data.Vect
 
@@ -86,3 +87,28 @@ generateAll27States =
   let bits = [MinusOne, ZeroBit, PlusOne]
   in [ (b1, b2, b3, buildTernaryMetric b1 b2 b3, classifyTernaryMetric b1 b2 b3)
      | b1 <- bits, b2 <- bits, b3 <- bits ]
+
+------------------------------------------------------------------------
+-- 2. NATURAL LINEAR INDEPENDENCE OF METRIC VECTORS (CH. 26)
+------------------------------------------------------------------------
+
+||| Classifies whether two metric basis Vexels are linearly independent over Nat or proportional.
+public export
+classifyVexelIndependence : Vexel -> Vexel -> (Bool, Maybe (BalanceArray 2))
+classifyVexelIndependence v1 v2 =
+  case find2VexelBalance v1 v2 of
+    Just b  => (False, Just b)
+    Nothing => (True, Nothing)
+
+||| Audits that orthogonal metric singletons are linearly independent, while parallel singletons balance.
+public export
+auditGeometricVexelClassificationProof : Bool
+auditGeometricVexelClassificationProof =
+  let e1 = MkVexel [(MkUnixel 1, intToBoxInt 1)]
+      e2 = MkVexel [(MkUnixel 2, intToBoxInt 1)]
+      vDouble = MkVexel [(MkUnixel 1, intToBoxInt 2)]
+      (indep12, _) = classifyVexelIndependence e1 e2
+      (indepDouble, balDouble) = classifyVexelIndependence e1 vDouble
+  in indep12 == True &&
+     indepDouble == False &&
+     balDouble == Just (MkBalanceArray [2, 0] [0, 1])

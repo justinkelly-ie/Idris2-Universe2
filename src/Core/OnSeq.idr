@@ -2,7 +2,7 @@ module Core.OnSeq
 
 import Core.BoxInt
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 
 %default total
 
@@ -96,15 +96,15 @@ public export
 mulOnSeqBox : OnSeq BoxInt -> OnSeq BoxInt -> OnSeq BoxInt
 mulOnSeqBox = zipWith (*)
 
-||| Pointwise addition of SingFraction on-sequences.
+||| Pointwise addition of UnixelFraction on-sequences.
 public export
-addOnSeqSingFraction : OnSeq SingFraction -> OnSeq SingFraction -> OnSeq SingFraction
-addOnSeqSingFraction = zipWith addSingFraction
+addOnSeqUnixelFraction : OnSeq UnixelFraction -> OnSeq UnixelFraction -> OnSeq UnixelFraction
+addOnSeqUnixelFraction = zipWith addUnixelFraction
 
-||| Pointwise multiplication of SingFraction on-sequences.
+||| Pointwise multiplication of UnixelFraction on-sequences.
 public export
-mulOnSeqSingFraction : OnSeq SingFraction -> OnSeq SingFraction -> OnSeq SingFraction
-mulOnSeqSingFraction = zipWith mulSingFraction
+mulOnSeqUnixelFraction : OnSeq UnixelFraction -> OnSeq UnixelFraction -> OnSeq UnixelFraction
+mulOnSeqUnixelFraction = zipWith mulUnixelFraction
 
 ------------------------------------------------------------------------
 -- 3. QUANTITATIVE TYPE THEORY (QTT) SEQUENCING

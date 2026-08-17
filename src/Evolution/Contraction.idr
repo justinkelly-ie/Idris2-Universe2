@@ -15,12 +15,12 @@ gridToStatePolynomial [] = zeroPolynumber
 gridToStatePolynomial vm = MkPolynumber (toList vm)
 
 ||| Computes the discrete scalar remainder token from an irreducible remainder polynomial:
-||| RemainderToken = polyDegree(R) + |evalPoly(R, 1)|
+||| RemainderToken = polynumberDegree(R) + |evalPolynumber(R, 1)|
 public export
-extractRemainderToken : BoxPolynomial -> BoxInt
+extractRemainderToken : Polynumber -> BoxInt
 extractRemainderToken r =
-  let degBox = natToBoxInt (polyDegree r)
-      valBox = evalPoly r (intToBoxInt 1)
+  let degBox = natToBoxInt (polynumberDegree r)
+      valBox = evalPolynumber r (intToBoxInt 1)
   in degBox + (if unwrapBox valBox >= 0 then valBox else negate valBox)
 
 ||| Linearly folds active visible matter field tokens into the background Dark Energy ROM.
@@ -36,7 +36,7 @@ foldVisibleIntoDE (x :: xs) de =
   in foldVisibleIntoDE xs de'
 
 ||| Generalized multi-epoch cyclic contraction transformer with active cyclotomic polynomial division:
-||| 1. Converts active grid to BoxPolynomial P(x).
+||| 1. Converts active grid to Polynumber P(x).
 ||| 2. Divides P(x) by Φ₁₃₇(x) = (Q(x), R(x)).
 ||| 3. Folds Q(x) into Dark Energy.
 ||| 4. Encodes R(x) as an irreducible remainder token and appends to Dark Matter (dm -> S dm).
@@ -59,7 +59,7 @@ contractWithCyclotomicDivision : {vm, de, dm : Nat} ->
                                 UniverseState vm de (S dm)
 contractWithCyclotomicDivision {vm} (MkUniverseState vmData deData dmData) =
   let statePoly = gridToStatePolynomial vmData
-      (q, r)    = divModPoly statePoly cyclotomic137
+      (q, r)    = divModPolynumber statePoly cyclotomic137Polynumber
       remToken  = extractRemainderToken r
       resetVM   = replicate vm (intToBoxInt 0)
       updatedDE = foldVisibleIntoDE vmData deData

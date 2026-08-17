@@ -31,15 +31,6 @@ Show PolynumberTerm where
   show (MkPolynumberTerm c d) = 
     show c ++ (if d == 0 then "" else " * x^" ++ show d)
 
-||| Alias for backward compatibility.
-public export
-BoxTerm : Type
-BoxTerm = PolynumberTerm
-
-public export
-MkBoxTerm : BoxInt -> Nat -> BoxTerm
-MkBoxTerm = MkPolynumberTerm
-
 ||| A Polynumber is a multiset of nested monomial terms.
 ||| Stored as a coefficient list from degree 0 upwards: c0 + c1*x + c2*x^2 + ...
 public export
@@ -56,15 +47,6 @@ Show Polynumber where
   show (MkPolynumber cs) = 
     "Polynumber(" ++ show (map unwrapBox cs) ++ ")"
 
-||| Backward compatibility type alias.
-public export
-BoxPolynomial : Type
-BoxPolynomial = Polynumber
-
-public export
-MkBoxPolynomial : List BoxInt -> BoxPolynomial
-MkBoxPolynomial = MkPolynumber
-
 ||| Structurally recursive list trimmer eliminating trailing zeros without reverse/dropWhile.
 public export
 trimList : List BoxInt -> List BoxInt
@@ -79,10 +61,6 @@ trimList (x :: xs) =
 public export
 trimPolynumber : Polynumber -> Polynumber
 trimPolynumber (MkPolynumber cs) = MkPolynumber (trimList cs)
-
-public export
-trimPoly : BoxPolynomial -> BoxPolynomial
-trimPoly = trimPolynumber
 
 public export
 safeLast : a -> List a -> a
@@ -104,37 +82,21 @@ public export
 polynumberDegree : Polynumber -> Nat
 polynumberDegree p = snd (leadingTerm p)
 
-public export
-polyDegree : BoxPolynomial -> Nat
-polyDegree = polynumberDegree
-
 ||| Zero polynumber: empty box container.
 public export
 zeroPolynumber : Polynumber
 zeroPolynumber = MkPolynumber []
-
-public export
-zeroPoly : BoxPolynomial
-zeroPoly = zeroPolynumber
 
 ||| Creates a constant monomial polynumber: c * x^0.
 public export
 constantPolynumber : BoxInt -> Polynumber
 constantPolynumber c = trimPolynumber (MkPolynumber [c])
 
-public export
-constantPoly : BoxInt -> BoxPolynomial
-constantPoly = constantPolynumber
-
 ||| Creates a single monomial term polynumber: c * x^deg.
 public export
 monomialPolynumber : BoxInt -> Nat -> Polynumber
 monomialPolynumber c deg = 
   trimPolynumber (MkPolynumber (replicate deg (intToBoxInt 0) ++ [c]))
-
-public export
-monomialPoly : BoxInt -> Nat -> BoxPolynomial
-monomialPoly = monomialPolynumber
 
 ||| Addition of polynumbers: pours term containers together and adds matching degrees.
 public export
@@ -148,10 +110,6 @@ addPolynumber : Polynumber -> Polynumber -> Polynumber
 addPolynumber (MkPolynumber p1) (MkPolynumber p2) = 
   trimPolynumber (MkPolynumber (addPolyList p1 p2))
 
-public export
-addPoly : BoxPolynomial -> BoxPolynomial -> BoxPolynomial
-addPoly = addPolynumber
-
 ||| Subtraction of polynumbers: inverts the negative box container and pours terms.
 public export
 subPolyList : List BoxInt -> List BoxInt -> List BoxInt
@@ -164,19 +122,11 @@ subPolynumber : Polynumber -> Polynumber -> Polynumber
 subPolynumber (MkPolynumber p1) (MkPolynumber p2) = 
   trimPolynumber (MkPolynumber (subPolyList p1 p2))
 
-public export
-subPoly : BoxPolynomial -> BoxPolynomial -> BoxPolynomial
-subPoly = subPolynumber
-
 ||| Scalar multiplication of a polynumber container.
 public export
 scalePolynumber : BoxInt -> Polynumber -> Polynumber
 scalePolynumber s (MkPolynumber cs) = 
   trimPolynumber (MkPolynumber (map (* s) cs))
-
-public export
-scalePoly : BoxInt -> BoxPolynomial -> BoxPolynomial
-scalePoly = scalePolynumber
 
 ||| Shifts a polynumber by multiplying by x^k (increasing nesting depth by k).
 public export
@@ -184,10 +134,6 @@ shiftPolynumber : Nat -> Polynumber -> Polynumber
 shiftPolynumber Z p = p
 shiftPolynumber (S k) (MkPolynumber cs) = 
   trimPolynumber (MkPolynumber (intToBoxInt 0 :: cs))
-
-public export
-shiftPoly : Nat -> BoxPolynomial -> BoxPolynomial
-shiftPoly = shiftPolynumber
 
 ||| Monomial multiplication: (c1 * x^d1) * P(x).
 public export
@@ -202,10 +148,6 @@ mulPolynumber (MkPolynumber []) _ = zeroPolynumber
 mulPolynumber (MkPolynumber (c :: cs)) q = 
   addPolynumber (scalePolynumber c q) (shiftPolynumber 1 (mulPolynumber (MkPolynumber cs) q))
 
-public export
-mulPoly : BoxPolynomial -> BoxPolynomial -> BoxPolynomial
-mulPoly = mulPolynumber
-
 ||| Exact discrete polynumber evaluation at an integer scalar x = a (Horner's rule).
 public export
 evalPolyList : List BoxInt -> BoxInt -> BoxInt
@@ -216,10 +158,6 @@ public export
 evalPolynumber : Polynumber -> BoxInt -> BoxInt
 evalPolynumber (MkPolynumber cs) a = evalPolyList cs a
 
-public export
-evalPoly : BoxPolynomial -> BoxInt -> BoxInt
-evalPoly = evalPolynumber
-
 ------------------------------------------------------------------------
 -- 2. MULTISET ISOMORPHISMS: POLYS <-> VEXELS, MAXELS, BOXELS
 ------------------------------------------------------------------------
@@ -228,7 +166,7 @@ evalPoly = evalPolynumber
 public export
 polynumberToVexel : Polynumber -> Vexel
 polynumberToVexel (MkPolynumber cs) =
-  let pairs = zipWith (\idx, c => (MkSingleton idx, c)) [0..(length cs)] cs
+  let pairs = zipWith (\idx, c => (MkUnixel idx, c)) [0..(length cs)] cs
   in canonicalizeVexel (MkVexel pairs)
 
 ||| Converts a 1D Vexel into a univariate Polynumber: sum c_k [k] <=> sum c_k x^k.
@@ -323,10 +261,6 @@ divModPolynumber dividend divisor =
   let fuel = 1 + polynumberDegree dividend + polynumberDegree divisor
   in divModPolyHelper fuel zeroPolynumber (trimPolynumber dividend) (trimPolynumber divisor)
 
-public export
-divModPoly : BoxPolynomial -> BoxPolynomial -> (BoxPolynomial, BoxPolynomial)
-divModPoly = divModPolynumber
-
 ------------------------------------------------------------------------
 -- 5. GOH FACTORIZATION & LINEAR REDUCTION IN BOX ARITHMETIC
 ------------------------------------------------------------------------
@@ -341,19 +275,11 @@ gohPolynumberFactor poly root =
       remVal = evalPolynumber poly root
   in (q, remVal)
 
-public export
-gohLinearFactor : BoxPolynomial -> BoxInt -> (BoxPolynomial, BoxInt)
-gohLinearFactor = gohPolynumberFactor
-
 ||| The 137th Cyclotomic Polynomial: Φ₁₃₇(x) = 1 + x + x² + ... + x¹³⁶ (137 unit stages).
 public export
 cyclotomic137Polynumber : Polynumber
 cyclotomic137Polynumber = 
   MkPolynumber (replicate 137 (intToBoxInt 1))
-
-public export
-cyclotomic137 : BoxPolynomial
-cyclotomic137 = cyclotomic137Polynumber
 
 ||| Folds an active epoch polynomial state by dividing by the cyclotomic period.
 ||| Returns (DarkEnergyQuotient, DarkMatterRemainder).
@@ -362,12 +288,128 @@ foldEpochPolynumber : Polynumber -> Polynumber -> (Polynumber, Polynumber)
 foldEpochPolynumber epochPoly divisorPoly = 
   divModPolynumber epochPoly divisorPoly
 
+------------------------------------------------------------------------
+-- 6. THE LEVEL 2 CARET OPERATION (^) & DIRICHLET ALGEBRA
+------------------------------------------------------------------------
+
+||| Helper to convert coefficients to sparse (degree, coeff) terms recursively.
 public export
-foldEpochPolynomial : BoxPolynomial -> BoxPolynomial -> (BoxPolynomial, BoxPolynomial)
-foldEpochPolynomial = foldEpochPolynumber
+toSparseHelper : Nat -> List BoxInt -> List (Nat, BoxInt)
+toSparseHelper deg [] = []
+toSparseHelper deg (c :: rest) =
+  if unwrapBox c /= 0
+    then (deg, c) :: toSparseHelper (S deg) rest
+    else toSparseHelper (S deg) rest
+
+||| Converts a Polynumber to a sparse list of non-zero (degree, coeff) pairs.
+public export
+polynumberToSparse : Polynumber -> List (Nat, BoxInt)
+polynumberToSparse (MkPolynumber cs) = toSparseHelper 0 cs
+
+||| Converts a sparse list of (degree, coeff) pairs back to a normalized dense Polynumber.
+public export
+sparseToPolynumber : List (Nat, BoxInt) -> Polynumber
+sparseToPolynumber terms =
+  foldl (\acc, (deg, c) => addPolynumber acc (monomialPolynumber c deg)) zeroPolynumber terms
+
+||| The Level 2 Caret Operation (^) on Monomial Terms:
+||| (c1 * α^d1) ^ (c2 * α^d2) = (c1 * c2) * α^(d1 * d2).
+public export
+caretMonomial : PolynumberTerm -> PolynumberTerm -> PolynumberTerm
+caretMonomial (MkPolynumberTerm c1 d1) (MkPolynumberTerm c2 d2) =
+  MkPolynumberTerm (c1 * c2) (d1 * d2)
+
+||| The Level 2 Caret Operation (^) on Polynumbers:
+||| Multiplies monomial degrees (Dirichlet product): (Σ c_i α^i) ^ (Σ d_j α^j) = Σ (c_i * d_j) α^(i * j).
+public export
+caretPolynumber : Polynumber -> Polynumber -> Polynumber
+caretPolynumber p q =
+  let termsP = polynumberToSparse p
+      termsQ = polynumberToSparse q
+      caretTerms = concatMap (\(dP, cP) => 
+                     map (\(dQ, cQ) => (dP * dQ, cP * cQ)) termsQ) termsP
+  in sparseToPolynumber caretTerms
+
+||| Iterated Caret power: p^(^n). Identity for Caret (n = 0) is α^1 = monomialPolynumber 1 1.
+public export
+caretPower : Polynumber -> Nat -> Polynumber
+caretPower p Z = monomialPolynumber (intToBoxInt 1) 1
+caretPower p (S k) = caretPolynumber p (caretPower p k)
+
+||| Fast natural number exponentiation / Caret on natural numbers: a ^ b = a^b.
+public export
+caretNatural : Nat -> Nat -> Nat
+caretNatural base exp = power base exp
+
+||| Level 0 Collection Recipe (Summation): Σ_0[p] = Σ c_k = p(1).
+public export
+summationPolynumber : Polynumber -> BoxInt
+summationPolynumber p = evalPolynumber p (intToBoxInt 1)
+
+||| Recursive generator for prime powers [1, p, p^2, ..., p^k].
+public export
+powersHelper : Nat -> Nat -> Nat -> List Nat
+powersHelper base cur Z = [cur]
+powersHelper base cur (S k) = cur :: powersHelper base (cur * base) k
+
+||| Constructs a finite Prime-Power Box B_p(k) = α^1 + α^p + α^(p^2) + ... + α^(p^k).
+public export
+primePowerBox : (prime : Nat) -> (maxPower : Nat) -> Polynumber
+primePowerBox p maxPow =
+  let pPowers = powersHelper p 1 maxPow
+      terms = map (\pow => (pow, intToBoxInt 1)) pPowers
+  in sparseToPolynumber terms
+
+||| The Fundamental Identity of Arithmetic (FIA) in finite Dirichlet form:
+||| Computes the finite Zeta polynumber as the Caret product over primes:
+||| Z(primes, k) = ∧_{p ∈ primes} B_p(k).
+public export
+dirichletFIA : (primes : List Nat) -> (maxPower : Nat) -> Polynumber
+dirichletFIA primes maxPow =
+  foldl caretPolynumber 
+        (monomialPolynumber (intToBoxInt 1) 1) 
+        (map (\p => primePowerBox p maxPow) primes)
 
 ------------------------------------------------------------------------
--- 6. ELABORATOR REFLECTION MACROS FOR POLYS
+-- 7. CONSTRUCTIVE FORMAL AUDIT PROOFS FOR CARET & FIA
+------------------------------------------------------------------------
+
+||| Audits the Caret Product Identity: Σ_0[p ^ q] = Σ_0[p] * Σ_0[q].
+public export
+auditCaretProductIdentityProof : Bool
+auditCaretProductIdentityProof =
+  let p = addPolynumber (monomialPolynumber (intToBoxInt 2) 1)
+                        (monomialPolynumber (intToBoxInt 3) 2) -- 2α^1 + 3α^2 (sum = 5)
+      q = addPolynumber (monomialPolynumber (intToBoxInt 1) 1)
+                        (monomialPolynumber (intToBoxInt 4) 3) -- 1α^1 + 4α^3 (sum = 5)
+      caretProd = caretPolynumber p q                        -- sum = 25
+      sumProd = summationPolynumber caretProd
+      prodSums = summationPolynumber p * summationPolynumber q
+  in sumProd == prodSums && unwrapBox sumProd == 25
+
+||| Audits the Caret Level-2 Identity Element: p ^ α^1 = p.
+public export
+auditCaretIdentityElementProof : Bool
+auditCaretIdentityElementProof =
+  let p = addPolynumber (monomialPolynumber (intToBoxInt 7) 2)
+                        (monomialPolynumber (intToBoxInt 11) 5)
+      e2 = monomialPolynumber (intToBoxInt 1) 1 -- α^1
+      pTimesE = caretPolynumber p e2
+  in pTimesE == p
+
+||| Audits the Fundamental Identity of Arithmetic (FIA) Euler Caret Factorization:
+||| B_2(2) ^ B_3(2) generates exactly the 9 products {2^a * 3^b : 0 <= a, b <= 2}
+||| with maximum degree 2^2 * 3^2 = 36 and total element count 9.
+public export
+auditFIAEulerProductProof : Bool
+auditFIAEulerProductProof =
+  let zeta23 = dirichletFIA [2, 3] 2
+      totalCount = summationPolynumber zeta23
+      maxDeg = polynumberDegree zeta23
+  in unwrapBox totalCount == 9 && maxDeg == 36
+
+------------------------------------------------------------------------
+-- 8. ELABORATOR REFLECTION MACROS FOR POLYS
 ------------------------------------------------------------------------
 
 ||| Generates the AST for a Polynumber literal from a list of integer coefficients.
@@ -386,10 +428,3 @@ export
 %macro
 makePolynumber : List Integer -> Elab TTImp
 makePolynumber cs = pure (genPolyAST cs)
-
-export
-%macro
-makePolynomial : List Integer -> Elab TTImp
-makePolynomial cs = pure (genPolyAST cs)
-
-

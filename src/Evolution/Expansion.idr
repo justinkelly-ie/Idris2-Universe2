@@ -131,3 +131,40 @@ auditLinearExpansionConservationProof =
      length (darkMatter expanded) == 0 &&
      totalStateCapacity expanded == 5
 
+------------------------------------------------------------------------
+-- DOUBLY STOCHASTIC LATTICE REDISTRIBUTION (MAGIC MAXELS)
+------------------------------------------------------------------------
+
+||| Performs a doubly stochastic token redistribution across the visible matter lattice.
+||| Uses an exact MagicMaxel to guarantee zero token leakage across cells.
+public export
+stochasticLatticeRedistribution : {vm, de, dm : Nat} ->
+                                  MagicMaxel vm ->
+                                  UniverseState vm de dm ->
+                                  UniverseState vm de dm
+stochasticLatticeRedistribution m (MkUniverseState vm de dm) =
+  let newVM = applyMagicMaxelBoxInt m vm
+  in MkUniverseState newVM de dm
+
+||| Audits that a 3x3 Magic Maxel redistribution over a 3-cell Visible Matter state
+||| maintains total mass conservation under normalized permutation transfer.
+public export
+auditStochasticRedistributionConservationProof : Bool
+auditStochasticRedistributionConservationProof =
+  let id3 : MagicMaxel 3 = MkMagicMaxel [
+        [0, 1, 0],
+        [0, 0, 1],
+        [1, 0, 0]
+      ]
+      initialState = MkUniverseState {vmSize=3} {deSize=128} {dmSize=55}
+                       [intToBoxInt 10, intToBoxInt 20, intToBoxInt 30]
+                       (replicate 128 (intToBoxInt 1))
+                       (replicate 55 (intToBoxInt 1))
+      redistributed = stochasticLatticeRedistribution id3 initialState
+      newVM = visibleMatter redistributed
+      sumInitial = foldl (+) (intToBoxInt 0) (visibleMatter initialState)
+      sumFinal   = foldl (+) (intToBoxInt 0) newVM
+  in isMagicMaxel id3 1 &&
+     newVM == [intToBoxInt 20, intToBoxInt 30, intToBoxInt 10] &&
+     sumInitial == sumFinal
+

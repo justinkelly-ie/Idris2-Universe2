@@ -1,6 +1,7 @@
 module Math.FineStructure
 
 import Core.BoxInt
+import Core.Polynumber
 import Data.Nat
 
 %default total
@@ -11,15 +12,25 @@ public export
 primorial4 : BoxInt
 primorial4 = intToBoxInt (2 * 3 * 5 * 7)
 
+||| The 7-bit Dark Energy ROM prime power generator: B_2(7) with leading degree 2^7 = 128.
+public export
+darkEnergyPrimePowerBox : Polynumber
+darkEnergyPrimePowerBox = primePowerBox 2 7
+
 ||| The 7-bit Dark Energy ROM capacity buffer: 2^7 = 128.
 public export
 darkEnergyROM : BoxInt
 darkEnergyROM = intToBoxInt 128
 
+||| The 9 spatial interaction channels prime power generator: B_3(2) with leading degree 3^2 = 9.
+public export
+spatialPrimePowerBox : Polynumber
+spatialPrimePowerBox = primePowerBox 3 2
+
 ||| The 9 spatial interaction channels of the 3x3 metric tensor: 3^2 = 9.
 public export
 spatialInteractionChannels : BoxInt
-spatialInteractionChannels = intToBoxInt (3 * 3)
+spatialInteractionChannels = intToBoxInt 9
 
 ||| The 137-stage cyclotomic evolution cycle:
 ||| Emerges from coupling the 128-bit Dark Energy ROM with the 9 spatial channels:
@@ -52,3 +63,11 @@ public export
 verify137Derivation : Bool
 verify137Derivation =
   cycle137StagePeriod == intToBoxInt 137
+
+||| Validates prime-power Caret generator degrees for 137:
+||| deg(B_2(7)) == 128 and deg(B_3(2)) == 9.
+public export
+verify137PrimePowerDecomposition : Bool
+verify137PrimePowerDecomposition =
+  polynumberDegree darkEnergyPrimePowerBox == 128 &&
+  polynumberDegree spatialPrimePowerBox == 9

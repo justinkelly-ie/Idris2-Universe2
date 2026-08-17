@@ -3,7 +3,7 @@ module Math.RenormalizationInformationFlow
 import Core.BoxInt
 import Core.Multiset
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.FourGeometries
 import Math.TopologicalChernNumber
 import Data.List
@@ -17,12 +17,12 @@ import Data.List
 ||| Discrete Callan-Symanzik beta function evaluating step-change in effective coupling:
 ||| beta(g) = Delta g_k = - (drag_k * g) / (1 + drag_k)
 public export
-discreteBetaStep : (coupling : SingFraction) -> (dragNat : Nat) -> SingFraction
-discreteBetaStep (MkSingFraction (MkBoxInt numVal) (MkSingleton denVal)) drag =
+discreteBetaStep : (coupling : UnixelFraction) -> (dragNat : Nat) -> UnixelFraction
+discreteBetaStep (MkUnixelFraction (MkBoxInt numVal) (MkUnixel denVal)) drag =
   let dragInt = natToInteger drag
       newNum = - (numVal * dragInt)
       newDen = denVal * (1 + drag)
-  in MkSingFraction (MkBoxInt newNum) (MkSingleton (if newDen == 0 then 1 else newDen))
+  in MkUnixelFraction (MkBoxInt newNum) (MkUnixel (if newDen == 0 then 1 else newDen))
 
 ------------------------------------------------------------------------
 -- 2. DISCRETE FISHER INFORMATION METRIC ON PROBABILITY SIMPLICES
@@ -30,14 +30,14 @@ discreteBetaStep (MkSingFraction (MkBoxInt numVal) (MkSingleton denVal)) drag =
 ------------------------------------------------------------------------
 
 ||| Evaluates discrete Fisher information quadrance between two 1-particle state weights:
-||| I_F = (w1 - w2)^2 / w1 (as a SingFraction).
+||| I_F = (w1 - w2)^2 / w1 (as a UnixelFraction).
 public export
-discreteFisherQuadrance : (w1 : Nat) -> (w2 : Nat) -> SingFraction
+discreteFisherQuadrance : (w1 : Nat) -> (w2 : Nat) -> UnixelFraction
 discreteFisherQuadrance w1 w2 =
   let diff = (natToInteger w1) - (natToInteger w2)
       sqDiff = diff * diff
       den = if w1 == 0 then 1 else w1
-  in MkSingFraction (intToBoxInt sqDiff) (MkSingleton den)
+  in MkUnixelFraction (intToBoxInt sqDiff) (MkUnixel den)
 
 ------------------------------------------------------------------------
 -- 3. TOPOLOGICAL RG FIXED POINT COARSE-GRAINING
@@ -60,7 +60,7 @@ decimateBerryCurvature = foldl (+) (intToBoxInt 0)
 public export
 auditDiscreteBetaFlowProof : Bool
 auditDiscreteBetaFlowProof =
-  let g0 = unitSingFraction
+  let g0 = unitUnixelFraction
       beta = discreteBetaStep g0 3
   in unwrapBox (num beta) == (-3) &&
      index (den beta) == 4

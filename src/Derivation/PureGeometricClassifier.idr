@@ -3,7 +3,10 @@ module Derivation.PureGeometricClassifier
 import Evolution.State
 import Math.LinAlgebra.MetricTensor
 import Math.FourGeometries
+import Math.RationalTrig
 import Core.BoxInt
+import Core.VexelMaxel
+import Core.UnixelFraction
 
 %default total
 
@@ -96,3 +99,39 @@ auditPureGeometricClassificationProof =
      classifyMetricGeometry mHyp == "Hyperbolic" &&
      classifyMetricGeometry mPar == "Parabolic" &&
      classifyMetricGeometry mSub == "Substrate"
+
+------------------------------------------------------------------------
+-- 4. RATIONAL SPREAD CLASSIFIER BETWEEN VEXELS (CH. 18-20)
+------------------------------------------------------------------------
+
+||| Classifies the geometric angle relationship between two Vexels from origin:
+||| - "Orthogonal": s = 1/1 (perpendicular, right angle)
+||| - "Collinear":  s = 0/1 (parallel, linearly aligned)
+||| - "Rational Angle": intermediate rational spread s in (0, 1)
+public export
+classifyVexelSpreadAngle : (v1 : Vexel) -> (v2 : Vexel) -> (String, UnixelFraction)
+classifyVexelSpreadAngle v1 v2 =
+  let origin = MkVexel []
+      s = vexelSpread v1 origin v2
+  in if rationalEquiv s (mkUnixelFraction (intToBoxInt 1) 1)
+       then ("Orthogonal", s)
+       else if rationalEquiv s (mkUnixelFraction (intToBoxInt 0) 1)
+         then ("Collinear", s)
+         else ("Rational Angle", s)
+
+||| Audits Vexel Spread Classification:
+||| 1. Perpendicular axes [1, 0] and [0, 1] -> "Orthogonal" (s = 1).
+||| 2. Parallel rays [2, 0] and [5, 0] -> "Collinear" (s = 0).
+public export
+auditVexelSpreadClassificationProof : Bool
+auditVexelSpreadClassificationProof =
+  let e1 = MkVexel [(MkUnixel 1, intToBoxInt 1)]
+      e2 = MkVexel [(MkUnixel 2, intToBoxInt 1)]
+      ray1 = MkVexel [(MkUnixel 1, intToBoxInt 2)]
+      ray2 = MkVexel [(MkUnixel 1, intToBoxInt 5)]
+      (clsOrtho, sOrtho) = classifyVexelSpreadAngle e1 e2
+      (clsColl, sColl)   = classifyVexelSpreadAngle ray1 ray2
+  in clsOrtho == "Orthogonal" &&
+     rationalEquiv sOrtho (mkUnixelFraction (intToBoxInt 1) 1) &&
+     clsColl == "Collinear" &&
+     rationalEquiv sColl (mkUnixelFraction (intToBoxInt 0) 1)

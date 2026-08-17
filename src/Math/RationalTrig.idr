@@ -2,8 +2,11 @@ module Math.RationalTrig
 
 import Core.BoxInt
 import Core.VexelMaxel
+import Core.Multiset
+import Core.UnixelFraction
 import Core.Polynumber
 import Math.LinAlgebra.MetricTensor
+import Data.List
 
 %default total
 
@@ -143,3 +146,95 @@ auditRationalSnellLawProof =
       n2Sq = intToBoxInt 4
       s2   = refractSpread n1Sq n2Sq s1
   in s2 == intToBoxInt 1 && (n1Sq * s1) == (n2Sq * s2)
+
+------------------------------------------------------------------------
+-- 4. CONTAINER DIFFERENCE QUADRANCE & RATIONAL SPREAD (CH. 18-20)
+------------------------------------------------------------------------
+
+||| Computes the exact Box Difference Quadrance between two multiset containers:
+||| Q_Box(A, B) = (D_MSet(A, B))^2 = (sum_x |w_A(x) - w_B(x)|)^2.
+public export
+boxDifferenceQuadrance : Eq a => Box a -> Box a -> BoxInt
+boxDifferenceQuadrance b1 b2 =
+  let d = natToBoxInt (boxSymmetricDifference b1 b2)
+  in d * d
+
+||| Computes the exact Difference Quadrance between two BoxSpec structures:
+||| Q_Spec(A, B) = |boxSize(A) - boxSize(B)|^2.
+public export
+boxSpecQuadrance : BoxSpec -> BoxSpec -> BoxInt
+boxSpecQuadrance s1 s2 =
+  let sz1 = natToBoxInt (boxSize s1)
+      sz2 = natToBoxInt (boxSize s2)
+      diff = sz1 - sz2
+  in diff * diff
+
+||| Computes the exact coordinate Quadrance between two 1D Vexels:
+||| Q_Vexel(v1, v2) = sum_i (c1(i) - c2(i))^2.
+public export
+vexelQuadrance : Vexel -> Vexel -> BoxInt
+vexelQuadrance (MkVexel xs) (MkVexel ys) =
+  let allIndices = nub (map (unUnixel . fst) xs ++ map (unUnixel . fst) ys)
+      sqDiffs = map (\idx =>
+        let w1 = lookupUnixel (MkUnixel idx) (MkVexel xs)
+            w2 = lookupUnixel (MkUnixel idx) (MkVexel ys)
+            diff = w1 - w2
+        in diff * diff) allIndices
+  in foldl (+) (intToBoxInt 0) sqDiffs
+  where
+    unUnixel : Unixel -> Nat
+    unUnixel (MkUnixel k) = k
+
+||| Computes the exact Rational Spread s = sin^2(theta) between three container quadrances Q1, Q2, Q3:
+||| s = A(Q1, Q2, Q3) / (4 * Q1 * Q2) in UnixelFraction.
+public export
+boxSpread : (q1 : BoxInt) -> (q2 : BoxInt) -> (q3 : BoxInt) -> UnixelFraction
+boxSpread q1 q2 q3 =
+  let numVal = quadrea q1 q2 q3
+      denVal = unwrapBox (intToBoxInt 4 * q1 * q2)
+      denNat = if denVal <= 0 then 1 else integerToNat denVal
+  in mkUnixelFraction numVal denNat
+
+||| Computes the exact Rational Spread between Vexel displacements (vertex -> a) and (vertex -> b).
+public export
+vexelSpread : (a : Vexel) -> (vertex : Vexel) -> (b : Vexel) -> UnixelFraction
+vexelSpread a vertex b =
+  let q1 = vexelQuadrance vertex a
+      q2 = vexelQuadrance vertex b
+      q3 = vexelQuadrance a b
+  in boxSpread q1 q2 q3
+
+||| Audits Container Pythagorean Theorem (Right-Angle Spread s = 1):
+||| Displacements v1 = [3, 0] and v2 = [0, 4] from origin [0, 0]:
+||| Q1 = 9, Q2 = 16, Q3 = 25 (3^2 + 4^2 = 5^2).
+||| A(9, 16, 25) = 4*9*16 - (9+16-25)^2 = 576.
+||| 4 * Q1 * Q2 = 4 * 9 * 16 = 576.
+||| s = 576 / 576 = 1.
+public export
+auditBoxPythagorasProof : Bool
+auditBoxPythagorasProof =
+  let origin = MkVexel []
+      v1 = MkVexel [(MkUnixel 1, intToBoxInt 3)]
+      v2 = MkVexel [(MkUnixel 2, intToBoxInt 4)]
+      q1 = vexelQuadrance origin v1
+      q2 = vexelQuadrance origin v2
+      q3 = vexelQuadrance v1 v2
+      s = vexelSpread v1 origin v2
+  in q1 == intToBoxInt 9 &&
+     q2 == intToBoxInt 16 &&
+     q3 == intToBoxInt 25 &&
+     rationalEquiv s (mkUnixelFraction (intToBoxInt 1) 1)
+
+||| Audits Container Collinearity Spread (s = 0):
+||| Points along the same line: origin [0, 0], v1 = [2, 0], v2 = [5, 0].
+||| Q1 = 4, Q2 = 25, Q3 = 9.
+||| A(4, 25, 9) = 4*4*25 - (4+25-9)^2 = 400 - 400 = 0.
+||| s = 0.
+public export
+auditBoxCollinearitySpreadProof : Bool
+auditBoxCollinearitySpreadProof =
+  let origin = MkVexel []
+      v1 = MkVexel [(MkUnixel 1, intToBoxInt 2)]
+      v2 = MkVexel [(MkUnixel 1, intToBoxInt 5)]
+      s = vexelSpread v1 origin v2
+  in rationalEquiv s (mkUnixelFraction (intToBoxInt 0) 1)

@@ -2,7 +2,7 @@ module Math.FourGeometries
 
 import Core.BoxInt
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.LinAlgebra.MetricTensor
 import Math.LinAlgebra.TernaryClassifier
 import Compound.HadronicConfinement
@@ -124,11 +124,11 @@ cosmicBudgetByGeometry SubstrateGeom  = 210 -- The master evolutionary container
 
 ||| Evaluates the exact rational chance proportion of each geometry.
 public export
-cosmicChanceByGeometry : FundamentalGeometry -> SingFraction
+cosmicChanceByGeometry : FundamentalGeometry -> UnixelFraction
 cosmicChanceByGeometry geom =
   let tally = cosmicBudgetByGeometry geom
   in if geom == SubstrateGeom
-       then unitSingFraction
+       then unitUnixelFraction
        else hehnerTallyToChance tally 210
 
 ------------------------------------------------------------------------
@@ -153,7 +153,7 @@ auditFourGeometriesDeterminantsProof =
 ||| 1. Quadrance of (1, 1) under Hyperbolic is exactly 0 (Lightcone).
 ||| 2. Quadrance of (1, 0) under Elliptic is exactly 1 (Confinement).
 ||| 3. Budget partition 27 + 128 + 55 == 210 (Primorial 210).
-||| 4. Sum of triad chances equals unitSingFraction (1/1).
+||| 4. Sum of triad chances equals unitUnixelFraction (1/1).
 public export
 auditFourGeometriesCosmicSynthesisProof : Bool
 auditFourGeometriesCosmicSynthesisProof =
@@ -166,8 +166,8 @@ auditFourGeometriesCosmicSynthesisProof =
       cEll = cosmicChanceByGeometry EllipticGeom
       cHyp = cosmicChanceByGeometry HyperbolicGeom
       cPar = cosmicChanceByGeometry ParabolicGeom
-      totC = addSingFraction (addSingFraction cEll cHyp) cPar
+      totC = addUnixelFraction (addUnixelFraction cEll cHyp) cPar
   in unwrapBox qHyp == 0 &&
      unwrapBox qEll == 1 &&
      totB == 210 &&
-     totC == unitSingFraction
+     totC == unitUnixelFraction

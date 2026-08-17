@@ -84,3 +84,32 @@ auditMultisetTreeTokenSumProof =
       t1 = insertTokenTree (intToBoxInt 10) 5 t0
       t2 = insertTokenTree (intToBoxInt 20) 3 t1
   in treeTokenSum t2 == 8 && treeElementCount t2 == 2
+
+------------------------------------------------------------------------
+-- 3. CANONICAL BOXSPEC MULTISET TREES
+------------------------------------------------------------------------
+
+||| Specialized Multiset Tree indexed by canonical BoxSpec configurations.
+public export
+BoxSpecTree : Type
+BoxSpecTree = MultisetTree BoxSpec
+
+||| Audits that MultisetTree uses Canonical BoxSpec total ordering (Leaf < [[]] < [[] []]):
+||| Inserting BoxSpec 0, 1, 2 stores them in deterministic binary search tree order.
+public export
+auditBoxSpecTreeOrderingProof : Bool
+auditBoxSpecTreeOrderingProof =
+  let b0 = fromNatBoxSpec 0
+      b1 = fromNatBoxSpec 1
+      b2 = fromNatBoxSpec 2
+      t0 : BoxSpecTree = Leaf
+      t1 = insertTokenTree b1 10 t0
+      t2 = insertTokenTree b0 5 t1
+      t3 = insertTokenTree b2 15 t2
+      c0 = lookupTokenTree b0 t3
+      c1 = lookupTokenTree b1 t3
+      c2 = lookupTokenTree b2 t3
+      c3 = lookupTokenTree (fromNatBoxSpec 3) t3
+  in c0 == 5 && c1 == 10 && c2 == 15 && c3 == 0 &&
+     treeTokenSum t3 == 30 &&
+     treeElementCount t3 == 3

@@ -2,7 +2,7 @@ module Math.GaugeSpinorCoupling
 
 import Core.BoxInt
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.DiscreteDiracSpinor
 import Math.GravitationalWaveDynamics
 import Math.FourGeometries

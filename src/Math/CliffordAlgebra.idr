@@ -97,7 +97,7 @@ public export
 auditCliffordGeometricProductProof : Bool
 auditCliffordGeometricProductProof =
   let metric = MkMaxel [(MkPixel 1 1, intToBoxInt 1), (MkPixel 2 2, intToBoxInt 1)]
-      v = MkVexel [(MkSingleton 1, intToBoxInt 3), (MkSingleton 2, intToBoxInt 4)]
+      v = MkVexel [(MkUnixel 1, intToBoxInt 3), (MkUnixel 2, intToBoxInt 4)]
       mvSquare = mulGeometricVector metric v v
   in scalarPart mvSquare == intToBoxInt (3 * 3 + 4 * 4) &&
      bivectorPart mvSquare == MkMaxel []
@@ -114,7 +114,7 @@ diracSpinorCurrent (MkMultivector s v (MkMaxel b) _) =
   let bSq = sum (map (\(_, w) => w * w) b)
       j0  = (s * s) + bSq
       jV  = scaleVexel (intToBoxInt 2 * s) v
-  in addVexel (MkVexel [(MkSingleton 0, j0)]) jV
+  in addVexel (MkVexel [(MkUnixel 0, j0)]) jV
 
 ||| Audits that the discrete Dirac current divergence across closed bounding faces vanishes identically.
 public export

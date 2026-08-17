@@ -3,21 +3,16 @@ module Math.ShannonHuffmanOptimality
 import Core.BoxInt
 import Core.Multiset
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.FourGeometries
 import Data.List
+import Data.Vect
 
 %default total
 
 ------------------------------------------------------------------------
 -- 1. CONSTRUCTIVE MULTISET SHANNON-HUFFMAN PREFIX OPTIMALITY
 ------------------------------------------------------------------------
-
-||| Exact integer powers of 2 for Kraft-McMillan scaling:
-public export
-natPower2 : Nat -> Nat
-natPower2 0 = 1
-natPower2 (S k) = 2 * natPower2 k
 
 ||| Computes integer half of a Nat:
 public export
@@ -48,6 +43,12 @@ public export
 fastNatPower2 : Nat -> Nat
 fastNatPower2 k = fastNatPower2Fuel (k + 5) k
 
+||| @deprecated Linear Peano natPower2 is superseded by O(log k) binary fastNatPower2.
+||| Exact integer powers of 2 for Kraft-McMillan scaling:
+public export
+natPower2 : Nat -> Nat
+natPower2 = fastNatPower2
+
 ||| Evaluates scaled Kraft-McMillan sum for a list of codeword lengths with maximum length maxL:
 ||| Sum_{i=1}^k 2^(maxL - l_i) <= 2^maxL.
 public export
@@ -55,14 +56,14 @@ scaledKraftSum : (maxL : Nat) -> List Nat -> Nat
 scaledKraftSum _ [] = 0
 scaledKraftSum maxL (l :: rest) =
   if l <= maxL
-    then (natPower2 (maxL `minus` l)) + scaledKraftSum maxL rest
+    then (fastNatPower2 (maxL `minus` l)) + scaledKraftSum maxL rest
     else scaledKraftSum maxL rest
 
 ||| Validates whether a list of codeword lengths forms a valid prefix-free code:
 public export
 isValidPrefixCode : (maxL : Nat) -> List Nat -> Bool
 isValidPrefixCode maxL lengths =
-  scaledKraftSum maxL lengths <= natPower2 maxL
+  scaledKraftSum maxL lengths <= fastNatPower2 maxL
 
 ||| Computes Stern-Brocot tree path depth with structural termination fuel:
 public export
@@ -114,3 +115,40 @@ auditCyclotomicKolmogorovMinimalityProof =
   let cyclePeriod = 137
       generatorDegree = cyclePeriod - 1
   in generatorDegree == 136
+
+------------------------------------------------------------------------
+-- 3. DYCK-HUFFMAN CODES & HOLOGRAPHIC TRANSMISSION (CH. 25 & 27)
+------------------------------------------------------------------------
+
+||| Evaluates the Dyck path bitstream of a BoxSpec tree:
+public export
+dyckHuffmanBitstream : BoxSpec -> List Bool
+dyckHuffmanBitstream = contourWalk
+
+||| Evaluates the bit length of the Dyck contour serialization:
+public export
+dyckHuffmanBitLength : BoxSpec -> Nat
+dyckHuffmanBitLength b = length (dyckHuffmanBitstream b)
+
+||| Audits Dyck-Huffman Codes & Holographic Boundary Transmission:
+||| 1. Huffman tree Node [Node [Leaf, Leaf], Leaf] (3 leaves, 5 nodes)
+||| 2. Serialized Dyck bitstream has length 2 * 5 = 10 bits.
+||| 3. Dyck path is strictly valid and balanced (isDyckPath == True).
+||| 4. Decodes back reversibly to the exact original BoxSpec tree (fromContourWalk).
+||| 5. Respects the 54-token Holographic Boundary area bound (10 <= 108 bits).
+public export
+auditDyckHuffmanHolographicProof : Bool
+auditDyckHuffmanHolographicProof =
+  let child1 : BoxSpec = Node [Leaf, Leaf]
+      hTree  : BoxSpec = Node [child1, Leaf]
+      bits = dyckHuffmanBitstream hTree
+      bitLen = dyckHuffmanBitLength hTree
+      validDyck = isDyckPath bits
+      roundtrip = case fromContourWalk bits of
+                    Just b' => b' == hTree
+                    Nothing => False
+      holographicCap = the Nat 108 -- 2 * 54 boundary tokens
+  in bitLen == 10 &&
+     validDyck &&
+     roundtrip &&
+     bitLen <= holographicCap

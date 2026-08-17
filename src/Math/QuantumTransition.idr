@@ -3,7 +3,7 @@ module Math.QuantumTransition
 import Core.BoxInt
 import Core.Multiset
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 import Data.List
 import Data.Vect
 
@@ -85,7 +85,7 @@ mulAmplitude (MkDualAmplitude r1 i1) (MkDualAmplitude r2 i2) =
 public export
 record QuantumState where
   constructor MkQuantumState
-  amplitudes : List (Singleton, DualAmplitude)
+  amplitudes : List (Unixel, DualAmplitude)
 
 public export
 Eq QuantumState where
@@ -97,7 +97,7 @@ Show QuantumState where
 
 ||| Looks up the amplitude of a basis singleton in a quantum state vector.
 public export
-lookupStateAmplitude : Singleton -> QuantumState -> DualAmplitude
+lookupStateAmplitude : Unixel -> QuantumState -> DualAmplitude
 lookupStateAmplitude s (MkQuantumState amps) =
   case find (\(k, _) => k == s) amps of
     Just (_, a) => a
@@ -109,17 +109,17 @@ totalBornNormSq : QuantumState -> BoxInt
 totalBornNormSq (MkQuantumState amps) =
   sum (map (\(_, a) => normSqAmplitude a) amps)
 
-||| Evaluates the exact rational Born probability chance (SingFraction) for a given basis singleton.
+||| Evaluates the exact rational Born probability chance (UnixelFraction) for a given basis singleton.
 public export
-bornProbabilityChance : Singleton -> QuantumState -> SingFraction
+bornProbabilityChance : Unixel -> QuantumState -> UnixelFraction
 bornProbabilityChance s st =
   let a = lookupStateAmplitude s st
       numer = normSqAmplitude a
       denomBox = totalBornNormSq st
       denomNat = integerToNat (unwrapBox denomBox)
   in if denomNat == 0
-       then mkSingFraction (intToBoxInt 0) 1
-       else mkSingFraction numer denomNat
+       then mkUnixelFraction (intToBoxInt 0) 1
+       else mkUnixelFraction numer denomNat
 
 ------------------------------------------------------------------------
 -- 3. QUANTUM TRANSITION OPERATORS & S-MATRICES
@@ -185,10 +185,10 @@ adjointQuantumOp (MkQuantumOperator mat) =
 ||| Applies a QuantumOperator to a QuantumState: |psi'> = U |psi>.
 ||| For each output basis row i: c'_i = sum_j U_ij * c_j.
 public export
-applyQuantumOperator : List Singleton -> QuantumOperator -> QuantumState -> QuantumState
+applyQuantumOperator : List Unixel -> QuantumOperator -> QuantumState -> QuantumState
 applyQuantumOperator basis op st =
-  let computed = map (\(sOut@(MkSingleton i)) =>
-                    let sumRow = sumAmplitudes (map (\(sIn@(MkSingleton j)) =>
+  let computed = map (\(sOut@(MkUnixel i)) =>
+                    let sumRow = sumAmplitudes (map (\(sIn@(MkUnixel j)) =>
                                                   let u_ij = lookupMatrixEntry (MkPixel i j) op
                                                       c_j  = lookupStateAmplitude sIn st
                                                   in mulAmplitude u_ij c_j) basis)
@@ -294,19 +294,19 @@ gaugeTransformLink dim v_i u_ij v_j =
 public export
 auditUnitaryProbabilityConservationProof : Bool
 auditUnitaryProbabilityConservationProof =
-  let basis = [MkSingleton 1, MkSingleton 2]
-      psi0  = MkQuantumState [(MkSingleton 1, unitAmplitude), (MkSingleton 2, zeroAmplitude)]
+  let basis = [MkUnixel 1, MkUnixel 2]
+      psi0  = MkQuantumState [(MkUnixel 1, unitAmplitude), (MkUnixel 2, zeroAmplitude)]
       psi1  = applyQuantumOperator basis hadamardQuantumOp2 psi0
-      c1    = lookupStateAmplitude (MkSingleton 1) psi1
-      c2    = lookupStateAmplitude (MkSingleton 2) psi1
-      p1    = bornProbabilityChance (MkSingleton 1) psi1
-      p2    = bornProbabilityChance (MkSingleton 2) psi1
-      totP  = addSingFraction p1 p2
+      c1    = lookupStateAmplitude (MkUnixel 1) psi1
+      c2    = lookupStateAmplitude (MkUnixel 2) psi1
+      p1    = bornProbabilityChance (MkUnixel 1) psi1
+      p2    = bornProbabilityChance (MkUnixel 2) psi1
+      totP  = addUnixelFraction p1 p2
   in c1 == unitAmplitude &&
      c2 == unitAmplitude &&
      unwrapBox (normSqAmplitude c1) == 1 &&
      unwrapBox (normSqAmplitude c2) == 1 &&
-     totP == unitSingFraction
+     totP == unitUnixelFraction
 
 ||| Audits Wilson Loop Gauge Invariance:
 ||| Proves that the Wilson loop trace is identical before and after local vertex gauge transformations.
@@ -331,14 +331,14 @@ auditWilsonLoopGaugeInvarianceProof =
   in trOriginal == trGaugeTransformed
 
 ||| Audits Discrete Born Probability Transition Tally:
-||| Tests that Born rational chances strictly sum to unitSingFraction (1/1).
+||| Tests that Born rational chances strictly sum to unitUnixelFraction (1/1).
 public export
 auditDiscreteBornTransitionTallyProof : Bool
 auditDiscreteBornTransitionTallyProof =
-  let st = MkQuantumState [ (MkSingleton 1, MkDualAmplitude (intToBoxInt 3) (intToBoxInt 0))
-                          , (MkSingleton 2, MkDualAmplitude (intToBoxInt 4) (intToBoxInt 0))
+  let st = MkQuantumState [ (MkUnixel 1, MkDualAmplitude (intToBoxInt 3) (intToBoxInt 0))
+                          , (MkUnixel 2, MkDualAmplitude (intToBoxInt 4) (intToBoxInt 0))
                           ]
-      p1 = bornProbabilityChance (MkSingleton 1) st -- 9 / 25
-      p2 = bornProbabilityChance (MkSingleton 2) st -- 16 / 25
-      pSum = addSingFraction p1 p2
-  in pSum == unitSingFraction
+      p1 = bornProbabilityChance (MkUnixel 1) st -- 9 / 25
+      p2 = bornProbabilityChance (MkUnixel 2) st -- 16 / 25
+      pSum = addUnixelFraction p1 p2
+  in pSum == unitUnixelFraction

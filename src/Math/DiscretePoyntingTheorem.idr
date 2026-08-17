@@ -1,7 +1,7 @@
 module Math.DiscretePoyntingTheorem
 
 import Core.BoxInt
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.FourGeometries
 import Data.List
 

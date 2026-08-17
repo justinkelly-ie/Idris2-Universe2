@@ -135,3 +135,20 @@ isHadronBoxelColorNeutral b =
 public export
 stateToEpoch3Boxel : UniverseState 27 de dm -> Boxel
 stateToEpoch3Boxel (MkUniverseState vm _ _) = field27ToBoxel vm
+
+||| A 4-Vexel Balance Array representing Hadronic Color Singlet Confinement:
+||| q_R + q_G + q_B = B_singlet
+public export
+hadronSingletBalanceArray : BalanceArray 4
+hadronSingletBalanceArray = MkBalanceArray [1, 1, 1, 0] [0, 0, 0, 1]
+
+||| Audits that 3 color quark vexels balance the unified baryon singlet.
+public export
+auditHadronSingletBalanceProof : Bool
+auditHadronSingletBalanceProof =
+  let qR = MkVexel [(MkUnixel 1, intToBoxInt 9)]
+      qG = MkVexel [(MkUnixel 2, intToBoxInt 9)]
+      qB = MkVexel [(MkUnixel 3, intToBoxInt 9)]
+      bSinglet = MkVexel [(MkUnixel 1, intToBoxInt 9), (MkUnixel 2, intToBoxInt 9), (MkUnixel 3, intToBoxInt 9)]
+  in isBalanced [qR, qG, qB, bSinglet] hadronSingletBalanceArray &&
+     isDisjointBalance hadronSingletBalanceArray

@@ -22,6 +22,8 @@ bootstrapEpochs (S j) state =
   let stepState = contractAndFoldGeneric state (natToBoxInt (S j))
   in rewrite plusSuccRightSucc j dm in bootstrapEpochs j stepState
 
+||| @deprecated Single-step stepEpoch is superseded by the full linear QTT pipeline 
+||| Evolution.LinearPipeline.runEpochPipeline or contractAndFoldGeneric.
 ||| Steps a single epoch by folding active fields and appending an exact remainder token.
 public export
 stepEpoch : {vm, de, dm : Nat} -> 
@@ -43,6 +45,7 @@ bootstrapToEpoch : (targetEpoch : Nat) ->
 bootstrapToEpoch targetEpoch gridDim deDepth =
   seedCosmicVacuum gridDim deDepth targetEpoch
 
+||| @deprecated Hardcoded standardEpoch37 is superseded by relational bootstrapToEpoch 37 3 7.
 ||| Generates the standard cosmological state for Epoch 37 (dim=3 -> 27, depth=7 -> 128, dm=55).
 public export
 standardEpoch37 : UniverseState 27 128 55

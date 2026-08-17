@@ -3,9 +3,10 @@ module Geometry.InformationGeometry
 import Core.BoxInt
 import Core.Multiset
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.CliffordAlgebra
 import Math.LinAlgebra.MetricTensor
+import Math.RationalTrig
 import Compound.HadronicConfinement
 
 %default total
@@ -18,14 +19,14 @@ import Compound.HadronicConfinement
 ||| from the cosmic origin (1/1) to a target rational state frac.
 ||| Exactly equal to Hehner's constructive bit-depth: d_H2(1/1, q) = length(toSternBrocotPath fuel q).
 public export
-hyperbolicGeodesicDistance : (fuel : Nat) -> SingFraction -> Nat
+hyperbolicGeodesicDistance : (fuel : Nat) -> UnixelFraction -> Nat
 hyperbolicGeodesicDistance fuel q = hehnerBitDepth fuel q
 
 ||| Proves that the hyperbolic geodesic distance to 5/3 is exactly 3 discrete steps ([R, L, R]).
 public export
 auditHyperbolicBitDualityProof : Bool
 auditHyperbolicBitDualityProof =
-  let q = mkSingFraction (intToBoxInt 5) 3
+  let q = mkUnixelFraction (intToBoxInt 5) 3
       d = hyperbolicGeodesicDistance 10 q
   in d == 3
 
@@ -43,10 +44,10 @@ cliffordScalarOverlap metric u v =
 
 ||| Converts a quantum Vexel's basis Singletons into an exact Multiset.
 public export
-vexelToMSet : Vexel -> MSet Nat
+vexelToMSet : Vexel -> Box Nat
 vexelToMSet (MkVexel sings) =
-  let items = map (\(MkSingleton k, w) => (k, w)) sings
-  in MkMSet (filter (\(_, w) => unwrapBox w /= 0) items)
+  let items = map (\(MkUnixel k, w) => (k, w)) sings
+  in MkBox (filter (\(_, w) => unwrapBox w /= 0) items)
 
 ||| Proves that Clifford vector collinearity <u, v> directly matches Multiset Intersection Mass:
 ||| For orthogonal vectors (collinear = 0), intersection is empty;
@@ -54,17 +55,17 @@ vexelToMSet (MkVexel sings) =
 public export
 auditCliffordCompactnessDualityProof : Bool
 auditCliffordCompactnessDualityProof =
-  let u = MkVexel [(MkSingleton 1, intToBoxInt 3), (MkSingleton 2, intToBoxInt 4)]
-      v = MkVexel [(MkSingleton 1, intToBoxInt 3), (MkSingleton 2, intToBoxInt 4)]
-      w = MkVexel [(MkSingleton 3, intToBoxInt 5)]
+  let u = MkVexel [(MkUnixel 1, intToBoxInt 3), (MkUnixel 2, intToBoxInt 4)]
+      v = MkVexel [(MkUnixel 1, intToBoxInt 3), (MkUnixel 2, intToBoxInt 4)]
+      w = MkVexel [(MkUnixel 3, intToBoxInt 5)]
       metric = identityMaxel
       overlapSelf = cliffordScalarOverlap metric u v
       overlapOrtho = cliffordScalarOverlap metric u w
       mU = vexelToMSet u
       mV = vexelToMSet v
       mW = vexelToMSet w
-      interSelf = multisetIntersectionMass mU mV
-      interOrtho = multisetIntersectionMass mU mW
+      interSelf = boxIntersectionMass mU mV
+      interOrtho = boxIntersectionMass mU mW
   in overlapSelf == intToBoxInt 25 &&
      overlapOrtho == intToBoxInt 0 &&
      interSelf == 7 &&
@@ -79,7 +80,7 @@ auditCliffordCompactnessDualityProof =
 ||| - RedColor   (Hyperbolic Symplectic Law ROM)    -> 128 / 210
 ||| - GreenColor (Parabolic Lightcone Remainder)    -> 55 / 210
 public export
-chromogeometricSectorChance : ColorCharge -> SingFraction
+chromogeometricSectorChance : ColorCharge -> UnixelFraction
 chromogeometricSectorChance BlueColor  = hehnerTallyToChance 27 210
 chromogeometricSectorChance RedColor   = hehnerTallyToChance 128 210
 chromogeometricSectorChance GreenColor = hehnerTallyToChance 55 210
@@ -91,8 +92,8 @@ auditChromogeometricBudgetProof =
   let cBlue  = chromogeometricSectorChance BlueColor
       cRed   = chromogeometricSectorChance RedColor
       cGreen = chromogeometricSectorChance GreenColor
-      totChance = addSingFraction (addSingFraction cBlue cRed) cGreen
-  in totChance == unitSingFraction
+      totChance = addUnixelFraction (addUnixelFraction cBlue cRed) cGreen
+  in totChance == unitUnixelFraction
 
 
 
@@ -158,7 +159,7 @@ auditYangMillsPlaquetteCrossEntropyProof =
 ||| Evaluates the Scale-to-Scale Renormalization Mutual Compactness:
 ||| Measures topological information preservation when coarse-graining from micro to macro scales.
 public export
-renormalizationMutualCompactness : Eq a => (micro : MSet a) -> (macro : MSet a) -> SingFraction
+renormalizationMutualCompactness : Eq a => (micro : Box a) -> (macro : Box a) -> UnixelFraction
 renormalizationMutualCompactness micro macro =
   multisetCompactnessRatio micro macro
 
@@ -168,8 +169,30 @@ renormalizationMutualCompactness micro macro =
 public export
 auditRenormalizationInvarianceProof : Bool
 auditRenormalizationInvarianceProof =
-  let microLattice = MkMSet [(1, intToBoxInt 9), (2, intToBoxInt 9), (3, intToBoxInt 9)]
+  let microLattice = MkBox [(1, intToBoxInt 9), (2, intToBoxInt 9), (3, intToBoxInt 9)]
       macroLattice = microLattice
       rgCompactness = renormalizationMutualCompactness microLattice macroLattice
-  in rgCompactness == unitSingFraction
+  in rgCompactness == unitUnixelFraction
+
+------------------------------------------------------------------------
+-- 7. MULTISET QUADRANCE & RATIONAL INFORMATION METRIC (CH. 18-20)
+------------------------------------------------------------------------
+
+||| Computes exact information quadrance between two probability/token multisets:
+||| Q_Info(P, Q) = (D_MSet(P, Q))^2.
+public export
+multisetQuadranceDistance : Eq a => Box a -> Box a -> BoxInt
+multisetQuadranceDistance p q = boxDifferenceQuadrance p q
+
+||| Audits that Multiset Information Quadrance:
+||| 1. Q_Info(P, P) == 0 (zero self-quadrance)
+||| 2. Q_Info(P, Q) == 4 for symmetric difference 2 (dist = 2, quad = 4).
+public export
+auditInformationQuadranceProof : Bool
+auditInformationQuadranceProof =
+  let p = MkBox [(1, intToBoxInt 5), (2, intToBoxInt 3)]
+      q = MkBox [(1, intToBoxInt 4), (2, intToBoxInt 4)]
+      qSelf = multisetQuadranceDistance p p
+      qDiff = multisetQuadranceDistance p q
+  in qSelf == intToBoxInt 0 && qDiff == intToBoxInt 4
 

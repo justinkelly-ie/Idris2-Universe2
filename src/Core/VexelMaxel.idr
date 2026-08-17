@@ -12,19 +12,19 @@ import Language.Reflection
 -- 1. WILDBERGER'S SINGLETONS, PIXELS & VOXELS
 ------------------------------------------------------------------------
 
-||| A Singleton is a 1-list from Nat [n], representing a 1D basis coordinate.
+||| A Unixel is a 1-list from Nat [n], representing a 1D basis coordinate.
 public export
-record Singleton where
-  constructor MkSingleton
+record Unixel where
+  constructor MkUnixel
   index : Nat
 
 public export
-Eq Singleton where
-  (MkSingleton i1) == (MkSingleton i2) = i1 == i2
+Eq Unixel where
+  (MkUnixel i1) == (MkUnixel i2) = i1 == i2
 
 public export
-Show Singleton where
-  show (MkSingleton i) = "[" ++ show i ++ "]"
+Show Unixel where
+  show (MkUnixel i) = "[" ++ show i ++ "]"
 
 ||| A Pixel is a 2-list from Nat [i, j], representing a 2D coordinate cell or signed difference pair [pos, neg].
 public export
@@ -80,7 +80,7 @@ pixelToSignedBoxInt (MkPixel p n) = intToBoxInt (cast p - cast n)
 public export
 record Vexel where
   constructor MkVexel
-  terms : List (Singleton, BoxInt)
+  terms : List (Unixel, BoxInt)
 
 public export
 Eq Vexel where
@@ -105,10 +105,10 @@ public export
 Show Maxel where
   show (MkMaxel ps) = "Maxel(" ++ show ps ++ ")"
 
-||| Extracts the weight of a specific basis Singleton in a Vexel.
+||| Extracts the weight of a specific basis Unixel in a Vexel.
 public export
-lookupSingleton : Singleton -> Vexel -> BoxInt
-lookupSingleton target (MkVexel sings) =
+lookupUnixel : Unixel -> Vexel -> BoxInt
+lookupUnixel target (MkVexel sings) =
   foldl (\acc, (s, w) => if s == target then acc + w else acc) (intToBoxInt 0) sings
 
 ||| Computes the total integer mass of a Vexel vector.
@@ -175,7 +175,7 @@ canonicalizeVexel (MkVexel terms) =
       pruned = filter (\(_, w) => unwrapBox w /= 0) folded
   in MkVexel pruned
   where
-    insertOrAdd : List (Singleton, BoxInt) -> (Singleton, BoxInt) -> List (Singleton, BoxInt)
+    insertOrAdd : List (Unixel, BoxInt) -> (Unixel, BoxInt) -> List (Unixel, BoxInt)
     insertOrAdd [] (s, w) = [(s, w)]
     insertOrAdd ((k, v) :: rest) (s, w) =
       if k == s 
@@ -225,17 +225,17 @@ mulPixel : Pixel -> Pixel -> Maybe Pixel
 mulPixel (MkPixel i j) (MkPixel k l) =
   if j == k then Just (MkPixel i l) else Nothing
 
-||| Multiplies a Singleton on the left by a Pixel (Row extraction filter).
+||| Multiplies a Unixel on the left by a Pixel (Row extraction filter).
 public export
-mulSingletonPixel : Singleton -> Pixel -> Maybe Singleton
-mulSingletonPixel (MkSingleton k) (MkPixel l m) =
-  if k == l then Just (MkSingleton m) else Nothing
+mulUnixelPixel : Unixel -> Pixel -> Maybe Unixel
+mulUnixelPixel (MkUnixel k) (MkPixel l m) =
+  if k == l then Just (MkUnixel m) else Nothing
 
-||| Multiplies a Pixel on the left by a Singleton (Column extraction filter).
+||| Multiplies a Pixel on the left by a Unixel (Column extraction filter).
 public export
-mulPixelSingleton : Pixel -> Singleton -> Maybe Singleton
-mulPixelSingleton (MkPixel l m) (MkSingleton k) =
-  if m == k then Just (MkSingleton l) else Nothing
+mulPixelUnixel : Pixel -> Unixel -> Maybe Unixel
+mulPixelUnixel (MkPixel l m) (MkUnixel k) =
+  if m == k then Just (MkUnixel l) else Nothing
 
 ||| Multiplies two Maxels (discrete matrix multiplication).
 ||| (sum a_ij [i, j]) * (sum b_kl [k, l]) => sum (a_ij * b_kl) [i, l] (where j == k)
@@ -252,8 +252,8 @@ mulMaxel (MkMaxel ps1) (MkMaxel ps2) =
 public export
 actMaxelVexel : Maxel -> Vexel -> Vexel
 actMaxelVexel (MkMaxel pxs) (MkVexel sings) =
-  let step : (Pixel, BoxInt) -> List (Singleton, BoxInt)
-      step (pix, pw) = mapMaybe (\(sing, sw) => case mulPixelSingleton pix sing of
+  let step : (Pixel, BoxInt) -> List (Unixel, BoxInt)
+      step (pix, pw) = mapMaybe (\(sing, sw) => case mulPixelUnixel pix sing of
                                                   Just sOut => Just (sOut, pw * sw)
                                                   Nothing   => Nothing) sings
   in MkVexel (concatMap step pxs)
@@ -301,9 +301,9 @@ scaleVexel s (MkVexel sings) =
 public export
 dotVexel : Vexel -> Vexel -> BoxInt
 dotVexel (MkVexel uTerms) v =
-  let step : (Singleton, BoxInt) -> BoxInt
+  let step : (Unixel, BoxInt) -> BoxInt
       step (s, uw) =
-        let vw = lookupSingleton s v
+        let vw = lookupUnixel s v
         in uw * vw
   in foldl (+) (intToBoxInt 0) (map step uTerms)
 
@@ -323,9 +323,9 @@ metricInnerVexel g u v =
 public export
 extractRowVexel : Nat -> Maxel -> Vexel
 extractRowVexel i (MkMaxel ps) =
-  let singI = MkSingleton i
+  let singI = MkUnixel i
       extracted = mapMaybe (\(pix, w) => 
-                    case mulSingletonPixel singI pix of
+                    case mulUnixelPixel singI pix of
                       Just sOut => Just (sOut, w)
                       Nothing   => Nothing) ps
   in MkVexel extracted
@@ -334,9 +334,9 @@ extractRowVexel i (MkMaxel ps) =
 public export
 extractColVexel : Nat -> Maxel -> Vexel
 extractColVexel j (MkMaxel ps) =
-  let singJ = MkSingleton j
+  let singJ = MkUnixel j
       extracted = mapMaybe (\(pix, w) => 
-                    case mulPixelSingleton pix singJ of
+                    case mulPixelUnixel pix singJ of
                       Just sOut => Just (sOut, w)
                       Nothing   => Nothing) ps
   in MkVexel extracted
@@ -402,9 +402,9 @@ totalMaxelWeight (MkMaxel ps) =
 public export
 nucleonQuarkVexel : Vexel
 nucleonQuarkVexel =
-  MkVexel [ (MkSingleton 1, intToBoxInt 1)
-          , (MkSingleton 2, intToBoxInt 1)
-          , (MkSingleton 3, intToBoxInt 1)
+  MkVexel [ (MkUnixel 1, intToBoxInt 1)
+          , (MkUnixel 2, intToBoxInt 1)
+          , (MkUnixel 3, intToBoxInt 1)
           ]
 
 ||| 🧪 Chemistry: A Molecular Bond Maxel represents covalent bond connectivity between atoms i and j.
@@ -481,8 +481,8 @@ translateGene (MkGene (MkBoxel voxs)) =
 public export
 wedgeVexel : Vexel -> Vexel -> Maxel
 wedgeVexel (MkVexel u) (MkVexel v) =
-  let pairs = concatMap (\(MkSingleton i, wu) =>
-                map (\(MkSingleton j, wv) =>
+  let pairs = concatMap (\(MkUnixel i, wu) =>
+                map (\(MkUnixel j, wv) =>
                   (MkPixel i j, wu * wv)) v) u
       antisym = concatMap (\(MkPixel i j, w) =>
         if i == j then [] else [(MkPixel i j, w), (MkPixel j i, -w)]) pairs
@@ -494,7 +494,7 @@ wedgeVexel (MkVexel u) (MkVexel v) =
 public export
 wedgeVexelMaxel : Vexel -> Maxel -> Boxel
 wedgeVexelMaxel (MkVexel u) (MkMaxel m) =
-  let terms = concatMap (\(MkSingleton i, wu) =>
+  let terms = concatMap (\(MkUnixel i, wu) =>
         concatMap (\(MkPixel j k, wm) =>
           if i == j || j == k || i == k
             then []
@@ -578,30 +578,120 @@ public export
 outerProductVexelBoxel : Vexel -> Boxel -> HyperBoxel
 outerProductVexelBoxel (MkVexel times) (MkBoxel spaces) =
   let productList = [ (MkTesseract x y z t, wt * ws)
-                    | (MkSingleton t, wt) <- times
+                    | (MkUnixel t, wt) <- times
                     , (MkVoxel x y z, ws) <- spaces
                     ]
   in canonicalizeHyperBoxel (MkHyperBoxel productList)
 
 ------------------------------------------------------------------------
--- 10. COMPILE-TIME REFLECTION & INVARIANT AUDITORS
+-- 10. BALANCE ARRAYS & SUBTRACTION-FREE NATURAL LINEAR INDEPENDENCE (CH. 26)
+------------------------------------------------------------------------
+
+||| Fuel-bounded total greatest common divisor for natural numbers.
+public export
+natGcdFuel : Nat -> Nat -> Nat -> Nat
+natGcdFuel Z a b = 1
+natGcdFuel (S f) a Z = a
+natGcdFuel (S f) a (S b) =
+  let rem = a `mod` (S b)
+  in natGcdFuel f (S b) rem
+
+public export
+natGcd : Nat -> Nat -> Nat
+natGcd a b = natGcdFuel (a + b + 10) a b
+
+||| A Balance Array represents a subtraction-free linear relation between n vectors (Vexels).
+||| Positive side: sum posWeights_i * v_i
+||| Negative side: sum negWeights_i * v_i
+public export
+record BalanceArray (n : Nat) where
+  constructor MkBalanceArray
+  posWeights : Vect n Nat
+  negWeights : Vect n Nat
+
+public export
+Eq (BalanceArray n) where
+  (MkBalanceArray p1 n1) == (MkBalanceArray p2 n2) = p1 == p2 && n1 == n2
+
+public export
+Show (BalanceArray n) where
+  show (MkBalanceArray p n) = "BalanceArray(+" ++ show (toList p) ++ ", -" ++ show (toList n) ++ ")"
+
+||| Computes a linear combination of Vexels weighted by natural numbers.
+public export
+linearComboVexel : {n : Nat} -> Vect n Nat -> Vect n Vexel -> Vexel
+linearComboVexel [] [] = MkVexel []
+linearComboVexel (c :: cs) (v :: vs) =
+  let scaled = scaleVexel (intToBoxInt (cast c)) v
+      rest   = linearComboVexel cs vs
+  in addVexel scaled rest
+
+||| Evaluates the positive and negative sides of a BalanceArray over a list of Vexels: (posVex, negVex).
+public export
+evalVexelBalance : {n : Nat} -> Vect n Vexel -> BalanceArray n -> (Vexel, Vexel)
+evalVexelBalance vexels (MkBalanceArray posW negW) =
+  (canonicalizeVexel (linearComboVexel posW vexels),
+   canonicalizeVexel (linearComboVexel negW vexels))
+
+||| A BalanceArray is balanced when its positive side equals its negative side in canonical multiset form.
+public export
+isBalanced : {n : Nat} -> Vect n Vexel -> BalanceArray n -> Bool
+isBalanced vexels b =
+  let (p, n) = evalVexelBalance vexels b
+  in p == n
+
+||| A BalanceArray is disjoint when min(pos_i, neg_i) == 0 for all i (no token appears on both sides).
+public export
+isDisjointBalance : {n : Nat} -> BalanceArray n -> Bool
+isDisjointBalance (MkBalanceArray [] []) = True
+isDisjointBalance (MkBalanceArray (p :: ps) (n :: ns)) =
+  (p == 0 || n == 0) && isDisjointBalance (MkBalanceArray ps ns)
+
+||| A BalanceArray is non-trivial if at least one weight is positive.
+public export
+isNonTrivialBalance : {n : Nat} -> BalanceArray n -> Bool
+isNonTrivialBalance (MkBalanceArray posW negW) =
+  (foldl (+) 0 posW > 0) || (foldl (+) 0 negW > 0)
+
+||| For two vexels, computes their exact minimal natural-number balance relation c1*v1 = c2*v2 if proportional.
+||| Returns Nothing if the vexels are linearly independent over Nat.
+public export
+find2VexelBalance : Vexel -> Vexel -> Maybe (BalanceArray 2)
+find2VexelBalance v1 v2 =
+  let m1 = unwrapBox (totalVexelMass v1)
+      m2 = unwrapBox (totalVexelMass v2)
+  in if m1 <= 0 || m2 <= 0
+       then Nothing
+       else
+         let n1 = integerToNat m1
+             n2 = integerToNat m2
+             g = natGcd n1 n2
+             c1 = if g == 0 then 1 else n2 `div` g
+             c2 = if g == 0 then 1 else n1 `div` g
+             b = MkBalanceArray [c1, 0] [0, c2]
+         in if isBalanced [v1, v2] b
+              then Just b
+              else Nothing
+
+------------------------------------------------------------------------
+-- 11. COMPILE-TIME REFLECTION & INVARIANT AUDITORS
 ------------------------------------------------------------------------
 
 ||| Pure evaluator verifying that row extraction on an outer-product Maxel is proportional to the bra Vexel.
 public export
 auditRowExtractionProof : Bool
 auditRowExtractionProof =
-  let v1 = MkVexel [(MkSingleton 1, intToBoxInt 2), (MkSingleton 2, intToBoxInt 3)]
-      v2 = MkVexel [(MkSingleton 1, intToBoxInt 1), (MkSingleton 2, intToBoxInt 4)]
+  let v1 = MkVexel [(MkUnixel 1, intToBoxInt 2), (MkUnixel 2, intToBoxInt 3)]
+      v2 = MkVexel [(MkUnixel 1, intToBoxInt 1), (MkUnixel 2, intToBoxInt 4)]
       m = outerProductVexel v1 v2
       row1 = extractRowVexel 1 m
-  in row1 == MkVexel [(MkSingleton 1, intToBoxInt 2), (MkSingleton 2, intToBoxInt 8)]
+  in row1 == MkVexel [(MkUnixel 1, intToBoxInt 2), (MkUnixel 2, intToBoxInt 8)]
 
 ||| Proves that the Grassmann wedge product of any Vexel with itself is identically zero: v ^ v == 0.
 public export
 auditWedgeNilpotencyProof : Bool
 auditWedgeNilpotencyProof =
-  let v = MkVexel [(MkSingleton 1, intToBoxInt 3), (MkSingleton 2, intToBoxInt 5)]
+  let v = MkVexel [(MkUnixel 1, intToBoxInt 3), (MkUnixel 2, intToBoxInt 5)]
       w = wedgeVexel v v
   in w == MkMaxel []
 
@@ -609,8 +699,123 @@ auditWedgeNilpotencyProof =
 public export
 auditHyperBoxelSliceProof : Bool
 auditHyperBoxelSliceProof =
-  let tVex = MkVexel [(MkSingleton 1, intToBoxInt 1), (MkSingleton 2, intToBoxInt 1)]
+  let tVex = MkVexel [(MkUnixel 1, intToBoxInt 1), (MkUnixel 2, intToBoxInt 1)]
       sBox = MkBoxel [(MkVoxel 1 1 1, intToBoxInt 7), (MkVoxel 2 2 2, intToBoxInt 9)]
       h4   = outerProductVexelBoxel tVex sBox
       s2   = sliceHyperBoxelT 2 h4
   in s2 == sBox
+
+||| Audits the Balance Array 3-Vexel exact balance: [1, 2] + [3, 1] = [4, 3].
+public export
+auditVexelBalanceProof : Bool
+auditVexelBalanceProof =
+  let v1 = MkVexel [(MkUnixel 1, intToBoxInt 1), (MkUnixel 2, intToBoxInt 2)]
+      v2 = MkVexel [(MkUnixel 1, intToBoxInt 3), (MkUnixel 2, intToBoxInt 1)]
+      v3 = MkVexel [(MkUnixel 1, intToBoxInt 4), (MkUnixel 2, intToBoxInt 3)]
+      b = MkBalanceArray [1, 1, 0] [0, 0, 1]
+  in isBalanced [v1, v2, v3] b &&
+     isDisjointBalance b &&
+     isNonTrivialBalance b
+
+||| Audits 2-Vexel proportionality balance: 3 * [2, 4] = 2 * [3, 6].
+public export
+auditVexelProportionalityBalanceProof : Bool
+auditVexelProportionalityBalanceProof =
+  let v1 = MkVexel [(MkUnixel 1, intToBoxInt 2), (MkUnixel 2, intToBoxInt 4)]
+      v2 = MkVexel [(MkUnixel 1, intToBoxInt 3), (MkUnixel 2, intToBoxInt 6)]
+      res = find2VexelBalance v1 v2
+  in case res of
+       Just (MkBalanceArray [3, 0] [0, 2]) => True
+       _                                  => False
+
+||| Audits that orthogonal basis Singletons [1, 0] and [0, 1] are Nat-linearly independent (no balance relation).
+public export
+auditVexelLinearIndependenceProof : Bool
+auditVexelLinearIndependenceProof =
+  let e1 = MkVexel [(MkUnixel 1, intToBoxInt 1)]
+      e2 = MkVexel [(MkUnixel 2, intToBoxInt 1)]
+  in case find2VexelBalance e1 e2 of
+       Nothing => True
+       Just _  => False
+
+------------------------------------------------------------------------
+-- 12. MAGIC MAXELS & DOUBLY STOCHASTIC MATRICES (CH. 27)
+------------------------------------------------------------------------
+
+||| A Natural Number Magic Maxel: An n x n matrix of discrete token transition weights.
+||| Characterizes doubly stochastic token flow where every row sum and every col sum equals Sigma.
+public export
+record MagicMaxel (n : Nat) where
+  constructor MkMagicMaxel
+  grid : Vect n (Vect n Nat)
+
+public export
+Eq (MagicMaxel n) where
+  (MkMagicMaxel g1) == (MkMagicMaxel g2) = g1 == g2
+
+||| Computes the row sum of row i in a MagicMaxel.
+public export
+magicRowSum : {n : Nat} -> Fin n -> MagicMaxel n -> Nat
+magicRowSum idx (MkMagicMaxel g) = foldl (+) 0 (index idx g)
+
+||| Computes the column sum of col j in a MagicMaxel.
+public export
+magicColSum : {n : Nat} -> Fin n -> MagicMaxel n -> Nat
+magicColSum idx (MkMagicMaxel g) = foldl (+) 0 (map (index idx) g)
+
+||| Validates that an n x n MagicMaxel is doubly stochastic with common line budget Sigma.
+public export
+isMagicMaxel : {n : Nat} -> MagicMaxel n -> Nat -> Bool
+isMagicMaxel {n} m sigma =
+  let allFinsList = allFins n
+      allRows = map (\i => magicRowSum i m) allFinsList
+      allCols = map (\j => magicColSum j m) allFinsList
+  in all (== sigma) allRows && all (== sigma) allCols
+  where
+    allFins : (k : Nat) -> List (Fin k)
+    allFins Z = []
+    allFins (S k') = FZ :: map FS (allFins k')
+
+||| Applies a MagicMaxel doubly stochastic transition to a vector of token counts:
+||| v_out_i = Sum_j M_ij * v_in_j.
+public export
+applyMagicMaxel : {n : Nat} -> MagicMaxel n -> Vect n Nat -> Vect n Nat
+applyMagicMaxel (MkMagicMaxel g) v =
+  map (\row => foldl (+) 0 (zipWith (*) row v)) g
+
+||| Applies a MagicMaxel doubly stochastic transition directly to BoxInt lattice states:
+public export
+applyMagicMaxelBoxInt : {n : Nat} -> MagicMaxel n -> Vect n BoxInt -> Vect n BoxInt
+applyMagicMaxelBoxInt (MkMagicMaxel g) v =
+  map (\row => foldl (+) (intToBoxInt 0) (zipWith (\c, b => intToBoxInt (cast c) * b) row v)) g
+
+||| Audits 3x3 Magic Maxel (Lo Shu Square, Sigma=15):
+||| Row sums = 15, Col sums = 15, preserves token mass on uniform state.
+public export
+auditMagicMaxel3x3Proof : Bool
+auditMagicMaxel3x3Proof =
+  let m3 : MagicMaxel 3 = MkMagicMaxel [
+        [8, 1, 6],
+        [3, 5, 7],
+        [4, 9, 2]
+      ]
+      vIn : Vect 3 Nat = [1, 1, 1]
+      vOut = applyMagicMaxel m3 vIn
+  in isMagicMaxel m3 15 &&
+     vOut == [15, 15, 15] &&
+     foldl (+) 0 vOut == 45
+
+||| Audits 3x3 Identity Magic Maxel (Sigma=1, Permutation Decomposition):
+||| Preserves arbitrary token state exactly.
+public export
+auditMagicMaxelIdentityProof : Bool
+auditMagicMaxelIdentityProof =
+  let id3 : MagicMaxel 3 = MkMagicMaxel [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+      ]
+      vIn : Vect 3 Nat = [10, 20, 30]
+      vOut = applyMagicMaxel id3 vIn
+  in isMagicMaxel id3 1 &&
+     vOut == [10, 20, 30]

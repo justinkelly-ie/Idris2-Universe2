@@ -2,7 +2,7 @@ module Math.ConstructiveBaryogenesis
 
 import Core.BoxInt
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.FourGeometries
 import Data.Nat
 import Data.List
@@ -42,12 +42,12 @@ netBaryonNumber (MkBaryonState p n _) = p - n
 
 ||| Evaluates exact rational baryon asymmetry ratio: eta_B = (B+ - B-) / N_gamma.
 public export
-baryonAsymmetryRatio : BaryonState -> SingFraction
+baryonAsymmetryRatio : BaryonState -> UnixelFraction
 baryonAsymmetryRatio state =
   let bNet = netBaryonNumber state
       denom = case unwrapBox (photonTokens state) of
                 v => if v <= 0 then 1 else integerToNat v
-  in MkSingFraction bNet (MkSingleton denom)
+  in MkUnixelFraction bNet (MkUnixel denom)
 
 ------------------------------------------------------------------------
 -- 2. SAKHAROV THREE INVARIANTS

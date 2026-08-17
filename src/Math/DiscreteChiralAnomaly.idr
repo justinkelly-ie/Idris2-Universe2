@@ -1,7 +1,7 @@
 module Math.DiscreteChiralAnomaly
 
 import Core.BoxInt
-import Core.SingFraction
+import Core.UnixelFraction
 import Core.Multiset
 import Math.FourGeometries
 import Math.DiscreteDiracSpinor

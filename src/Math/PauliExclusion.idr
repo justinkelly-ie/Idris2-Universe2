@@ -2,7 +2,7 @@ module Math.PauliExclusion
 
 import Core.BoxInt
 import Core.VexelMaxel
-import Core.SingFraction
+import Core.UnixelFraction
 import Math.FourGeometries
 import Data.List
 
@@ -55,10 +55,10 @@ fermiDiracZeroTemp energy eFermi =
      else intToBoxInt 0
 
 ||| Evaluates discrete Fermi-Dirac rational fraction at finite temperature drag parameter D:
-||| n(E) = 1 / (1 + D) as a SingFraction.
+||| n(E) = 1 / (1 + D) as a UnixelFraction.
 public export
-fermiDiracRational : (drag : Nat) -> SingFraction
-fermiDiracRational drag = MkSingFraction (intToBoxInt 1) (MkSingleton (1 + drag))
+fermiDiracRational : (drag : Nat) -> UnixelFraction
+fermiDiracRational drag = MkUnixelFraction (intToBoxInt 1) (MkUnixel (1 + drag))
 
 ------------------------------------------------------------------------
 -- 3. CONSTRUCTIVE FORMAL AUDIT PROOFS
