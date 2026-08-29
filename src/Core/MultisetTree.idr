@@ -113,3 +113,59 @@ auditBoxSpecTreeOrderingProof =
   in c0 == 5 && c1 == 10 && c2 == 15 && c3 == 0 &&
      treeTokenSum t3 == 30 &&
      treeElementCount t3 == 3
+
+------------------------------------------------------------------------
+-- 4. TREE COMBINATORS & LOGARITHMIC COSMIC STATE EVOLUTION
+------------------------------------------------------------------------
+
+||| Merges two multiset trees by folding elements of the second into the first:
+public export
+mergeMultisetTrees : Ord a => MultisetTree a -> MultisetTree a -> MultisetTree a
+mergeMultisetTrees target Leaf = target
+mergeMultisetTrees target (Node l x c r) =
+  let t1 = insertTokenTree x c target
+      t2 = mergeMultisetTrees t1 l
+  in mergeMultisetTrees t2 r
+
+||| High-capacity tree-indexed cosmological state container.
+||| Uses O(log N) balanced multiset trees for visible matter, dark energy, and dark matter.
+public export
+record TreeUniverseState where
+  constructor MkTreeUniverseState
+  epochNumber    : Nat
+  visibleLattice : MultisetTree BoxInt
+  darkEnergyROM  : MultisetTree BoxInt
+  darkMatterLog  : MultisetTree BoxInt
+
+||| Returns the total active token count across the entire TreeUniverseState:
+public export
+treeUniverseTotalTokens : TreeUniverseState -> Nat
+treeUniverseTotalTokens (MkTreeUniverseState _ vm de dm) =
+  treeTokenSum vm + treeTokenSum de + treeTokenSum dm
+
+||| Linear QTT state transition for TreeUniverseState with strict token conservation:
+public export
+stepTreeUniverseLinear : (1 state : TreeUniverseState) ->
+                         (matterTokens : List (BoxInt, Nat)) ->
+                         TreeUniverseState
+stepTreeUniverseLinear (MkTreeUniverseState ep vm de dm) newMatter =
+  let updatedVM = foldl (\acc, (k, cnt) => insertTokenTree k cnt acc) vm newMatter
+      updatedDM = insertTokenTree (natToBoxInt ep) 1 dm
+  in MkTreeUniverseState (S ep) updatedVM de updatedDM
+
+||| Audits Logarithmic Scaling State Evolution:
+||| Tests that stepTreeUniverseLinear accurately updates the tree state and preserves tokens.
+public export
+auditTreeUniverseScalingProof : Bool
+auditTreeUniverseScalingProof =
+  let s0 = MkTreeUniverseState 0 Leaf Leaf Leaf
+      s1 = stepTreeUniverseLinear s0 [(intToBoxInt 1, 9), (intToBoxInt 2, 18)]
+      s2 = stepTreeUniverseLinear s1 [(intToBoxInt 3, 27)]
+      totVM = treeTokenSum (visibleLattice s2)
+      totDM = treeTokenSum (darkMatterLog s2)
+      totAll = treeUniverseTotalTokens s2
+  in epochNumber s2 == 2 &&
+     totVM == 54 &&
+     totDM == 2 &&
+     totAll == 56
+

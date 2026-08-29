@@ -36,7 +36,7 @@ discreteCasimirPolderPotential c7 q =
 ||| Validates that both London and Casimir-Polder forces are strictly attractive (negative potential):
 public export
 isAttractiveDispersion : UnixelFraction -> Bool
-isAttractiveDispersion f = unwrapBox (num f) < 0
+isAttractiveDispersion (MkUnixelFraction n _) = boxNegative n
 
 ------------------------------------------------------------------------
 -- 2. CONSTRUCTIVE FORMAL AUDIT PROOFS
@@ -52,11 +52,9 @@ isAttractiveDispersion f = unwrapBox (num f) < 0
 public export
 auditDiscreteCasimirPolderProof : Bool
 auditDiscreteCasimirPolderProof =
-  let vLondon = discreteLondonPotential (intToBoxInt 8) 2
-      vCP = discreteCasimirPolderPotential (intToBoxInt 81) 3
-  in unwrapBox (num vLondon) == -8 &&
-     index (den vLondon) == 8 &&
-     unwrapBox (num vCP) == -81 &&
-     index (den vCP) == 81 &&
-     isAttractiveDispersion vLondon &&
-     isAttractiveDispersion vCP
+  case (discreteLondonPotential (intToBoxInt 8) 2, discreteCasimirPolderPotential (intToBoxInt 81) 3) of
+    (MkUnixelFraction n1 (MkUnixel d1), MkUnixelFraction n2 (MkUnixel d2)) =>
+      (n1 == intToBoxInt (-8)) && natEq d1 8 &&
+      (n2 == intToBoxInt (-81)) && natEq d2 81 &&
+      boxNegative n1 && boxNegative n2
+

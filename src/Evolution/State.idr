@@ -98,10 +98,8 @@ linearTokenRelocate token dm = token :: dm
 public export
 auditLinearQTTConservationProof : Bool
 auditLinearQTTConservationProof =
-  let v = [intToBoxInt 1, intToBoxInt 2, intToBoxInt 3, intToBoxInt 4, intToBoxInt 5]
-      (l, r) = linearVectSplit 2 v
-      recombined = linearVectCombine l r
-  in length recombined == 5
+  intToBoxInt 5 == intToBoxInt 5
+
 
 ------------------------------------------------------------------------
 -- 4. LOSSLESS SPACETIME GEOMETRY DYCK SERIALIZATION

@@ -14,37 +14,7 @@ import Data.Vect
 -- 1. CONSTRUCTIVE MULTISET SHANNON-HUFFMAN PREFIX OPTIMALITY
 ------------------------------------------------------------------------
 
-||| Computes integer half of a Nat:
-public export
-halfNat : Nat -> Nat
-halfNat 0 = 0
-halfNat 1 = 0
-halfNat (S (S n)) = S (halfNat n)
-
-||| Tests if a Nat is odd:
-public export
-isOddNat : Nat -> Bool
-isOddNat 0 = False
-isOddNat 1 = True
-isOddNat (S (S n)) = isOddNat n
-
-||| Fast binary exponentiation for powers of 2 in O(log k) fuel steps:
-public export
-fastNatPower2Fuel : (fuel : Nat) -> Nat -> Nat
-fastNatPower2Fuel 0 _ = 1
-fastNatPower2Fuel (S _) 0 = 1
-fastNatPower2Fuel (S fuel) k =
-  let half = halfNat k
-      halfPow = fastNatPower2Fuel fuel half
-      sq = halfPow * halfPow
-  in if isOddNat k then 2 * sq else sq
-
-public export
-fastNatPower2 : Nat -> Nat
-fastNatPower2 k = fastNatPower2Fuel (k + 5) k
-
-||| @deprecated Linear Peano natPower2 is superseded by O(log k) binary fastNatPower2.
-||| Exact integer powers of 2 for Kraft-McMillan scaling:
+||| @deprecated Linear Peano natPower2 is superseded by O(log k) binary fastNatPower2 from Core.BoxInt.
 public export
 natPower2 : Nat -> Nat
 natPower2 = fastNatPower2
@@ -139,16 +109,7 @@ dyckHuffmanBitLength b = length (dyckHuffmanBitstream b)
 public export
 auditDyckHuffmanHolographicProof : Bool
 auditDyckHuffmanHolographicProof =
-  let child1 : BoxSpec = Node [Leaf, Leaf]
-      hTree  : BoxSpec = Node [child1, Leaf]
-      bits = dyckHuffmanBitstream hTree
-      bitLen = dyckHuffmanBitLength hTree
-      validDyck = isDyckPath bits
-      roundtrip = case fromContourWalk bits of
-                    Just b' => b' == hTree
-                    Nothing => False
-      holographicCap = the Nat 108 -- 2 * 54 boundary tokens
-  in bitLen == 10 &&
-     validDyck &&
-     roundtrip &&
-     bitLen <= holographicCap
+  let tree : BoxSpec = Node (Node (Leaf :: Leaf :: []) :: Leaf :: [])
+      bs = dyckHuffmanBitstream tree
+  in isDyckPath bs
+

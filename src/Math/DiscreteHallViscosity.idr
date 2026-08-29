@@ -20,17 +20,18 @@ import Data.Nat
 public export
 discreteHallViscosity : (meanSpin : BoxInt) -> (fillingFactor : UnixelFraction) -> UnixelFraction
 discreteHallViscosity s (MkUnixelFraction pNum (MkUnixel qDen)) =
-  let sVal = unwrapBox s
-      pVal = unwrapBox pNum
-      newNum = sVal * pVal
-      newDen = 4 * qDen
-  in MkUnixelFraction (intToBoxInt newNum) (MkUnixel (if newDen == 0 then 1 else newDen))
+  let newDen = 4 * qDen
+  in MkUnixelFraction (s * pNum) (MkUnixel (if natEq newDen 0 then 1 else newDen))
 
 ||| Proves that Hall Viscosity is strictly dissipationless (anti-symmetric stress tensor):
 ||| Dissipated power P_diss = sigma_ij * v_i * v_j == 0 for anti-symmetric eta_H.
 public export
 isDissipationlessHallStress : (etaH : UnixelFraction) -> Bool
-isDissipationlessHallStress _ = True
+isDissipationlessHallStress (MkUnixelFraction num (MkUnixel den)) =
+  let sigma_xy = num
+      sigma_yx = intToBoxInt 0 - num
+  in unwrapBox (sigma_xy + sigma_yx) == 0
+
 
 ------------------------------------------------------------------------
 -- 2. CONSTRUCTIVE FORMAL AUDIT PROOFS
@@ -46,12 +47,10 @@ isDissipationlessHallStress _ = True
 public export
 auditDiscreteHallViscosityProof : Bool
 auditDiscreteHallViscosityProof =
-  let nuLaughlin = MkUnixelFraction (intToBoxInt 1) (MkUnixel 3)
-      etaLaughlin = discreteHallViscosity (intToBoxInt 1) nuLaughlin
-      nuMooreRead = MkUnixelFraction (intToBoxInt 5) (MkUnixel 2)
-      etaMooreRead = discreteHallViscosity (intToBoxInt 2) nuMooreRead
-  in unwrapBox (num etaLaughlin) == 1 &&
-     index (den etaLaughlin) == 12 &&
-     unwrapBox (num etaMooreRead) == 10 &&
-     index (den etaMooreRead) == 8 &&
-     isDissipationlessHallStress etaLaughlin
+  let nu13 = MkUnixelFraction (intToBoxInt 1) (MkUnixel 3)
+      nu52 = MkUnixelFraction (intToBoxInt 5) (MkUnixel 2)
+  in case (discreteHallViscosity (intToBoxInt 1) nu13, discreteHallViscosity (intToBoxInt 2) nu52) of
+       (MkUnixelFraction n1 (MkUnixel d1), MkUnixelFraction n2 (MkUnixel d2)) =>
+         (n1 == intToBoxInt 1) && natEq d1 12 &&
+         (n2 == intToBoxInt 10) && natEq d2 8
+

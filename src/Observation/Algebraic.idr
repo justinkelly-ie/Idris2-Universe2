@@ -94,3 +94,9 @@ public export
 auditAllAlgebraicConserved : Bool
 auditAllAlgebraicConserved =
   all isConserved algebraicCatalog && length algebraicCatalog == 44
+
+||| Standard proof export for compile-time elaborator reflection.
+public export
+auditAlgebraicObservationCatalogProof : Bool
+auditAlgebraicObservationCatalogProof = auditAllAlgebraicConserved
+

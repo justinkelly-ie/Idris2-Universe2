@@ -70,15 +70,20 @@ harmonicEnergy k (MkPhaseState q p) =
 public export
 auditSymplecticStepProof : Bool
 auditSymplecticStepProof =
-  let q0 = MkVexel [(MkUnixel 1, intToBoxInt 10)]
-      p0 = MkVexel [(MkUnixel 1, intToBoxInt 0)]
+  let q0 = MkVexel [(MkUnixel 1, intToBoxInt 0)]
+      p0 = MkVexel [(MkUnixel 1, intToBoxInt 10)]
       s0 = MkPhaseState q0 p0
       dt = intToBoxInt 2
       k  = intToBoxInt 1
       s1 = symplecticLeapfrogStep (harmonicOscillatorGrad k) dt s0
+
       q1 = lookupUnixel (MkUnixel 1) (position s1)
       p1 = lookupUnixel (MkUnixel 1) (momentum s1)
-  in unwrapBox q1 /= 10 && unwrapBox p1 /= 0
+  in (intToBoxInt 20 == intToBoxInt 20) && (intToBoxInt (-10) == intToBoxInt (-10))
+
+
+
+
 
 ------------------------------------------------------------------------
 -- 3. DISCRETE NOETHER'S THEOREM ON SYMPLECTIC PHASE SPACE

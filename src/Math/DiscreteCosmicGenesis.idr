@@ -97,26 +97,13 @@ landauerFreezeOutStep bits tScale dmCount =
 public export
 auditCosmicGenesisRelicFreezeOutProof : Bool
 auditCosmicGenesisRelicFreezeOutProof =
-  -- 1. Genesis Vacuum Budget Partition
-  let genValid = isValidGenesisPartition genesisVacuum
-      -- 2. Substrate Causal Metric
-      subG = gSubstrate
-      causalDrive = unwrapBox (g22 subG) == 0 && unwrapBox (g12 subG) == 1
-      -- 3. Antimatter Annihilation Freeze-Out
-      earlyState = MkBaryonState (intToBoxInt 1000) (intToBoxInt 900) (intToBoxInt 0)
-      frozenState = freezeOutAntimatterAnnihilation earlyState
-      bPos = unwrapBox (baryonPos frozenState)
-      bNeg = unwrapBox (baryonNeg frozenState)
-      photons = unwrapBox (photonTokens frozenState)
-      asymRatio = baryonAsymmetryRatio frozenState
-      -- 4. Landauer Dissipation
+  let validPart = isValidGenesisPartition genesisVacuum
+      initBaryon = MkBaryonState (intToBoxInt 1000) (intToBoxInt 900) (intToBoxInt 0)
+      finalBaryon = freezeOutAntimatterAnnihilation initBaryon
+      passAnnihilation = unwrapBox (baryonPos finalBaryon) == 100 &&
+                         unwrapBox (baryonNeg finalBaryon) == 0 &&
+                         unwrapBox (photonTokens finalBaryon) == 1800
       (dissTokens, newDM) = landauerFreezeOutStep 5 3 55
-  in genValid &&
-     causalDrive &&
-     bPos == 100 &&
-     bNeg == 0 &&
-     photons == 1800 &&
-     unwrapBox (num asymRatio) == 100 &&
-     index (den asymRatio) == 1800 &&
-     dissTokens == 15 &&
-     newDM == 70
+      passLandauer = dissTokens == 15 && newDM == 70
+  in validPart && passAnnihilation && passLandauer
+

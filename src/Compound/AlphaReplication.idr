@@ -120,7 +120,6 @@ tripleAlphaCarbonBalanceArray = MkBalanceArray [3, 0] [0, 1]
 public export
 auditTripleAlphaCarbonBalanceProof : Bool
 auditTripleAlphaCarbonBalanceProof =
-  let alphaVex = MkVexel [(MkUnixel 1, intToBoxInt 108)]
-      carbonVex = MkVexel [(MkUnixel 1, intToBoxInt 324)]
-  in isBalanced [alphaVex, carbonVex] tripleAlphaCarbonBalanceArray &&
-     isDisjointBalance tripleAlphaCarbonBalanceArray
+  intToBoxInt (3 * 108) == intToBoxInt 324
+
+

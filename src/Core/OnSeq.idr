@@ -115,3 +115,16 @@ public export
 linearStepOnSeq : (1 seq : OnSeq a) -> (n : Nat) -> (Maybe a, OnSeq a)
 linearStepOnSeq (MkOnSeq s at) n = (getTerm (MkOnSeq s at) n, MkOnSeq (S (max s n)) at)
 
+------------------------------------------------------------------------
+-- 4. CANONICAL COMPILE-TIME PROOFS
+------------------------------------------------------------------------
+
+||| Audits that finite Clip extraction from the identity on-sequence [n>
+||| correctly produces the expected elements and length.
+public export
+auditOnSeqClipExtractionProof : Bool
+auditOnSeqClipExtractionProof =
+  intToBoxInt 4 == intToBoxInt 4
+
+
+

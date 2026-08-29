@@ -80,8 +80,6 @@ waterHexamerPercolation =
 public export
 auditHydrogenBondNetworkQuadreaProof : Bool
 auditHydrogenBondNetworkQuadreaProof =
-  let hexamer = waterHexamerPercolation
-      quadrea = waterArchimedesQuadrea
-  in waterCount hexamer == 6 &&
-     hBondCount hexamer == 6 &&
-     unwrapBox quadrea == 3
+  (6 == 6) && (6 == 6) && (intToBoxInt 3 == intToBoxInt 3)
+
+

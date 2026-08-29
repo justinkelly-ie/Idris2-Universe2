@@ -1,6 +1,7 @@
 module Math.FractionalQuantumHall
 
 import Core.BoxInt
+import Core.VexelMaxel
 import Core.UnixelFraction
 import Core.Multiset
 import Math.FourGeometries
@@ -27,7 +28,7 @@ Eq LaughlinState where
 public export
 fractionalQuasiparticleCharge : LaughlinState -> UnixelFraction
 fractionalQuasiparticleCharge (MkLaughlinState p q) =
-  mkUnixelFraction (natToBoxInt p) q
+  MkUnixelFraction (natToBoxInt p) (MkUnixel (if natEq q 0 then 1 else q))
 
 ||| Computes the anyonic statistical exchange angle denominator:
 ||| Exchanging two anyons yields topological phase θ = π / q.
@@ -52,10 +53,9 @@ fractionalHallConductance = fractionalQuasiparticleCharge
 public export
 auditFractionalChargeQuantizationProof : Bool
 auditFractionalChargeQuantizationProof =
-  let state13 = MkLaughlinState 1 3
-      charge = fractionalQuasiparticleCharge state13
-      expected = mkUnixelFraction (intToBoxInt 1) 3
-  in rationalEquiv charge expected
+  case fractionalQuasiparticleCharge (MkLaughlinState 1 3) of
+    MkUnixelFraction n (MkUnixel d) =>
+      (n == intToBoxInt 1) && natEq d 3
 
 ||| Audits Anyonic Topological Braiding Phase:
 ||| For Laughlin state ν = 1/3, exchanging two quasiparticles incurs phase θ = π / 3,
@@ -65,15 +65,15 @@ auditAnyonicBraidingPhaseProof : Bool
 auditAnyonicBraidingPhaseProof =
   let state13 = MkLaughlinState 1 3
       period = anyonicExchangePeriod state13
-  in period == 6
+  in natEq period 6
 
 ||| Audits Fractional Hall Conductance:
 ||| Proves σ_{xy}(1/3) = 1/3 and σ_{xy}(2/5) = 2/5 on exact SingFractions.
 public export
 auditFractionalHallConductanceProof : Bool
 auditFractionalHallConductanceProof =
-  let sigma13 = fractionalHallConductance (MkLaughlinState 1 3)
-      sigma25 = fractionalHallConductance (MkLaughlinState 2 5)
-      exp13 = mkUnixelFraction (intToBoxInt 1) 3
-      exp25 = mkUnixelFraction (intToBoxInt 2) 5
-  in rationalEquiv sigma13 exp13 && rationalEquiv sigma25 exp25
+  case (fractionalHallConductance (MkLaughlinState 1 3), fractionalHallConductance (MkLaughlinState 2 5)) of
+    (MkUnixelFraction n1 (MkUnixel d1), MkUnixelFraction n2 (MkUnixel d2)) =>
+      (n1 == intToBoxInt 1) && natEq d1 3 &&
+      (n2 == intToBoxInt 2) && natEq d2 5
+

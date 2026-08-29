@@ -12,13 +12,13 @@
 
 `Idris2-Universe2` represents the next evolutionary leap of the [Finite-Science](https://github.com/justinkelly-ie/Finite-Science) cosmological framework. 
 
-Traditional computational physics relies on hardcoded dimensions, fixed background metric assertions, and continuous approximations. `Idris2-Universe2` replaces these assumptions with a **self-compiling, un-hardcoded, and scale-invariant multiset architecture**:
+While continuous modeling and numerical simulations are foundational across computational physics, `Idris2-Universe2` explores a complementary, discrete-constructive paradigm centered around a **self-compiling, dynamically dimensioned, and scale-invariant multiset architecture**:
 
 1. **The Universal Mapping**: Dependent Types model physical laws, QTT Multiplicity `1` enforces thermodynamic conservation, Type Erasure `0` drops cosmic scaffolding, and Elaborator Reflection (`%runElab`) acts as a second-order cybernetic feedback engine.
 2. **Numbers as Physical Containers**: Natural numbers, multisets, and polynumbers are constructed purely as inductive tallies of empty boxes (`BoxSpec`, `Polynumber`, `WildNat`).
 3. **Unixels, Pixels, Voxels, Vexels, Maxels & Boxels**: Replaces rigid coordinate tensors with Wildberger's multiset linear algebra hierarchy (`Unixel` $[n]$, `Pixel` $[i, j]$, `Voxel` $[x, y, z]$, `Vexel` 1D, `Maxel` 2D, `Boxel` 3D).
-4. **The 27-State Ternary Spacetime Multiverse**: Replaces arbitrary pre-declared geometries by permuting the fundamental 3-bit alphabet $\{-1, 0, 1\}$ (Identity, Presence, Parity) across symmetric Maxel metrics.
-5. **Dynamic `UniverseState`**: Eliminates magic numbers (`27`, `128`, `55`) by tracking dimensions as dependent parameters derived dynamically from prior epoch states.
+4. **The 27-State Ternary Spacetime Multiverse**: Instead of assuming a single pre-selected geometry, the framework constructs a 2D metric multiset using discrete values $\{-1, 0, 1\}$ across its 3 independent components. This generates an exhaustive $3^3 = 27$ state manifold, categorizing all possible spacetime geometries into Elliptic, Hyperbolic, Parabolic, and Substrate sectors.
+5. **Dynamic `UniverseState`**: Tracks dimensions as dependent types derived dynamically from prior epoch states.
 6. **Bootstrapping Epoch 1 to 37**: Simulates lattice expansion ($1\times 1 \to 2\times 2 \to 3\times 3$), 137-stage cycles, and contraction/folding where Dark Matter acts as the accumulated historical error ledger ($55 \to 56$ states).
 7. **Nilpotent Kinematics & Lensing**: Directional velocity tokens ($\epsilon = \begin{pmatrix}0&1\\0&0\end{pmatrix}, \epsilon^2 = 0$) routed through symmetric $g_{\text{EM}}$ and asymmetric $g_{\text{Substrate}}$ Maxels with inductive drag from Dark Matter residues.
 8. **Grassmann Exterior Calculus & Yang-Mills Gauge Theory**: Full 3D discrete coboundary operators ($d_0, d_1, d_2$), combinatorial Hodge duality ($\star$), exact Bianchi closure ($d_2(d_1 A) = 0$), and Dihedron non-Abelian color flux confinement.

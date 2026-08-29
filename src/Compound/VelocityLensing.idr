@@ -57,4 +57,6 @@ public export
 auditRelativisticVelocityLensingProof : Bool
 auditRelativisticVelocityLensingProof =
   let theta = relativisticDeflectionAngle (intToBoxInt 10) (intToBoxInt 100) (intToBoxInt 20) (intToBoxInt 3) (intToBoxInt 10)
-  in unwrapBox theta == 500
+  in theta == intToBoxInt 500
+
+

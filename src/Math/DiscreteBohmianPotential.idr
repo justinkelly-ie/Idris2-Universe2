@@ -48,8 +48,8 @@ bohmianTotalEnergy k v q =
 public export
 auditDiscreteBohmianPotentialProof : Bool
 auditDiscreteBohmianPotentialProof =
-  let qFrac = discreteQuantumPotential (intToBoxInt 4) 2
-      eTot = bohmianTotalEnergy (intToBoxInt 5) (intToBoxInt 6) (intToBoxInt (-1))
-  in unwrapBox (num qFrac) == -4 &&
-     index (den qFrac) == 4 &&
-     unwrapBox eTot == 10
+  case discreteQuantumPotential (intToBoxInt 4) 2 of
+    MkUnixelFraction qNum (MkUnixel qDen) =>
+      let eTot = bohmianTotalEnergy (intToBoxInt 5) (intToBoxInt 6) (intToBoxInt (-1))
+      in (qNum == intToBoxInt (-4)) && natEq qDen 4 && (eTot == intToBoxInt 10)
+

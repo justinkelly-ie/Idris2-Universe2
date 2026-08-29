@@ -106,8 +106,9 @@ auditPlasmaRecombinationDecouplingProof =
   let initial = MkPlasmaCell 100 100
       initialCharge = netPlasmaCharge initial
       result = recombinePlasma initial
-  in unwrapBox initialCharge == 0 &&
+  in initialCharge == intToBoxInt 0 &&
      neutralAtoms result == 100 &&
      decoupledPhotons result == 100 &&
      residualProtons result == 0 &&
      residualElectrons result == 0
+

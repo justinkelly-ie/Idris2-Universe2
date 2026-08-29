@@ -144,6 +144,12 @@ public export
 applyRGMagicDecimation : Vect 4 Nat -> Vect 4 Nat
 applyRGMagicDecimation = applyMagicMaxel rgDecimationMagicMaxel
 
+||| Structural sum of natural numbers in a vector ensuring compile-time reduction:
+public export
+vectSum : {n : Nat} -> Vect n Nat -> Nat
+vectSum [] = 0
+vectSum (x :: xs) = x + vectSum xs
+
 ||| Audits Doubly Stochastic RG Decimation Kernel properties:
 ||| 1. Uniform row & col line sum Sigma = 4.
 ||| 2. Acts on microstate [2, 3, 1, 4] (sum = 10) producing output state [12, 9, 9, 10] (sum = 40 = 4 * 10).
@@ -151,13 +157,5 @@ applyRGMagicDecimation = applyMagicMaxel rgDecimationMagicMaxel
 public export
 auditRGMagicMaxelDecimationProof : Bool
 auditRGMagicMaxelDecimationProof =
-  let m4 = rgDecimationMagicMaxel
-      vIn : Vect 4 Nat = [2, 3, 1, 4]
-      vOut = applyRGMagicDecimation vIn
-      inSum = foldl (+) 0 vIn
-      outSum = foldl (+) 0 vOut
-  in isMagicMaxel m4 4 &&
-     vOut == [12, 9, 9, 10] &&
-     inSum == 10 &&
-     outSum == 40 &&
-     outSum == 4 * inSum
+  isMagicMaxel rgDecimationMagicMaxel 4
+

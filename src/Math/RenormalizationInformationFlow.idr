@@ -54,27 +54,24 @@ decimateBerryCurvature = foldl (+) (intToBoxInt 0)
 --    (Multi-Scale Renormalization & Information Geometry)
 ------------------------------------------------------------------------
 
-||| Audits Discrete Beta Flow towards Asymptotic Freedom / IR Fixed Point:
-||| Proves that for initial coupling g = 1/1 with drag = 3:
-||| beta(1/1, 3) = -3/4 < 0 (asymptotically decreasing coupling).
+||| Audits Discrete Beta Function Running:
+||| Proves beta(1/1, 3) = -(3) / 4 = -3/4.
 public export
 auditDiscreteBetaFlowProof : Bool
 auditDiscreteBetaFlowProof =
-  let g0 = unitUnixelFraction
-      beta = discreteBetaStep g0 3
-  in unwrapBox (num beta) == (-3) &&
-     index (den beta) == 4
+  case discreteBetaStep (MkUnixelFraction (intToBoxInt 1) (MkUnixel 1)) 3 of
+    MkUnixelFraction bNum (MkUnixel bDen) =>
+      (bNum == intToBoxInt (-3)) && natEq bDen 4
 
 ||| Audits Discrete Fisher Information Metric Positivity:
 ||| Proves I_F(w1=10, w2=6) = (10 - 6)^2 / 10 = 16/10 >= 0, and I_F(w, w) == 0.
 public export
 auditDiscreteFisherMetricProof : Bool
 auditDiscreteFisherMetricProof =
-  let ifDiff = discreteFisherQuadrance 10 6
-      ifSame = discreteFisherQuadrance 10 10
-  in unwrapBox (num ifDiff) == 16 &&
-     index (den ifDiff) == 10 &&
-     unwrapBox (num ifSame) == 0
+  case (discreteFisherQuadrance 10 6, discreteFisherQuadrance 10 10) of
+    (MkUnixelFraction f1Num (MkUnixel f1Den), MkUnixelFraction f0Num (MkUnixel f0Den)) =>
+      (f1Num == intToBoxInt 16) && natEq f1Den 10 &&
+      (f0Num == intToBoxInt 0) && natEq f0Den 10
 
 ||| Audits Scale-Invariance of Topological First Chern Number under RG Decimation:
 ||| Proves that a 4-cell fine Berry grid with fluxes [1, 2, -1, 1] (sum = 3)

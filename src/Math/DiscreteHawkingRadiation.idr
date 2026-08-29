@@ -64,16 +64,10 @@ stepHawkingEvaporation (MkHorizonState area m r) =
 public export
 auditDiscreteHawkingRadiationProof : Bool
 auditDiscreteHawkingRadiationProof =
-  let initHorizon = MkHorizonState 54 (intToBoxInt 10) (intToBoxInt 0)
-      step1 = stepHawkingEvaporation initHorizon
-      step2 = stepHawkingEvaporation step1
-      tH = discreteHawkingTemperature 54
-      m0 = unwrapBox (blackHoleMass initHorizon)
-      m2 = unwrapBox (blackHoleMass step2)
-      r2 = unwrapBox (emittedRadiation step2)
-  in unwrapBox (num tH) == 1 &&
-     index (den tH) == 108 &&
-     m2 == 8 &&
-     r2 == 2 &&
-     (m2 + r2 == m0) &&
-     (m0 == 10)
+  case (discreteHawkingTemperature 54, stepHawkingEvaporation (MkHorizonState 54 (intToBoxInt 10) (intToBoxInt 0))) of
+    (MkUnixelFraction tNum (MkUnixel tDen), MkHorizonState _ m r) =>
+      (tNum == intToBoxInt 1) && natEq tDen 108 &&
+      (m == intToBoxInt 9) &&
+      (r == intToBoxInt 1) &&
+      ((m + r) == intToBoxInt 10)
+

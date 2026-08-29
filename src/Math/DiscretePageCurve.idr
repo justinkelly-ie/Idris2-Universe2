@@ -27,14 +27,16 @@ discretePageEntropy t totalBudget =
 ||| t_Page = totalBudget / 2.
 public export
 pageTime : (totalBudget : Nat) -> Nat
-pageTime totalBudget = totalBudget `div` 2
+pageTime Z = Z
+pageTime (S Z) = Z
+pageTime (S (S k)) = S (pageTime k)
 
 ||| Validates Unitarity: S_Page(0) == 0 and S_Page(N_total) == 0 (pure-to-pure evolution).
 public export
 isUnitaryPageEvaporation : (totalBudget : Nat) -> Bool
 isUnitaryPageEvaporation n =
-  discretePageEntropy 0 n == 0 &&
-  discretePageEntropy n n == 0
+  natEq (discretePageEntropy 0 n) 0 &&
+  natEq (discretePageEntropy n n) 0
 
 ------------------------------------------------------------------------
 -- 2. CONSTRUCTIVE FORMAL AUDIT PROOFS
@@ -50,17 +52,12 @@ isUnitaryPageEvaporation n =
 public export
 auditDiscretePageCurveProof : Bool
 auditDiscretePageCurveProof =
-  let tot = 210
-      s0   = discretePageEntropy 0 tot
-      s50  = discretePageEntropy 50 tot
-      s105 = discretePageEntropy 105 tot
-      s160 = discretePageEntropy 160 tot
-      s210 = discretePageEntropy 210 tot
-      tP   = pageTime tot
-  in s0 == 0 &&
-     s50 == 50 &&
-     tP == 105 &&
-     s105 == 105 &&
-     s160 == 50 &&
-     s210 == 0 &&
-     isUnitaryPageEvaporation tot
+  let s0 = discretePageEntropy 0 210
+      s50 = discretePageEntropy 50 210
+      sPeak = discretePageEntropy 105 210
+      s160 = discretePageEntropy 160 210
+      s210 = discretePageEntropy 210 210
+      unitary = isUnitaryPageEvaporation 210
+      tPage = pageTime 210
+  in natEq s0 0 && natEq s50 50 && natEq sPeak 105 && natEq s160 50 && natEq s210 0 && unitary && natEq tPage 105
+

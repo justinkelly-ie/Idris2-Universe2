@@ -17,7 +17,8 @@ computeVMSize dim = dim * dim * dim
 ||| Binary depth b produces 2^b conserved archival capacity slots (e.g. 7 -> 128).
 public export
 computeDESize : (deDepth : Nat) -> Nat
-computeDESize depth = power 2 depth
+computeDESize depth = fastNatPower2 depth
+
 
 ||| Relational scaling function for Dark Matter historical log length.
 ||| The ledger records exactly the number of elapsed evolutionary epochs.

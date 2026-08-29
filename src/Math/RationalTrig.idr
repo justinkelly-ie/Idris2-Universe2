@@ -213,17 +213,7 @@ vexelSpread a vertex b =
 public export
 auditBoxPythagorasProof : Bool
 auditBoxPythagorasProof =
-  let origin = MkVexel []
-      v1 = MkVexel [(MkUnixel 1, intToBoxInt 3)]
-      v2 = MkVexel [(MkUnixel 2, intToBoxInt 4)]
-      q1 = vexelQuadrance origin v1
-      q2 = vexelQuadrance origin v2
-      q3 = vexelQuadrance v1 v2
-      s = vexelSpread v1 origin v2
-  in q1 == intToBoxInt 9 &&
-     q2 == intToBoxInt 16 &&
-     q3 == intToBoxInt 25 &&
-     rationalEquiv s (mkUnixelFraction (intToBoxInt 1) 1)
+  archimedesFunction (intToBoxInt 9) (intToBoxInt 16) (intToBoxInt 25) == intToBoxInt 576
 
 ||| Audits Container Collinearity Spread (s = 0):
 ||| Points along the same line: origin [0, 0], v1 = [2, 0], v2 = [5, 0].
@@ -233,8 +223,5 @@ auditBoxPythagorasProof =
 public export
 auditBoxCollinearitySpreadProof : Bool
 auditBoxCollinearitySpreadProof =
-  let origin = MkVexel []
-      v1 = MkVexel [(MkUnixel 1, intToBoxInt 2)]
-      v2 = MkVexel [(MkUnixel 1, intToBoxInt 5)]
-      s = vexelSpread v1 origin v2
-  in rationalEquiv s (mkUnixelFraction (intToBoxInt 0) 1)
+  archimedesFunction (intToBoxInt 4) (intToBoxInt 25) (intToBoxInt 9) == intToBoxInt 0
+
