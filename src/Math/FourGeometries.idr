@@ -1,11 +1,11 @@
 module Math.FourGeometries
 
-import Core.BoxInt
-import Core.VexelMaxel
-import Core.UnixelFraction
-import Math.LinAlgebra.MetricTensor
-import Math.LinAlgebra.TernaryClassifier
-import Compound.HadronicConfinement
+import public Core.BoxInt
+import public Core.VexelMaxel
+import public Core.UnixelFraction
+import public Math.LinAlgebra.MetricTensor
+import public Math.LinAlgebra.TernaryClassifier
+import public Compound.HadronicConfinement
 
 %default total
 
@@ -167,7 +167,6 @@ auditFourGeometriesDeterminantsProof =
 ||| 1. Quadrance of (1, 1) under Hyperbolic is exactly 0 (Lightcone).
 ||| 2. Quadrance of (1, 0) under Elliptic is exactly 1 (Confinement).
 ||| 3. Budget partition 27 + 128 + 55 == 210 (Primorial 210).
-%inline
 public export
 auditFourGeometriesCosmicSynthesisProof : Bool
 auditFourGeometriesCosmicSynthesisProof =
@@ -178,6 +177,11 @@ auditFourGeometriesCosmicSynthesisProof =
       bTotal = cosmicBudgetByGeometry EllipticGeom +
                cosmicBudgetByGeometry HyperbolicGeom +
                cosmicBudgetByGeometry ParabolicGeom
-  in unwrapBox qHyp == 0 &&
-     unwrapBox qEll == 1 &&
-     bTotal == 210
+      okHyp = case unwrapBox qHyp of
+                0 => True
+                _ => False
+      okEll = case unwrapBox qEll of
+                1 => True
+                _ => False
+      okTot = natEq bTotal 210
+  in okHyp && okEll && okTot

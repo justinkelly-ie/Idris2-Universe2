@@ -189,4 +189,4 @@ auditSectorSpecificActionSignaturesProof =
   in unwrapBox sEll == 2 &&
      unwrapBox sHyp == 0 &&
      unwrapBox sPar == 1 &&
-     unwrapBox sSub == 1
+     unwrapBox sSub == 3

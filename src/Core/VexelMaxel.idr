@@ -756,18 +756,37 @@ public export
 magicColSum : {n : Nat} -> Fin n -> MagicMaxel n -> Nat
 magicColSum idx (MkMagicMaxel g) = foldl (+) 0 (map (index idx) g)
 
+public export
+allFinList : (k : Nat) -> List (Fin k)
+allFinList Z = []
+allFinList (S Z) = [FZ]
+allFinList (S (S Z)) = [FZ, FS FZ]
+allFinList (S (S (S Z))) = [FZ, FS FZ, FS (FS FZ)]
+allFinList (S (S (S (S Z)))) = [FZ, FS FZ, FS (FS FZ), FS (FS (FS FZ))]
+allFinList (S (S (S (S (S k'))))) = FZ :: map FS (allFinList (S (S (S (S k')))))
+
 ||| Validates that an n x n MagicMaxel is doubly stochastic with common line budget Sigma.
 public export
 isMagicMaxel : {n : Nat} -> MagicMaxel n -> Nat -> Bool
+isMagicMaxel {n=4} (MkMagicMaxel [[a1,a2,a3,a4],[b1,b2,b3,b4],[c1,c2,c3,c4],[d1,d2,d3,d4]]) sigma =
+  natEq (a1+a2+a3+a4) sigma &&
+  natEq (b1+b2+b3+b4) sigma &&
+  natEq (c1+c2+c3+c4) sigma &&
+  natEq (d1+d2+d3+d4) sigma &&
+  natEq (a1+b1+c1+d1) sigma &&
+  natEq (a2+b2+c2+d2) sigma &&
+  natEq (a3+b3+c3+d3) sigma &&
+  natEq (a4+b4+c4+d4) sigma
+isMagicMaxel {n=2} (MkMagicMaxel [[a1,a2],[b1,b2]]) sigma =
+  natEq (a1+a2) sigma &&
+  natEq (b1+b2) sigma &&
+  natEq (a1+b1) sigma &&
+  natEq (a2+b2) sigma
 isMagicMaxel {n} m sigma =
-  let allFinsList = allFins n
+  let allFinsList = allFinList n
       allRows = map (\i => magicRowSum i m) allFinsList
       allCols = map (\j => magicColSum j m) allFinsList
-  in all (== sigma) allRows && all (== sigma) allCols
-  where
-    allFins : (k : Nat) -> List (Fin k)
-    allFins Z = []
-    allFins (S k') = FZ :: map FS (allFins k')
+  in all (\r => natEq r sigma) allRows && all (\c => natEq c sigma) allCols
 
 ||| Applies a MagicMaxel doubly stochastic transition to a vector of token counts:
 ||| v_out_i = Sum_j M_ij * v_in_j.

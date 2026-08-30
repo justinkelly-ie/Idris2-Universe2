@@ -1,13 +1,13 @@
 module Reflect.Auditor.Observation
 
-import Core.BoxInt
-import Core.Multiset
-import Core.UnixelFraction
+import public Core.BoxInt
+import public Core.Multiset
+import public Core.UnixelFraction
 import Language.Reflection
-import Observation.Algebraic
-import Observation.Dataset
-import Observation.Scientific
-import Observation.Triad
+import public Observation.Algebraic
+import public Observation.Dataset
+import public Observation.Scientific
+import public Observation.Triad
 
 %default total
 
@@ -16,28 +16,24 @@ import Observation.Triad
 ------------------------------------------------------------------------
 
 -- Witness 12: Multiset Born Rule & Hehner Triad
-%inline
 public export
 auditMultisetHehnerTriadProofExport : Bool
 auditMultisetHehnerTriadProofExport = Core.UnixelFraction.auditMultisetHehnerTriadProof
 
 
 -- Witness 159: Empirical Scientific Observation Dataset Consistency
-%inline
 public export
 auditScientificObservationDatasetProofExport : Bool
 auditScientificObservationDatasetProofExport = Observation.Dataset.auditScientificObservationDatasetProof
 
 
 -- Witness 160: Algebraic Observation Catalog Completeness
-%inline
 public export
 auditAlgebraicObservationCatalogProofExport : Bool
 auditAlgebraicObservationCatalogProofExport = Observation.Algebraic.auditAlgebraicObservationCatalogProof
 
 
 -- Witness 161: Cosmological Observation Triad 3-Way Soundness
-%inline
 public export
 auditCosmologicalTriadProofExport : Bool
 auditCosmologicalTriadProofExport = Observation.Triad.auditCosmologicalTriadProof

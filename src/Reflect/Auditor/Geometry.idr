@@ -1,11 +1,11 @@
 module Reflect.Auditor.Geometry
 
-import Core.BoxInt
-import Derivation.PureGeometricClassifier
-import Geometry.InformationGeometry
+import public Core.BoxInt
+import public Derivation.PureGeometricClassifier
+import public Geometry.InformationGeometry
 import Language.Reflection
-import Math.DiscreteLatticeBoltzmann
-import Math.PauliExclusion
+import public Math.DiscreteLatticeBoltzmann
+import public Math.PauliExclusion
 
 %default total
 

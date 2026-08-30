@@ -1,12 +1,12 @@
 module Reflect.Auditor.Core
 
-import Core.BoxInt
-import Core.Multiset
-import Core.MultisetTree
-import Core.OnSeq
-import Core.Polynumber
-import Core.UnixelFraction
-import Core.VexelMaxel
+import public Core.BoxInt
+import public Core.Multiset
+import public Core.MultisetTree
+import public Core.OnSeq
+import public Core.Polynumber
+import public Core.UnixelFraction
+import public Core.VexelMaxel
 import Language.Reflection
 
 %default total
