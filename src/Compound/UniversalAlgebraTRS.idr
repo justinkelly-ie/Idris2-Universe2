@@ -156,8 +156,12 @@ evalMassTokens (TermUnion t1 t2) = evalMassTokens t1 + evalMassTokens t2
 public export
 evalChargeThirds : MatterTerm -> BoxInt
 evalChargeThirds TermVoid = intToBoxInt 0
-evalChargeThirds (TermQuark UpQuark _) = intToBoxInt 2
-evalChargeThirds (TermQuark DownQuark _) = intToBoxInt (-1)
+evalChargeThirds (TermQuark UpQuark _)      = intToBoxInt 2
+evalChargeThirds (TermQuark DownQuark _)    = intToBoxInt (-1)
+evalChargeThirds (TermQuark StrangeQuark _) = intToBoxInt (-1)
+evalChargeThirds (TermQuark CharmQuark _)   = intToBoxInt 2
+evalChargeThirds (TermQuark BottomQuark _)  = intToBoxInt (-1)
+evalChargeThirds (TermQuark TopQuark _)     = intToBoxInt 2
 evalChargeThirds (TermPion PionPlus) = intToBoxInt 3
 evalChargeThirds (TermPion PionZero) = intToBoxInt 0
 evalChargeThirds (TermPion PionMinus) = intToBoxInt (-3)

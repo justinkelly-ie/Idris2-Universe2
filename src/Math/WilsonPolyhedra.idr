@@ -36,6 +36,7 @@ Show ColorState where
     "ColorState(R=" ++ show r ++ ", G=" ++ show g ++ ", B=" ++ show b ++ ")"
 
 ||| Extracts the amplitude of a specific Chromogeometric color charge.
+%inline
 public export
 lookupColorAmplitude : ColorCharge -> ColorState -> DualAmplitude
 lookupColorAmplitude RedColor   st = redAmp st
@@ -43,6 +44,7 @@ lookupColorAmplitude GreenColor st = greenAmp st
 lookupColorAmplitude BlueColor  st = blueAmp st
 
 ||| Creates a color-neutral singlet state (equal amplitude on R, G, B).
+%inline
 public export
 colorSingletState : ColorState
 colorSingletState =
@@ -50,6 +52,7 @@ colorSingletState =
 
 ||| Confined / White Singlet Predicate:
 ||| True if and only if all 3 color amplitudes have equal squared norm.
+%inline
 public export
 isColorSingletState : ColorState -> Bool
 isColorSingletState (MkColorState r g b) =
@@ -63,6 +66,7 @@ isColorSingletState (MkColorState r g b) =
 ------------------------------------------------------------------------
 
 ||| Identity 3x3 quantum color operator.
+%inline
 public export
 identityColorOp3 : QuantumOperator
 identityColorOp3 =
@@ -72,6 +76,7 @@ identityColorOp3 =
                     ]
 
 ||| Gluon exchange operator swapping Red (Hyperbolic) and Green (Parabolic): P_RG.
+%inline
 public export
 swapRG : QuantumOperator
 swapRG =
@@ -81,6 +86,7 @@ swapRG =
                     ]
 
 ||| Gluon exchange operator swapping Green (Parabolic) and Blue (Elliptic): P_GB.
+%inline
 public export
 swapGB : QuantumOperator
 swapGB =
@@ -90,6 +96,7 @@ swapGB =
                     ]
 
 ||| Gluon exchange operator swapping Blue (Elliptic) and Red (Hyperbolic): P_BR.
+%inline
 public export
 swapBR : QuantumOperator
 swapBR =
@@ -100,6 +107,7 @@ swapBR =
 
 ||| Diagonal color phase shift operator (T3 isospin generator):
 ||| R -> i R, G -> -i G, B -> B.
+%inline
 public export
 phaseColorT3 : QuantumOperator
 phaseColorT3 =
@@ -109,18 +117,16 @@ phaseColorT3 =
                     ]
 
 ||| Applies a 3x3 color operator to a 3-Color state vector.
+%inline
 public export
 applyColorOperator : QuantumOperator -> ColorState -> ColorState
 applyColorOperator op (MkColorState r g b) =
-  let -- Row 1: Red
-      r' = addAmplitude (addAmplitude (mulAmplitude (lookupMatrixEntry (MkPixel 1 1) op) r)
+  let r' = addAmplitude (addAmplitude (mulAmplitude (lookupMatrixEntry (MkPixel 1 1) op) r)
                                       (mulAmplitude (lookupMatrixEntry (MkPixel 1 2) op) g))
                         (mulAmplitude (lookupMatrixEntry (MkPixel 1 3) op) b)
-      -- Row 2: Green
       g' = addAmplitude (addAmplitude (mulAmplitude (lookupMatrixEntry (MkPixel 2 1) op) r)
                                       (mulAmplitude (lookupMatrixEntry (MkPixel 2 2) op) g))
                         (mulAmplitude (lookupMatrixEntry (MkPixel 2 3) op) b)
-      -- Row 3: Blue
       b' = addAmplitude (addAmplitude (mulAmplitude (lookupMatrixEntry (MkPixel 3 1) op) r)
                                       (mulAmplitude (lookupMatrixEntry (MkPixel 3 2) op) g))
                         (mulAmplitude (lookupMatrixEntry (MkPixel 3 3) op) b)
@@ -154,6 +160,7 @@ Show WilsonPolyhedron where
     ", U=" ++ show u ++ ", D=" ++ show d ++ ")"
 
 ||| Creates a flat / trivial Wilson Polyhedron (identity on all 6 faces).
+%inline
 public export
 flatWilsonPolyhedron3 : WilsonPolyhedron
 flatWilsonPolyhedron3 =
@@ -163,21 +170,21 @@ flatWilsonPolyhedron3 =
 
 ||| Evaluates the closed 3D Wilson Polyhedron Cubic Holonomy:
 ||| W_cube = W_east * W_north * W_up * (W_west)^dagger * (W_south)^dagger * (W_down)^dagger.
+%inline
 public export
 wilsonCubeHolonomy : WilsonPolyhedron -> QuantumOperator
 wilsonCubeHolonomy (MkWilsonPolyhedron e w n s u d) =
   let wAdj = adjointQuantumOp w
       sAdj = adjointQuantumOp s
       dAdj = adjointQuantumOp d
-      -- Ordered forward product across positive faces (+X, +Y, +Z)
       pos1 = mulQuantumOp 3 e n
       pos2 = mulQuantumOp 3 pos1 u
-      -- Ordered reverse product across negative faces (-X, -Y, -Z)
       neg1 = mulQuantumOp 3 pos2 wAdj
       neg2 = mulQuantumOp 3 neg1 sAdj
   in mulQuantumOp 3 neg2 dAdj
 
 ||| Evaluates the Wilson Polyhedron Trace Observable: Tr(W_cube).
+%inline
 public export
 wilsonPolyhedronTrace : WilsonPolyhedron -> DualAmplitude
 wilsonPolyhedronTrace poly =
@@ -187,6 +194,7 @@ wilsonPolyhedronTrace poly =
 ||| Evaluates the 3D Polyhedral Cross-Entropy Flux Deficit:
 ||| Delta W = |3 - Re(Tr(W_cube))|.
 ||| Exactly 0 for flat / monopole-free gauge configurations.
+%inline
 public export
 polyhedralCrossEntropyDeficit : WilsonPolyhedron -> Nat
 polyhedralCrossEntropyDeficit poly =
@@ -201,6 +209,7 @@ polyhedralCrossEntropyDeficit poly =
 
 ||| Performs a local vertex gauge transformation at the voxel center V_c
 ||| and its 6 toroidal face neighbors V_e, V_w, V_n, V_s, V_u, V_d.
+%inline
 public export
 gaugeTransformPolyhedron : (vCenter : QuantumOperator) ->
                           (vEast : QuantumOperator) -> (vWest : QuantumOperator) ->
@@ -222,24 +231,34 @@ gaugeTransformPolyhedron vc ve vw vn vs vu vd (MkWilsonPolyhedron e w n s u d) =
 
 ||| Audits 3D Wilson Polyhedron Multiplicative Bianchi Closure:
 ||| Proves that on a flat / source-free gauge lattice, W_cube = I_3x3 and Deficit = 0.
+%inline
 public export
 auditWilsonPolyhedronBianchiClosureProof : Bool
 auditWilsonPolyhedronBianchiClosureProof =
-  (intToBoxInt 3 == intToBoxInt 3) &&
-  (intToBoxInt 0 == intToBoxInt 0)
+  let flat = flatWilsonPolyhedron3
+      tr = wilsonPolyhedronTrace flat
+      deficit = polyhedralCrossEntropyDeficit flat
+  in unwrapBox (real tr) == 3 && deficit == 0
 
 ||| Audits Non-Abelian Chromogeometric Gauge Invariance:
 ||| Proves that the Polyhedral trace is strictly invariant under local SU(3) color rotations (swapRG).
+%inline
 public export
 auditChromogeometricColorGaugeInvarianceProof : Bool
 auditChromogeometricColorGaugeInvarianceProof =
-  intToBoxInt 3 == intToBoxInt 3
+  let flat = flatWilsonPolyhedron3
+      transformed = gaugeTransformPolyhedron swapRG identityColorOp3 identityColorOp3 identityColorOp3 identityColorOp3 identityColorOp3 identityColorOp3 flat
+      tr1 = wilsonPolyhedronTrace flat
+      tr2 = wilsonPolyhedronTrace transformed
+  in unwrapBox (real tr1) == unwrapBox (real tr2)
 
 ||| Audits Hadronic Singlet Polyhedral Invariance:
 ||| Proves that a color-neutral singlet state (R+G+B) remains color-neutral
 ||| when parallel transported around a closed Wilson Polyhedron.
+%inline
 public export
 auditHadronSingletPolyhedralInvarianceProof : Bool
 auditHadronSingletPolyhedralInvarianceProof =
-  intToBoxInt 3 == intToBoxInt 3
-
+  let singlet = colorSingletState
+      st' = applyColorOperator identityColorOp3 singlet
+  in isColorSingletState st'

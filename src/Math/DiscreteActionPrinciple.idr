@@ -19,11 +19,13 @@ Coord2D : Type
 Coord2D = (BoxInt, BoxInt)
 
 ||| Difference vector between two lattice coordinates: Δx = x_{k+1} - x_k.
+%inline
 public export
 coordDiff : Coord2D -> Coord2D -> Coord2D
 coordDiff (x2, y2) (x1, y1) = (x2 - x1, y2 - y1)
 
 ||| Computes metric kinetic quadrance: T_g(Δx) = Δx^T · g · Δx.
+%inline
 public export
 metricKineticQuadrance : Maxel -> Coord2D -> BoxInt
 metricKineticQuadrance m (dx, dy) =
@@ -35,6 +37,7 @@ metricKineticQuadrance m (dx, dy) =
   in (dx * row1) + (dy * row2)
 
 ||| Discrete Lagrangian: L(x_k, x_{k+1}) = T_g(Δx) + SubstrateCoupling(x_k, x_{k+1}) - V(x_k).
+%inline
 public export
 discreteLagrangian : FundamentalGeometry -> Coord2D -> Coord2D -> (Coord2D -> BoxInt) -> BoxInt
 discreteLagrangian geom (x1, y1) (x2, y2) vPot =
@@ -42,13 +45,13 @@ discreteLagrangian geom (x1, y1) (x2, y2) vPot =
       diff = (x2 - x1, y2 - y1)
       tKin = metricKineticQuadrance metric diff
       vVal = vPot (x1, y1)
-      -- Substrate geometry adds asymmetric causal coupling: (x_{k+1} - x_k) * y_k
       causalCoupling = case geom of
                          SubstrateGeom => (x2 - x1) * y1
                          _             => intToBoxInt 0
   in (tKin + causalCoupling) - vVal
 
 ||| Computes the Discrete Action S[γ] along an ordered sequence of coordinates.
+%inline
 public export
 discreteAction : FundamentalGeometry -> List Coord2D -> (Coord2D -> BoxInt) -> BoxInt
 discreteAction _ [] _ = intToBoxInt 0
@@ -62,6 +65,7 @@ discreteAction geom (x0 :: x1 :: xs) vPot =
 ------------------------------------------------------------------------
 
 ||| Discrete second-order difference / acceleration: Δ²x = x_{k+1} - 2x_k + x_{k-1}.
+%inline
 public export
 discreteAcceleration : Coord2D -> Coord2D -> Coord2D -> Coord2D
 discreteAcceleration (xPrev, yPrev) (xCurr, yCurr) (xNext, yNext) =
@@ -71,6 +75,7 @@ discreteAcceleration (xPrev, yPrev) (xCurr, yCurr) (xNext, yNext) =
 
 ||| Discrete Euler-Lagrange residual: g · Δ²x + ∇V(x_k).
 ||| For extremal physical trajectories, this residual evaluates strictly to (0, 0).
+%inline
 public export
 discreteEulerLagrangeResidual : Maxel -> Coord2D -> Coord2D -> Coord2D -> Coord2D -> Coord2D
 discreteEulerLagrangeResidual m prev curr next (gradVx, gradVy) =
@@ -84,11 +89,13 @@ discreteEulerLagrangeResidual m prev curr next (gradVx, gradVy) =
 ------------------------------------------------------------------------
 
 ||| Zero potential function for free particle trajectories.
+%inline
 public export
 zeroPotential : Coord2D -> BoxInt
 zeroPotential _ = intToBoxInt 0
 
 ||| Linear potential gradient: V(x, y) = x -> ∇V = (1, 0).
+%inline
 public export
 linearPotentialGrad : Coord2D
 linearPotentialGrad = (intToBoxInt 1, intToBoxInt 0)
@@ -96,22 +103,30 @@ linearPotentialGrad = (intToBoxInt 1, intToBoxInt 0)
 ||| Audits Discrete Euler-Lagrange Equivalence on Geodesics:
 ||| Proves that the discrete Euler-Lagrange residual evaluates to (0, 0)
 ||| along the geodesic [(0,0), (1,1), (2,2)].
+%inline
 public export
 auditDiscreteEulerLagrangeEquivalenceProof : Bool
 auditDiscreteEulerLagrangeEquivalenceProof =
-  intToBoxInt 0 == intToBoxInt 0
+  let p0 = (intToBoxInt 0, intToBoxInt 0)
+      p1 = (intToBoxInt 1, intToBoxInt 1)
+      p2 = (intToBoxInt 2, intToBoxInt 2)
+      res = discreteEulerLagrangeResidual (geometryMetric EllipticGeom) p0 p1 p2 (intToBoxInt 0, intToBoxInt 0)
+  in (unwrapBox (fst res) == 0) && (unwrapBox (snd res) == 0)
 
 ||| Audits Substrate Action Asymmetry (The Causal Arrow of Time in Hamilton's Principle):
-||| Proves that under SubstrateGeom, S[forward] ≠ S[reverse] for path [(0,0) -> (1,2)]:
-||| S[(0,0) -> (1,2)] = 5, whereas S[(1,2) -> (0,0)] = 3.
+||| Proves that under SubstrateGeom, S[forward] ≠ S[reverse] for path [(0,0) -> (1,2)].
+%inline
 public export
 auditSubstrateActionAsymmetryProof : Bool
 auditSubstrateActionAsymmetryProof =
-  (intToBoxInt 5 == intToBoxInt 5) &&
-  (intToBoxInt 3 == intToBoxInt 3) &&
-  (intToBoxInt 2 == intToBoxInt 2)
+  let p1 = [(intToBoxInt 0, intToBoxInt 0), (intToBoxInt 1, intToBoxInt 2)]
+      p2 = [(intToBoxInt 1, intToBoxInt 2), (intToBoxInt 0, intToBoxInt 0)]
+      sFwd = discreteAction SubstrateGeom p1 zeroPotential
+      sRev = discreteAction SubstrateGeom p2 zeroPotential
+  in (unwrapBox sFwd /= unwrapBox sRev) && (unwrapBox sFwd > 0)
 
 ||| Computes discrete canonical momentum token: p_k = g · (x_{k+1} - x_k).
+%inline
 public export
 discreteCanonicalMomentum : Maxel -> Coord2D -> Coord2D -> Coord2D
 discreteCanonicalMomentum m (x1, y1) (x2, y2) =
@@ -123,44 +138,55 @@ discreteCanonicalMomentum m (x1, y1) (x2, y2) =
 
 ||| Audits Geodesic Least Action Optimality:
 ||| Proves that the straight geodesic path [(0,0), (1,1), (2,2)] strictly minimizes
-||| Action over the deflected path [(0,0), (0,2), (2,2)]: S_straight (4) < S_perturbed (8).
+||| Action over the deflected path [(0,0), (0,2), (2,2)].
+%inline
 public export
 auditGeodesicLeastActionOptimalityProof : Bool
 auditGeodesicLeastActionOptimalityProof =
-  (intToBoxInt 4 == intToBoxInt 4) &&
-  (intToBoxInt 8 == intToBoxInt 8)
+  let pStraight = [(intToBoxInt 0, intToBoxInt 0), (intToBoxInt 1, intToBoxInt 1), (intToBoxInt 2, intToBoxInt 2)]
+      pDeflected = [(intToBoxInt 0, intToBoxInt 0), (intToBoxInt 0, intToBoxInt 2), (intToBoxInt 2, intToBoxInt 2)]
+      sStraight = discreteAction EllipticGeom pStraight zeroPotential
+      sDeflected = discreteAction EllipticGeom pDeflected zeroPotential
+  in unwrapBox sStraight < unwrapBox sDeflected
 
 ||| Audits Discrete Noether Momentum Conservation:
 ||| Proves that for free motion along a geodesic, discrete momentum p_k = g · Δx
-||| is strictly identical across consecutive steps: p_0 = (1, 1) == p_1 = (1, 1).
+||| is strictly identical across consecutive steps: p_0 == p_1.
+%inline
 public export
 auditDiscreteMomentumConservationProof : Bool
 auditDiscreteMomentumConservationProof =
-  intToBoxInt 1 == intToBoxInt 1
+  let p0 = (intToBoxInt 0, intToBoxInt 0)
+      p1 = (intToBoxInt 1, intToBoxInt 1)
+      p2 = (intToBoxInt 2, intToBoxInt 2)
+      m0 = discreteCanonicalMomentum (geometryMetric EllipticGeom) p0 p1
+      m1 = discreteCanonicalMomentum (geometryMetric EllipticGeom) p1 p2
+  in (unwrapBox (fst m0) == unwrapBox (fst m1)) && (unwrapBox (snd m0) == unwrapBox (snd m1))
 
 ||| Audits Parabolic Null Momentum Zero Invariant:
 ||| Proves that in Parabolic geometry (det g = 0), momentum along the degenerate
-||| null direction (0, 1) evaluates to exactly (0, 0), allowing frictionless remainder
-||| drainage into Dark Matter without back-reaction or drag.
+||| null direction (0, 1) evaluates to exactly (0, 0).
+%inline
 public export
 auditParabolicNullMomentumZeroProof : Bool
 auditParabolicNullMomentumZeroProof =
-  intToBoxInt 0 == intToBoxInt 0
+  let p0 = (intToBoxInt 0, intToBoxInt 0)
+      p1 = (intToBoxInt 0, intToBoxInt 1)
+      m  = discreteCanonicalMomentum (geometryMetric ParabolicGeom) p0 p1
+  in (unwrapBox (fst m) == 0) && (unwrapBox (snd m) == 0)
 
 ||| Audits Sector-Specific Action Signatures across the 4 Geometries:
-||| For displacement Δx = (1, 1):
-||| - Elliptic: Q_Ell = 1² + 1² = 2 > 0 (Positive Bound State)
-||| - Hyperbolic: Q_Hyp = 1² - 1² = 0 (Null Lightcone Phase)
-||| - Parabolic: Q_Par = 1² + 0 = 1 (Dissipative Drain)
-||| - Substrate: Q_Sub = 1² + 2(1)(1) + 0 = 3 (Asymmetric Causal Drive)
+||| For displacement Δx = (1, 1).
+%inline
 public export
 auditSectorSpecificActionSignaturesProof : Bool
 auditSectorSpecificActionSignaturesProof =
-  (intToBoxInt 2 == intToBoxInt 2) &&
-  (intToBoxInt 0 == intToBoxInt 0) &&
-  (intToBoxInt 1 == intToBoxInt 1) &&
-  (intToBoxInt 3 == intToBoxInt 3)
-
-
-
-
+  let path = [(intToBoxInt 0, intToBoxInt 0), (intToBoxInt 1, intToBoxInt 1)]
+      sEll = discreteAction EllipticGeom path zeroPotential
+      sHyp = discreteAction HyperbolicGeom path zeroPotential
+      sPar = discreteAction ParabolicGeom path zeroPotential
+      sSub = discreteAction SubstrateGeom path zeroPotential
+  in unwrapBox sEll == 2 &&
+     unwrapBox sHyp == 0 &&
+     unwrapBox sPar == 1 &&
+     unwrapBox sSub == 1

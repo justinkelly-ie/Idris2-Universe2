@@ -387,6 +387,7 @@ unixelBox x w = MkBox [(x, w)]
 ||| @deprecated Linear O(N) lookupBox is suitable for small token sets.
 ||| For large or performance-critical token trees, use Core.MultisetTree.lookupTokenTree (O(log N)).
 ||| Lookups the multiplicity of an element in a multiset.
+%inline
 public export
 lookupBox : Eq a => a -> Box a -> BoxInt
 lookupBox _ (MkBox []) = intToBoxInt 0
@@ -394,6 +395,7 @@ lookupBox target (MkBox ((x, w) :: xs)) =
   if x == target then w else lookupBox target (MkBox xs)
 
 ||| Inserts or updates the multiplicity of an element.
+%inline
 public export
 insertBox : Eq a => a -> BoxInt -> Box a -> Box a
 insertBox x w (MkBox xs) =
@@ -405,6 +407,7 @@ insertBox x w (MkBox xs) =
        else MkBox ((x, newWeight) :: filtered)
 
 ||| Multiset Union (pouring containers together): adds multiplicities.
+%inline
 public export
 unionBox : Eq a => Box a -> Box a -> Box a
 unionBox (MkBox []) ys = ys
@@ -412,6 +415,7 @@ unionBox (MkBox ((x, w) :: xs)) ys =
   insertBox x w (unionBox (MkBox xs) ys)
 
 ||| Multiset Difference: subtracts multiplicities (bounded below by 0).
+%inline
 public export
 subBox : Eq a => Box a -> Box a -> Box a
 subBox (MkBox []) _ = MkBox []

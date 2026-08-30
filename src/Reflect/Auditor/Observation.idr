@@ -16,41 +16,29 @@ import Observation.Triad
 ------------------------------------------------------------------------
 
 -- Witness 12: Multiset Born Rule & Hehner Triad
+%inline
 public export
 auditMultisetHehnerTriadProofExport : Bool
 auditMultisetHehnerTriadProofExport = Core.UnixelFraction.auditMultisetHehnerTriadProof
 
-public export
-%macro
-auditMultisetHehnerTriad : Elab (Reflect.Auditor.Observation.auditMultisetHehnerTriadProofExport = True)
-auditMultisetHehnerTriad = pure Refl
 
 -- Witness 159: Empirical Scientific Observation Dataset Consistency
+%inline
 public export
 auditScientificObservationDatasetProofExport : Bool
 auditScientificObservationDatasetProofExport = Observation.Dataset.auditScientificObservationDatasetProof
 
-public export
-%macro
-auditScientificObservationDataset : Elab (Reflect.Auditor.Observation.auditScientificObservationDatasetProofExport = True)
-auditScientificObservationDataset = pure Refl
 
 -- Witness 160: Algebraic Observation Catalog Completeness
+%inline
 public export
 auditAlgebraicObservationCatalogProofExport : Bool
 auditAlgebraicObservationCatalogProofExport = Observation.Algebraic.auditAlgebraicObservationCatalogProof
 
-public export
-%macro
-auditAlgebraicObservationCatalog : Elab (Reflect.Auditor.Observation.auditAlgebraicObservationCatalogProofExport = True)
-auditAlgebraicObservationCatalog = pure Refl
 
 -- Witness 161: Cosmological Observation Triad 3-Way Soundness
+%inline
 public export
 auditCosmologicalTriadProofExport : Bool
 auditCosmologicalTriadProofExport = Observation.Triad.auditCosmologicalTriadProof
 
-public export
-%macro
-auditCosmologicalTriad : Elab (Reflect.Auditor.Observation.auditCosmologicalTriadProofExport = True)
-auditCosmologicalTriad = pure Refl

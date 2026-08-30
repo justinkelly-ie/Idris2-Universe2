@@ -7,6 +7,10 @@ import Data.Nat
 
 %default total
 
+------------------------------------------------------------------------
+-- 1. MODEL GENERATORS & RELATIONAL SCALING FUNCTIONS
+------------------------------------------------------------------------
+
 ||| Relational scaling function for 3D spatial field lattice cells.
 ||| Grid dimension k produces k^3 active spatial slots (1 -> 1, 2 -> 8, 3 -> 27).
 public export
@@ -19,12 +23,54 @@ public export
 computeDESize : (deDepth : Nat) -> Nat
 computeDESize depth = fastNatPower2 depth
 
-
 ||| Relational scaling function for Dark Matter historical log length.
 ||| The ledger records exactly the number of elapsed evolutionary epochs.
 public export
 computeDMSize : (epoch : Nat) -> Nat
 computeDMSize epoch = epoch
+
+------------------------------------------------------------------------
+-- 2. MODEL-DERIVED PRIMORIAL 210 COSMIC BUDGET CONSTANTS
+------------------------------------------------------------------------
+
+||| Manifest Spatial Grid Dimension for the 3D Universe (3).
+public export
+spatialGridDim : Nat
+spatialGridDim = 3
+
+||| Spectral Vacuum Binary Depth (7 bits).
+public export
+vacuumBinaryDepth : Nat
+vacuumBinaryDepth = 7
+
+||| Phase Space Substrate Basis Dimension (10D).
+public export
+substratePhaseDim : Nat
+substratePhaseDim = 10
+
+||| Model-Derived Baryonic Matter Capacity: computeVMSize 3 = 3³ = 27.
+public export
+baryonicTokenCapacity : Nat
+baryonicTokenCapacity = computeVMSize spatialGridDim
+
+||| Model-Derived Dark Energy Modes: computeDESize 7 = 2⁷ = 128.
+public export
+darkEnergyModeCapacity : Nat
+darkEnergyModeCapacity = computeDESize vacuumBinaryDepth
+
+||| Model-Derived Substrate Law Channels: 10×11/2 = 55.
+public export
+substrateLawChannelCount : Nat
+substrateLawChannelCount = cast {to=Nat} (div (cast {to=Integer} (substratePhaseDim * (substratePhaseDim + 1))) 2)
+
+||| Model-Derived Primorial Cosmic Budget: 27 + 128 + 55 = 210.
+public export
+primorialCosmicBudgetTotal : Nat
+primorialCosmicBudgetTotal = baryonicTokenCapacity + darkEnergyModeCapacity + substrateLawChannelCount
+
+------------------------------------------------------------------------
+-- 3. COSMIC VACUUM INITIALIZATION
+------------------------------------------------------------------------
 
 ||| Dynamically initializes the cosmic vacuum state purely from spatial,
 ||| energy depth, and epoch parameters without magic constants or casts.

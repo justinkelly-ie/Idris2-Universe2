@@ -23,15 +23,34 @@ import Data.Vect
 public export
 data ScaleTag = QuarkScale | HadronScale | AlphaScale | NucleusScale | MoleculeScale
 
-||| Quark Flavor Specification.
+||| Quark Flavor Specification (6 Standard Model Flavors).
 public export
-data QuarkSpec = UpQuark | DownQuark
+data QuarkSpec = UpQuark | DownQuark | StrangeQuark | CharmQuark | BottomQuark | TopQuark
 
 public export
 Eq QuarkSpec where
-  UpQuark == UpQuark = True
-  DownQuark == DownQuark = True
-  _ == _ = False
+  UpQuark      == UpQuark      = True
+  DownQuark    == DownQuark    = True
+  StrangeQuark == StrangeQuark = True
+  CharmQuark   == CharmQuark   = True
+  BottomQuark  == BottomQuark  = True
+  TopQuark     == TopQuark     = True
+  _            == _            = False
+
+||| Lepton Species Specification (6 Leptons).
+public export
+data LeptonSpec = ElectronLepton | MuonLepton | TauLepton 
+                | ElectronNeutrino | MuonNeutrino | TauNeutrino
+
+public export
+Eq LeptonSpec where
+  ElectronLepton   == ElectronLepton   = True
+  MuonLepton       == MuonLepton       = True
+  TauLepton        == TauLepton        = True
+  ElectronNeutrino == ElectronNeutrino = True
+  MuonNeutrino     == MuonNeutrino     = True
+  TauNeutrino      == TauNeutrino      = True
+  _                == _                = False
 
 ||| SU(3) Color Gauge Sector.
 public export
