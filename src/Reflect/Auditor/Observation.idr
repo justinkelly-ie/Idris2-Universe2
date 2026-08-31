@@ -8,6 +8,7 @@ import public Observation.Algebraic
 import public Observation.Dataset
 import public Observation.Scientific
 import public Observation.Triad
+import public Observation.HolographicStream
 
 %default total
 
@@ -37,4 +38,16 @@ auditAlgebraicObservationCatalogProofExport = Observation.Algebraic.auditAlgebra
 public export
 auditCosmologicalTriadProofExport : Bool
 auditCosmologicalTriadProofExport = Observation.Triad.auditCosmologicalTriadProof
+
+
+-- Witness 176: Dyck-Huffman Horizon Evaporation Stream & Page Curve (Law 21)
+public export
+auditHolographicStreamProofExport : Bool
+auditHolographicStreamProofExport = Observation.HolographicStream.auditHolographicStreamProof
+
+public export
+%macro
+auditHolographicStream : Elab (Reflect.Auditor.Observation.auditHolographicStreamProofExport = True)
+auditHolographicStream = pure Refl
+
 

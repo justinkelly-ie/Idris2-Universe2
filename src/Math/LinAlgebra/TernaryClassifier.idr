@@ -4,36 +4,45 @@ import Core.BoxInt
 import Core.VexelMaxel
 import Math.LinAlgebra.MetricTensor
 import Data.Vect
+import public Core.NarayAlphabet
 
 %default total
 
-||| The foundational 3-bit alphabet of Box Arithmetic:
+------------------------------------------------------------------------
+-- 1. TERNARY BIT ALPHABET REFLECTION FROM IDRIS2-NARAY
+------------------------------------------------------------------------
+
+||| The foundational 3-bit alphabet of Box Arithmetic, aliased to Bit3 from Idris2-Naray:
 ||| Parity (-1), Identity (0), and Presence (+1).
 public export
-data TernaryBit = MinusOne | ZeroBit | PlusOne
+TernaryBit : Type
+TernaryBit = Bit3
 
 public export
-Eq TernaryBit where
-  MinusOne == MinusOne = True
-  ZeroBit  == ZeroBit  = True
-  PlusOne  == PlusOne  = True
-  _        == _        = False
+MinusOne : TernaryBit
+MinusOne = Bit3MinusOne
 
 public export
-Show TernaryBit where
-  show MinusOne = "-1"
-  show ZeroBit  = " 0"
-  show PlusOne  = "+1"
+ZeroBit : TernaryBit
+ZeroBit = Bit3Zero
 
+public export
+PlusOne : TernaryBit
+PlusOne = Bit3PlusOne
+
+||| Converts a TernaryBit (Bit3) to an integer scalar.
 public export
 bitToInt : TernaryBit -> Integer
-bitToInt MinusOne = -1
-bitToInt ZeroBit  = 0
-bitToInt PlusOne  = 1
+bitToInt = bit3ToInt
 
+||| Converts a TernaryBit (Bit3) to a discrete BoxInt particle count.
 public export
-bitToBoxInt : TernaryBit -> BoxInt
-bitToBoxInt b = intToBoxInt (bitToInt b)
+bitToBoxInt : TernaryBit -> Core.BoxInt.BoxInt
+bitToBoxInt b = Core.BoxInt.intToBoxInt (bit3ToInt b)
+
+------------------------------------------------------------------------
+-- 2. METRIC TENSOR CLASSIFICATION & DISCRIMINANTS
+------------------------------------------------------------------------
 
 ||| The three geometric signatures of a discrete 2x2 metric manifold.
 public export
@@ -89,7 +98,7 @@ generateAll27States =
      | b1 <- bits, b2 <- bits, b3 <- bits ]
 
 ------------------------------------------------------------------------
--- 2. NATURAL LINEAR INDEPENDENCE OF METRIC VECTORS (CH. 26)
+-- 3. NATURAL LINEAR INDEPENDENCE OF METRIC VECTORS (CH. 26)
 ------------------------------------------------------------------------
 
 ||| Classifies whether two metric basis Vexels are linearly independent over Nat or proportional.
@@ -104,6 +113,5 @@ classifyVexelIndependence v1 v2 =
 public export
 auditGeometricVexelClassificationProof : Bool
 auditGeometricVexelClassificationProof =
-  (intToBoxInt 1 == intToBoxInt 1) &&
-  (intToBoxInt 2 == intToBoxInt 2)
-
+  (Core.BoxInt.intToBoxInt 1 == Core.BoxInt.intToBoxInt 1) &&
+  (Core.BoxInt.intToBoxInt 2 == Core.BoxInt.intToBoxInt 2)

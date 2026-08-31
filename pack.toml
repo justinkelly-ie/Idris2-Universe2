@@ -1,4 +1,4 @@
-[custom.all.Idris2-Universe2]
-type = "local"
-path = "."
-ipkg = "Idris2-Universe2.ipkg"
+[package]
+name = "Idris2-Universe3"
+version = "0.3.0"
+ipkg = "Idris2-Universe3.ipkg"

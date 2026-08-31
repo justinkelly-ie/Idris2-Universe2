@@ -22,6 +22,7 @@ While continuous modeling and numerical simulations are foundational across comp
 6. **Bootstrapping Epoch 1 to 37**: Simulates lattice expansion ($1\times 1 \to 2\times 2 \to 3\times 3$), 137-stage cycles, and contraction/folding where Dark Matter acts as the accumulated historical error ledger ($55 \to 56$ states).
 7. **Nilpotent Kinematics & Lensing**: Directional velocity tokens ($\epsilon = \begin{pmatrix}0&1\\0&0\end{pmatrix}, \epsilon^2 = 0$) routed through symmetric $g_{\text{EM}}$ and asymmetric $g_{\text{Substrate}}$ Maxels with inductive drag from Dark Matter residues.
 8. **Grassmann Exterior Calculus & Yang-Mills Gauge Theory**: Full 3D discrete coboundary operators ($d_0, d_1, d_2$), combinatorial Hodge duality ($\star$), exact Bianchi closure ($d_2(d_1 A) = 0$), and Dihedron non-Abelian color flux confinement.
+9. **Edwin Brady Protocol Channels & Galois Adjunction ($f_* \dashv f^*$)**: State evolution modeled as a linear QTT protocol channel (`PhysicsChannel`) indexed by reflected `Polynumber` generating functions ($P(x) = \sum c_k x^k$), driven by the 137-stage natural clock tick ($N_{\text{cycle}} = 137$) and a pure algebraic Galois Connection ($f_* \dashv f^*$) between contraction ($f_*$) and expansion ($f^*$).
 
 ---
 
@@ -37,6 +38,7 @@ While continuous modeling and numerical simulations are foundational across comp
 | [`Math.QuantumTransition`](src/Math/QuantumTransition.idr) | Discrete quantum state vectors, unitary S-matrices, Born probability conservation, and Wilson loop holonomies. |
 | [`Math.WilsonPolyhedra`](src/Math/WilsonPolyhedra.idr) | 3D Wilson Polyhedra cubic holonomies, non-Abelian $\mathrm{SU}(3)$ color flux coupling, and discrete Bianchi closure. |
 | [`Math.FourGeometries`](src/Math/FourGeometries.idr) | The 4 Fundamental Geometries: Elliptic (Confinement), Hyperbolic (Phase), Parabolic (Dissipation), and Substrate (Causality). |
+| [`Math.LawAlgebra`](src/Math/LawAlgebra.idr) | Typed Law Algebra Monoid ($\wedge, \otimes$), multiset pushforward ($f_*$), inverse image pullback ($f^*$), and pure algebraic Galois Connection ($f_* \dashv f^*$). |
 | [`Math.DiscreteActionPrinciple`](src/Math/DiscreteActionPrinciple.idr) | Law 1: The Discrete Principle of Least Action, Euler-Lagrange equations, and Substrate causal arrow asymmetry. |
 | [`Math.DiscreteBoltzmannDistribution`](src/Math/DiscreteBoltzmannDistribution.idr) | Law 2: The Discrete Boltzmann Distribution, sector partition functions ($Z$), and ground-state collapse. |
 | [`Math.RationalTrig`](src/Math/RationalTrig.idr) | Rational Trigonometry: Quadrance, Spread, Cross, and Archimedes' Function. |
@@ -60,6 +62,7 @@ While continuous modeling and numerical simulations are foundational across comp
 | [`Evolution.Expansion`](src/Evolution/Expansion.idr) | Generalized grid expansion into pure Maxels and outer product tensor inflation. |
 | [`Evolution.Contraction`](src/Evolution/Contraction.idr) | Multi-epoch collapse and folding (`contractAndFoldGeneric`). |
 | [`Evolution.Bootstrap`](src/Evolution/Bootstrap.idr) | Master bootstrap pipeline scaling from Epoch 1 through Epoch 37. |
+| [`Evolution.ProtocolChannel`](src/Evolution/ProtocolChannel.idr) | Edwin Brady Linear Protocol Channels (`PhysicsChannel`) parameterized by Polynumber generating functions and 137-stage clock ticks. |
 | [`Evolution.StructuralAccounting`](src/Evolution/StructuralAccounting.idr) | Structural summation loops for non-cast integer vectors. |
 | [`Derivation.PureGeometricClassifier`](src/Derivation/PureGeometricClassifier.idr) | Relational inference of metric coordinates from internal memory density ratios. |
 | [`Compound.LinearEpsilonRouting`](src/Compound/LinearEpsilonRouting.idr) | Kinematic velocity routing across symmetric $g_{\text{EM}}$ vs asymmetric $g_{\text{Substrate}}$ Maxels. |

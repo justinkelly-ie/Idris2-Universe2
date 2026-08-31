@@ -40,6 +40,10 @@ addBoxLinear : (1 a : BoxInt) -> (1 b : BoxInt) -> BoxInt
 addBoxLinear (MkBoxInt a) (MkBoxInt b) = MkBoxInt (a + b)
 
 public export
+subBoxLinear : BoxInt -> BoxInt -> BoxInt
+subBoxLinear (MkBoxInt a) (MkBoxInt b) = MkBoxInt (a - b)
+
+public export
 Num BoxInt where
   (+) (MkBoxInt a) (MkBoxInt b) = MkBoxInt (a + b)
   (*) (MkBoxInt a) (MkBoxInt b) = MkBoxInt (a * b)

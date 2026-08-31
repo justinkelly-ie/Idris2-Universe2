@@ -3,6 +3,7 @@ module Reflect.Auditor.Geometry
 import public Core.BoxInt
 import public Derivation.PureGeometricClassifier
 import public Geometry.InformationGeometry
+import public Geometry.GaloisCurvature
 import Language.Reflection
 import public Math.DiscreteLatticeBoltzmann
 import public Math.PauliExclusion
@@ -132,3 +133,14 @@ public export
 %macro
 auditDiscreteLatticeBoltzmann : Elab (Reflect.Auditor.Geometry.auditDiscreteLatticeBoltzmannProofExport = True)
 auditDiscreteLatticeBoltzmann = pure Refl
+
+-- Witness 175: Discrete Galois Einstein Curvature Tensor & Metric Shear
+public export
+auditGaloisEinsteinCurvatureProofExport : Bool
+auditGaloisEinsteinCurvatureProofExport = Geometry.GaloisCurvature.auditGaloisEinsteinCurvatureProof
+
+public export
+%macro
+auditGaloisEinsteinCurvature : Elab (Reflect.Auditor.Geometry.auditGaloisEinsteinCurvatureProofExport = True)
+auditGaloisEinsteinCurvature = pure Refl
+

@@ -1,6 +1,8 @@
 module Reflect.Auditor.Compound
 
 import public Compound.AlphaReplication
+import public Compound.HadronicConfinement
+import public Compound.WatsonCrickBasePairing
 import public Compound.AstrophysicalAggregation
 import public Compound.BiophysicalAggregation
 import public Compound.CosmicNucleosynthesis
@@ -24,6 +26,10 @@ import public Compound.TypeIndexedMultiset
 import public Compound.UniversalAlgebraTRS
 import public Compound.VelocityLensing
 import public Compound.WatsonCrickBasePairing
+import public Compound.Biomolecules
+import public Compound.StandardModel
+import public Compound.ParticleScattering
+import public Compound.HadronizationEngine
 import public Core.BoxInt
 import Language.Reflection
 
@@ -194,5 +200,58 @@ auditBiophysicalAggregationProofExport = Compound.BiophysicalAggregation.auditBi
 public export
 auditAstrophysicalAggregationProofExport : Bool
 auditAstrophysicalAggregationProofExport = Compound.AstrophysicalAggregation.auditAstrophysicalAggregationProof
+
+
+-- Witness 177: Biological Ribosomal Translation & Action Potentials (Laws 37-40)
+public export
+auditBiomolecularPipelineProofExport : Bool
+auditBiomolecularPipelineProofExport = Compound.Biomolecules.auditBiomolecularPipelineProof
+
+public export
+%macro
+auditBiomolecularPipeline : Elab (Reflect.Auditor.Compound.auditBiomolecularPipelineProofExport = True)
+auditBiomolecularPipeline = pure Refl
+
+-- Witness 178: Full Standard Model Particle Catalog (37 States) & Multiset Lagrangian Vertices
+public export
+auditFullStandardModelCatalogProofExport : Bool
+auditFullStandardModelCatalogProofExport = Compound.StandardModel.auditFullStandardModelCatalogProof
+
+public export
+%macro
+auditFullStandardModelCatalog : Elab (Reflect.Auditor.Compound.auditFullStandardModelCatalogProofExport = True)
+auditFullStandardModelCatalog = pure Refl
+
+-- Witness 179: High-Energy 2-to-2 Particle Scattering Vertices (QED, QCD, Weak)
+public export
+auditParticleScatteringProofExport : Bool
+auditParticleScatteringProofExport = Compound.ParticleScattering.auditParticleScatteringProof
+
+public export
+%macro
+auditParticleScattering : Elab (Reflect.Auditor.Compound.auditParticleScatteringProofExport = True)
+auditParticleScattering = pure Refl
+
+-- Witness 180: Hadronization & QGP Jet Fragmentation Automaton
+public export
+auditHadronizationEngineProofExport : Bool
+auditHadronizationEngineProofExport = Compound.HadronizationEngine.auditHadronizationEngineProof
+
+public export
+%macro
+auditHadronizationEngine : Elab (Reflect.Auditor.Compound.auditHadronizationEngineProofExport = True)
+auditHadronizationEngine = pure Refl
+
+-- Witness 181: Universal Transform Multiset Hadronic Confinement (G ⊗ Z ⊗ J)
+public export
+auditQuarkToBaryonTransformProofExport : Bool
+auditQuarkToBaryonTransformProofExport = Compound.HadronicConfinement.auditQuarkToBaryonTransformProof
+
+-- Witness 182: Universal Transform Multiset Base Pairing (G ⊗ Z ⊗ J)
+public export
+auditBasePairingTransformProofExport : Bool
+auditBasePairingTransformProofExport = Compound.WatsonCrickBasePairing.auditBasePairingTransformProof
+
+
 
 

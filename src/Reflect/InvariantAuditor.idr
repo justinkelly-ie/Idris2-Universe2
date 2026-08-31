@@ -9,7 +9,7 @@ import public Reflect.Auditor.Observation
 
 import Math.FineStructure
 import Compound.AlphaReplication
-import Language.Reflection
+import public Language.Reflection
 
 %default total
 

@@ -2,6 +2,8 @@ module Compound.AstrophysicalAggregation
 
 import Core.BoxInt
 import Core.Multiset
+import Core.UnixelFraction
+import Core.TransformMultiset
 import Math.LawAlgebra
 import Math.DiscreteChandrasekharLimit
 import Math.DiscreteTOVLimit
@@ -42,9 +44,10 @@ record StellarRemnant where
   totalTokens  : Nat
   remnantClass : RemnantType
 
-------------------------------------------------------------------------
--- 2. PUSHFORWARD AGGREGATION FUNCTIONS
-------------------------------------------------------------------------
+||| Astrophysical Remnant Transform Multiset (G ⊗ Z ⊗ J)
+public export
+astrophysicalRemnantTransform : TransformMultiset MassToken MassToken
+astrophysicalRemnantTransform = mkTransformBox EllipticSector unitUnixelFraction [((MkMassToken 1, MkMassToken 1), intToBoxInt 1)]
 
 ||| Aggregates stellar mass tokens into a Stellar Remnant.
 ||| Pushes Law 43 (Chandrasekhar Limit M=84) and Law 24 (TOV Limit M=108) forward:
@@ -56,7 +59,7 @@ aggregateStellarRemnant : Nat -> StellarRemnant
 aggregateStellarRemnant numTokens =
   let tokensList = map MkMassToken [1..numTokens]
       tokensBox = foldl (\acc, t => insertBox t (intToBoxInt 1) acc) emptyBox tokensList
-      pushedBox = pushforwardMultiset id tokensBox
+      pushedBox = applyPushforwardContraction astrophysicalRemnantTransform tokensBox
       remClass = if numTokens < 84
                     then WhiteDwarf
                     else if numTokens <= 108

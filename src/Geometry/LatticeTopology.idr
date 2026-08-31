@@ -3,6 +3,7 @@ module Geometry.LatticeTopology
 import Core.BoxInt
 import Core.VexelMaxel
 import Math.LinAlgebra.TernaryClassifier
+import Core.NarayAlphabet
 import Data.Vect
 import Data.Fin
 
@@ -33,15 +34,15 @@ Show Coord3D where
 
 public export
 ternaryNat : TernaryBit -> Nat
-ternaryNat MinusOne = 0
-ternaryNat ZeroBit  = 1
-ternaryNat PlusOne  = 2
+ternaryNat Bit3MinusOne = 0
+ternaryNat Bit3Zero     = 1
+ternaryNat Bit3PlusOne  = 2
 
 public export
 natToTernaryBit : Nat -> TernaryBit
-natToTernaryBit 0 = MinusOne
-natToTernaryBit 1 = ZeroBit
-natToTernaryBit _ = PlusOne
+natToTernaryBit 0 = Bit3MinusOne
+natToTernaryBit 1 = Bit3Zero
+natToTernaryBit _ = Bit3PlusOne
 
 ||| Maps a 3D coordinate (x,y,z) to a unique 1D cell index in Fin 27.
 ||| index = (x + 1) + 3*(y + 1) + 9*(z + 1)
@@ -73,18 +74,14 @@ fin27ToCoord finIdx =
 -- 2. TOROIDAL PERIODIC NEIGHBORHOOD GRAPH (T^3 Topology)
 ------------------------------------------------------------------------
 
-||| Moves one step along a ternary axis with periodic toroidal wrapping modulo 3.
+||| Moves one step along a ternary axis with periodic toroidal wrapping modulo 3 using F3 addition.
 public export
 shiftTernaryForward : TernaryBit -> TernaryBit
-shiftTernaryForward MinusOne = ZeroBit
-shiftTernaryForward ZeroBit  = PlusOne
-shiftTernaryForward PlusOne  = MinusOne
+shiftTernaryForward b = case addNaray (Naray3 b) (Naray3 Bit3PlusOne) of Naray3 b' => b'
 
 public export
 shiftTernaryBackward : TernaryBit -> TernaryBit
-shiftTernaryBackward MinusOne = PlusOne
-shiftTernaryBackward ZeroBit  = MinusOne
-shiftTernaryBackward PlusOne  = ZeroBit
+shiftTernaryBackward b = case addNaray (Naray3 b) (Naray3 Bit3MinusOne) of Naray3 b' => b'
 
 ||| The 6 cardinal directions on the 3D lattice.
 public export
@@ -169,7 +166,6 @@ field27ToBoxel : Vect 27 BoxInt -> Boxel
 field27ToBoxel grid =
   let paired = tabulate (\idx => (fin27ToVoxel idx, lookupCell idx grid))
   in canonicalizeBoxel (MkBoxel (toList paired))
-
 
 ||| Converts a 3D Boxel multiset back into a flat 27-cell scalar field.
 public export

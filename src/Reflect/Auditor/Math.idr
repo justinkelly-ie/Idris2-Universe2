@@ -57,6 +57,11 @@ import public Math.DiscreteToricCode
 import public Math.DiscreteTripleAlphaNucleosynthesis
 import public Math.DiscreteWatsonCrick
 import public Math.DiscreteWheelerDeWitt
+import public Math.DensityMatrix
+import public Math.GalacticRotationCurve
+import public Math.DiscreteFlavorMixing
+import public Math.NeutrinoOscillation
+import public Math.MuonG2Anomaly
 import public Math.LawAlgebra
 import public Math.SubstrateMetricTensor55
 import public Math.MultisetMetricTensor55
@@ -827,5 +832,64 @@ auditMultisetMetricTensor55ProofExport = Math.MultisetMetricTensor55.auditMultis
 public export
 auditDualComplexMultiplicationProofExport : Bool
 auditDualComplexMultiplicationProofExport = Math.Infinitesimal.auditAutoDiffProof
+
+-- Witness 173: Pure Algebraic Galois Connection (f_* ⊣ f^*) Unit/Counit Invariants
+public export
+auditGaloisConnectionProofExport : Bool
+auditGaloisConnectionProofExport = Math.LawAlgebra.auditGaloisConnectionProof
+
+-- Witness 174: Constructive Quantum Density Matrices & Born Rule Projection
+public export
+auditDensityMatrixBornRuleProofExport : Bool
+auditDensityMatrixBornRuleProofExport = Math.DensityMatrix.auditDensityMatrixBornRuleProof
+
+public export
+%macro
+auditDensityMatrixBornRule : Elab (Reflect.Auditor.Math.auditDensityMatrixBornRuleProofExport = True)
+auditDensityMatrixBornRule = pure Refl
+
+-- Witness 175: 1,000-Step Galactic Rotation Curve & Dark Matter Halo Time-Series Simulation
+public export
+auditGalacticRotationTimeSeriesProofExport : Bool
+auditGalacticRotationTimeSeriesProofExport = Math.GalacticRotationCurve.auditGalacticRotationTimeSeriesProof
+
+public export
+%macro
+auditGalacticRotationTimeSeries : Elab (Reflect.Auditor.Math.auditGalacticRotationTimeSeriesProofExport = True)
+auditGalacticRotationTimeSeries = pure Refl
+
+-- Witness 176: Constructive Anti-Matter Multiset Pair Annihilation & CKM/PMNS CP-Violation Unitarity
+public export
+auditAntiMatterAnnihilationProofExport : Bool
+auditAntiMatterAnnihilationProofExport = Math.DiscreteFlavorMixing.auditAntiMatterAnnihilationProof
+
+public export
+%macro
+auditAntiMatterAnnihilation : Elab (Reflect.Auditor.Math.auditAntiMatterAnnihilationProofExport = True)
+auditAntiMatterAnnihilation = pure Refl
+
+-- Witness 181: 3-Flavor Neutrino Oscillation Time-Series & PMNS Unitary Conservation
+public export
+auditNeutrinoOscillationProofExport : Bool
+auditNeutrinoOscillationProofExport = Math.NeutrinoOscillation.auditNeutrinoOscillationProof
+
+public export
+%macro
+auditNeutrinoOscillation : Elab (Reflect.Auditor.Math.auditNeutrinoOscillationProofExport = True)
+auditNeutrinoOscillation = pure Refl
+
+-- Witness 182: Muon g-2 Anomaly & Discrete Loop Correction Engine
+public export
+auditMuonG2AnomalyProofExport : Bool
+auditMuonG2AnomalyProofExport = Math.MuonG2Anomaly.auditMuonG2AnomalyProof
+
+public export
+%macro
+auditMuonG2Anomaly : Elab (Reflect.Auditor.Math.auditMuonG2AnomalyProofExport = True)
+auditMuonG2Anomaly = pure Refl
+
+
+
+
 
 
