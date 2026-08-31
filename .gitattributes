@@ -1,3 +1,2 @@
-# GitHub Linguist language overrides
 *.idr linguist-language=Idris
 *.ipkg linguist-language=Idris
